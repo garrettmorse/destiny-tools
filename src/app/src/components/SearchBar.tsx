@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search } from 'lucide-react';
+import { fetchUser } from '../services/user';
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
@@ -49,20 +50,14 @@ const SearchBar: React.FC<SearchBarProps> = ({
         return;
       }
       setIsLoading(true);
-      try {
-        const response = await fetch(`http://localhost:8080/api/d2/searchUser?user=${encodeURIComponent(query)}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch search results');
-        }
-        const data = (await response.json()) as SearchResult[];
-        setResults(data);
-        setShowResults(true);
-      } catch (error) {
-        console.error('Error fetching search results:', error);
+      const [searchError, searchData] = await fetchUser(query);
+      if (searchError) {
         setResults([]);
-      } finally {
-        setIsLoading(false);
+      } else {
+        setResults(searchData);
+        setShowResults(true);
       }
+      setIsLoading(false);
     };
 
     const debounceTimeout = setTimeout(() => {
