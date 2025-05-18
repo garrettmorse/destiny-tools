@@ -167,7 +167,7 @@ async function fetchPGCR(activityId) {
  * 
  * @typedef {Record<string, FireteamMember>} Fireteam
  * 
- * @typedef {{ name: string; attempts: number; emblemFullUrl: string; emblemIconUrl:string; totalKills: number; totalDeaths: number; killDeathRatio: number; weaponKills: WeaponKills; weaponKillsByAmmoType: { Primary: WeaponKills; Special: WeaponKills; Heavy: WeaponKills }}} User
+ * @typedef {{ name: string; lightLevel: number; attempts: number; emblemFullUrl: string; emblemIconUrl:string; totalKills: number; totalDeaths: number; killDeathRatio: number; weaponKills: WeaponKills; weaponKillsByAmmoType: { Primary: WeaponKills; Special: WeaponKills; Heavy: WeaponKills }}} User
  */
 
 /**
@@ -274,17 +274,18 @@ function gatherFireteamRaidStats(raidPgcrs, manifest) {
   for (const pgcr of raidPgcrs) {
     pgcr.entries.map(entry => {
       const id = entry.player.destinyUserInfo.membershipId;
-      idToNameMap[id] = [entry.player.destinyUserInfo.bungieGlobalDisplayName, entry.player.emblemHash];
+      idToNameMap[id] = [entry.player.destinyUserInfo.bungieGlobalDisplayName, entry.player.emblemHash, entry.player.lightLevel];
       return id;
     }).forEach(id => allFireteamMembers.add(id));
   }
 
   for (const fireteamId of allFireteamMembers) {
-    const [name, emblemHash] = idToNameMap[fireteamId];
+    const [name, emblemHash, lightLevel] = idToNameMap[fireteamId];
     const { displayProperties, secondaryIcon } = manifest[emblemHash];
     fireteam[fireteamId] = { 
       ...gatherUserRaidStats(raidPgcrs, fireteamId, manifest),
       name,
+      lightLevel,
       emblemIconUrl: displayProperties.icon,
       emblemFullUrl: secondaryIcon
     };
