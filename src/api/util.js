@@ -167,7 +167,7 @@ async function fetchPGCR(activityId) {
  * 
  * @typedef {Record<string, FireteamMember>} Fireteam
  * 
- * @typedef {{ name: string; emblemFullUrl: string; emblemIconUrl:string; totalKills: number; totalDeaths: number; killDeathRatio: number; weaponKills: WeaponKills; weaponKillsByAmmoType: { Primary: WeaponKills; Special: WeaponKills; Heavy: WeaponKills }}} User
+ * @typedef {{ name: string; attempts: number; emblemFullUrl: string; emblemIconUrl:string; totalKills: number; totalDeaths: number; killDeathRatio: number; weaponKills: WeaponKills; weaponKillsByAmmoType: { Primary: WeaponKills; Special: WeaponKills; Heavy: WeaponKills }}} User
  */
 
 /**
@@ -180,6 +180,9 @@ function gatherUserRaidStats(raidPgcrs, accountId, manifest) {
   const allUserPgcrStats = /** @type {Omit<User, 'name'>[]} */ ([]);
   for (const pgcr of raidPgcrs) {
     const userEntries = pgcr.entries.filter(entry => entry.player.destinyUserInfo.membershipId === accountId);
+    if (userEntries.length === 0) {
+      continue;
+    }
     const userPgcrStats = userEntries.reduce((stats, userEntry) => {
       stats.totalKills += userEntry.values.kills.basic.value;
       stats.totalDeaths += userEntry.values.deaths.basic.value;
@@ -222,12 +225,14 @@ function gatherUserRaidStats(raidPgcrs, accountId, manifest) {
         Heavy: {}
       },
     }));
+    userPgcrStats.attempts = 1;
     allUserPgcrStats.push(userPgcrStats);
   }
   const allStats = allUserPgcrStats.reduce((aggregateUserPgcr, pgcr) => {
     aggregateUserPgcr.totalKills = pgcr.totalKills + aggregateUserPgcr.totalKills;
     aggregateUserPgcr.totalDeaths = pgcr.totalDeaths + aggregateUserPgcr.totalDeaths;
     aggregateUserPgcr.killDeathRatio = aggregateUserPgcr.totalKills / aggregateUserPgcr.totalDeaths;
+    aggregateUserPgcr.attempts += pgcr.attempts;
     for (const [weaponName, kills] of Object.entries(pgcr.weaponKills)) {
       aggregateUserPgcr.weaponKills[weaponName] = kills + (aggregateUserPgcr.weaponKills[weaponName] ?? 0);
     }
@@ -241,6 +246,7 @@ function gatherUserRaidStats(raidPgcrs, accountId, manifest) {
     totalKills: 0,
     totalDeaths: 0,
     killDeathRatio: 0,
+    attempts: 0,
     weaponKills: {},
     weaponKillsByAmmoType: {
       Primary: {},

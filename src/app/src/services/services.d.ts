@@ -1,5 +1,6 @@
 interface UserStats {
   name: string;
+  attempts: number;
   totalKills: number;
   totalDeaths: number;
   killDeathRatio: number;
