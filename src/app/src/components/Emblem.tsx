@@ -8,20 +8,31 @@ const emblemStyles: Record<string, React.CSSProperties> = {
   },
   username: {
     position: 'absolute',
-    top: '35%',
-    left: '50%',
+    top: '25%',
+    left: '43.5%',
     transform: 'translate( -50%, -50% )',
     textAlign: 'center',
     color: 'white',
-    fontWeight: 'lighter',
-  }
+    fontWeight: 'bold',
+  },
+  light: {
+    position: 'absolute',
+    top: '25%',
+    left: '86.5%',
+    transform: 'translate( -50%, -50% )',
+    textAlign: 'center',
+    color: '#ffeb3b',
+  },
 };
 
-const Emblem: React.FC<{ name: string; emblemUrl: string; }> = ({ name, emblemUrl }) => (
-  <div style={emblemStyles.thumbnail}>
-    <img style={emblemStyles.img} src={`${global.BNET}/${emblemUrl}`} />
-    <div className="container text-2xl" style={emblemStyles.username}>
+const Emblem: React.FC<{ name: string; lightLevel: number | string; emblemUrl: string; }> = ({ name, lightLevel, emblemUrl }) => (
+  <div className="shadow-md" style={emblemStyles.thumbnail}>
+    <img className="rounded" style={emblemStyles.img} src={`${global.BNET}/${emblemUrl}`} />
+    <div className="text-lg" style={emblemStyles.username}>
       <p>{name}</p>
+    </div>
+    <div className="text-4xl"style={emblemStyles.light}>
+      <p>✦{lightLevel ?? 0}</p>
     </div>
   </div>
 );
