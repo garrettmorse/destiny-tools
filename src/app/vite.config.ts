@@ -4,8 +4,11 @@ import {
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
-
 // https://vite.dev/config/
-export default defineConfig({
-  plugins: [react(), tailwindcss()],
+export default defineConfig(({ mode }) => {
+  console.log(mode);
+  return {
+    define: process.env.NODE_ENV === 'development' ? { global: { BNET: 'https://bungie.net', SERVICE_URL: 'http://localhost:8080' } } : { global: { BNET: 'https://bungie.net', SERVICE_URL: '' }},
+    plugins: [react(), tailwindcss()],
+  }
 })

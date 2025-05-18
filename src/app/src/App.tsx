@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
-import PlayerPage from "./pages/PlayerPage";
+import Stats from "./pages/Stats";
 import NotFound from "./pages/NotFound";
 import "./out.css";
 const App = () => (
@@ -8,7 +8,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/player/:userId" element={<PlayerPage />} />
+          <Route path="/player/:userId" element={<Stats />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
 import { fetchUser } from '../services/user';
 
@@ -6,30 +6,11 @@ interface SearchBarProps {
   onSearch: (query: string) => void;
   placeholder?: string;
 }
-
-interface DestinyPlayer {
-  bungieGlobalDisplayName: string;
-  bungieGlobalDisplayNameCode: number;
-  displayName: string;
-  crossSaveOverride: 1 | 2 | 3 | 4;
-  iconPath: string;
-  isPublic: boolean;
-  membershipId: string;
-  membershipType:  1 | 2 | 3 | 4;
-}
-
-interface SearchResult {
-  bungieGlobalDisplayName: string;
-  bungieGlobalDisplayNameCode: number;
-  bungieNetMembershipId: string;
-  destinyMemberships: DestinyPlayer[];
-}
-
 const membershipTypeLogoMap = {
-  "1": "xbox.webp",
-  "2": "psn.webp",
-  "3": "steam.png",
-  "4": "epic.webp",
+  "1": "../xbox.webp",
+  "2": "../psn.webp",
+  "3": "../steam.png",
+  "4": "../epic.webp",
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({ 
@@ -37,10 +18,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
   placeholder = "Search for your Guardian..." 
 }) => {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<SearchResult[]>([]);
+  const [results, setResults] = useState<UserResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
-  const searchContainerRef = useRef<HTMLDivElement>(null);
 
   // Fetch search results when query changes
   useEffect(() => {
@@ -77,7 +57,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   };
 
   return (
-    <div className="w-full max-w-md mx-auto relative" ref={searchContainerRef}>
+    <div className="w-full z-100 max-w-md bg-white dark:bg-gray-800 mx-auto relative">
       <form
         className="relative"
       >
@@ -87,7 +67,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={placeholder}
-            className="w-full pl-10 pr-4 py-3 bg-secondary border border-border rounded-lg text-foreground hover:outline-none hover:ring-1 focus:outline-none focus:ring-5 transition duration-200 focus:ring-primary"
+            className="pointer-events-auto w-full pl-10 pr-4 py-3 bg-secondary border rounded-lg text-foreground hover:outline-none hover:ring-4 focus:outline-none focus:ring-4 transition-colors duration-200"
             onFocus={() => query.length >= 2 && setShowResults(true)}
           />
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -97,7 +77,6 @@ const SearchBar: React.FC<SearchBarProps> = ({
             type="submit"
             className="absolute inset-y-0 right-0 pr-3 flex items-center text-primary hover:text-primary/80"
           >
-            Search
           </button>
         </div>
       </form>
@@ -110,7 +89,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
               Loading...
             </div>
           ) : results.length > 0 ? (
-            <ul className="">
+            <ul className="bg-white dark:bg-gray-800 ">
               {results.map((result) => { 
                 const destinyMembership = result.destinyMemberships[0];
                 return (
