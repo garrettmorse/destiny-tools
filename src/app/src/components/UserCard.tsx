@@ -23,13 +23,6 @@ const UserCard: React.FC<UserStats> = ({
 
   const weaponKillLabels = Object.keys(weaponKills);
 
-  const mockLabels = ['January', 'February', 'March', 'April', 'May', 'June', 'July'];
-
-  // <div className="flex relative text-center max-w-sm justify-center-safe place-items-center">
-  //   <img className="border ring-black hover:ring-4 dark:ring-white transition-colors duration-200 rounded-xl flex" src={`${global.BNET}/${splash}`}>
-  //   </img>
-  //   <p className="absolute pointer-events-none text-xs sm:text-xs text-white font-bold px-2 z-10">{raid}</p>
-  // </div>
   return (
     <div className='p-4'>
       <div className="py-4 flex relative min-w-md place-items-center">
@@ -37,7 +30,7 @@ const UserCard: React.FC<UserStats> = ({
           <p className="absolute left-30 bottom-16 text-white text-2xl z-10">{name}</p>
       </div>
       <div className="min-w-screen grid grid-cols-2 gap-4">
-        <div className="container col-span-2 px-2">
+        <div className="col-span-2 place-items-center relative max-w-screen sm:min-h-[300px] md:min-h-[400px] lg:min-h-[500px] min-h-[242px]">
           <BarGraph 
           labels={weaponKillLabels}  
           dataset={{
@@ -47,7 +40,7 @@ const UserCard: React.FC<UserStats> = ({
           }} 
           />
         </div>
-        <div className="container col-span-1 px-2">
+        <div className="col-span-1 place-items-center relative max-w-screen sm:min-h-[150px] md:min-h-[200px] lg:min-h-[250px] min-h-[121px]">
           <BarGraph 
           labels={weaponTypes} 
           dataset={{ 
@@ -57,7 +50,7 @@ const UserCard: React.FC<UserStats> = ({
           }} 
           />
         </div>
-        <div>
+        <div className="col-span-1 place-items-center">
           <StatCard kills={totalKills} deaths={totalDeaths} kd={killDeathRatio} />
         </div>
       </div>

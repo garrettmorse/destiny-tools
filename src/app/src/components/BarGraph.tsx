@@ -32,9 +32,17 @@ const Graph: React.FC<{ labels: string[]; dataset: { label: string; data: number
   const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
   ChartJS.defaults.color = isDark ? "white": "black";
   return (
-    <div className={`place-items-center relative max-w-screen sm:min-h-[300px] lg:min-h-[500px] min-h-[242px] px-2`}>
       <Bar className="bg-white dark:bg-gray-900 shadow-lg" ref={graphRef} options={{
           responsive: true,
+          interaction: {
+            intersect: false,
+            mode: 'index',
+          },
+          layout: {
+            padding: {
+              top: -30
+            }
+          },
           plugins: {
             legend: {
               position: 'top' as const,
@@ -49,7 +57,6 @@ const Graph: React.FC<{ labels: string[]; dataset: { label: string; data: number
             },
           },
         }} data={{ labels, datasets: [dataset] }} />
-    </div>
       
     );
 }
