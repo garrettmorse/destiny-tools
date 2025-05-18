@@ -40,7 +40,8 @@ const Graph: React.FC<{ labels: string[]; dataset: { label: string; data: number
           },
           layout: {
             padding: {
-              top: -30
+              top: -30,
+              left: 10
             }
           },
           plugins: {
