@@ -1,4 +1,5 @@
 import BarGraph from "./BarGraph";
+import Emblem from "./Emblem";
 import StatCard from "./StatCard";
 
 const UserCard: React.FC<UserStats> = ({
@@ -24,13 +25,11 @@ const UserCard: React.FC<UserStats> = ({
   const weaponKillLabels = Object.keys(weaponKills);
 
   return (
-    <div className='p-4'>
-      <div className="py-4 flex relative min-w-md place-items-center">
-        <img className="flex px-4" src={`${global.BNET}/${emblemFullUrl}`} />
-          <p className="absolute left-30 bottom-16 text-white text-2xl z-10">{name}</p>
-      </div>
       <div className="min-w-screen grid grid-cols-2 gap-4">
-        <div className="col-span-2 place-items-center relative max-w-screen sm:min-h-[300px] md:min-h-[400px] lg:min-h-[500px] min-h-[242px]">
+        <div className="col-span-2 place-items-center min-w-md">
+          <Emblem name={name} emblemUrl={emblemFullUrl} />
+        </div>
+        <div className="col-span-2 place-items-center relative max-w-screen sm:min-h-[300px] md:min-h-[400px] lg:min-h-[450px] min-h-[242px]">
           <BarGraph 
           labels={weaponKillLabels}  
           dataset={{
@@ -40,7 +39,7 @@ const UserCard: React.FC<UserStats> = ({
           }} 
           />
         </div>
-        <div className="col-span-1 place-items-center relative max-w-screen sm:min-h-[150px] md:min-h-[200px] lg:min-h-[250px] min-h-[121px]">
+        <div className="col-span-1 justify-items-end place-items-center relative max-w-screen sm:min-h-[150px] md:min-h-[200px] lg:min-h-[250px] min-h-[121px]">
           <BarGraph 
           labels={weaponTypes} 
           dataset={{ 
@@ -50,11 +49,10 @@ const UserCard: React.FC<UserStats> = ({
           }} 
           />
         </div>
-        <div className="col-span-1 place-items-center">
+        <div className="bg-white col-span-1 justify-items-start place-items-center relative max-w-screen sm:min-h-[150px]  md:min-h-[200px]  lg:min-h-[225px]  min-h-[121px]">
           <StatCard kills={totalKills} deaths={totalDeaths} kd={killDeathRatio} />
         </div>
       </div>
-  </div>
   );
 }
 
