@@ -122,7 +122,7 @@ const Stats: React.FC = () => {
             <Loading message="Loading Raids..."/>
           ) : Object.entries(raids ?? {}).map(([raidName, data]) => (
             <div className="flex mx-1 min-w-25 place-items-center" onClick={() => handleRaidSelect(raidName)} key={raidName}>
-              <RaidCard raid={raidName} splash={data.imgUrl} />
+              <RaidCard isActive={selectedRaid === raidName} raid={raidName} splash={data.imgUrl} />
             </div>
             )
           )}
