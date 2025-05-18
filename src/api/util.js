@@ -224,7 +224,7 @@ function gatherUserRaidStats(raidPgcrs, accountId, manifest) {
     }));
     allUserPgcrStats.push(userPgcrStats);
   }
-  return allUserPgcrStats.reduce((aggregateUserPgcr, pgcr) => {
+  const allStats = allUserPgcrStats.reduce((aggregateUserPgcr, pgcr) => {
     aggregateUserPgcr.totalKills = pgcr.totalKills + aggregateUserPgcr.totalKills;
     aggregateUserPgcr.totalDeaths = pgcr.totalDeaths + aggregateUserPgcr.totalDeaths;
     aggregateUserPgcr.killDeathRatio = aggregateUserPgcr.totalKills / aggregateUserPgcr.totalDeaths;
@@ -248,6 +248,10 @@ function gatherUserRaidStats(raidPgcrs, accountId, manifest) {
       Heavy: {}
     },
   }));
+  
+  // sort weapon kills highest to lowest
+  allStats.weaponKills = Object.fromEntries(Object.entries(allStats.weaponKills).sort(([,a],[,b]) => b-a));
+  return allStats;
 }
 
 /**
