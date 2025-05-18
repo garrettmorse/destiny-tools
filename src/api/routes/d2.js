@@ -34,8 +34,37 @@ d2.get('/searchUser', async (req, res) => {
   return res.json(searchResults);
 });
 
+
+
+
+
 d2.get('/raids', async (_, res) => {
-  return res.json(Object.entries(content.DestinyActivityDefinition).filter(([_, data]) => data.activityModeTypes?.at(0) === 4).map(([hash, data]) => [data.originalDisplayProperties.name, hash]).reduce((raidMap, [raid, hash]) => { if (!raidMap[raid]) { raidMap[raid] = []; } raidMap[raid].push(hash); return raidMap; }, {}));
+    const RAID_SORT_MAP = {
+    "Leviathan": 0,
+    "Leviathan, Eater of Worlds": 1,
+    "Leviathan, Spire of Stars": 2,
+    "Scourge of the Past": 3,
+    "Crown of Sorrow": 4,
+    "Last Wish": 5,
+    "Garden of Salvation": 6,
+    "Deep Stone Crypt": 7,
+    "Vault of Glass": 8,
+    "Vault of Glass: Challenge Mode": 9,
+    "Vow of the Disciple": 10,
+    "King's Fall": 11,
+    "Root of Nightmares": 12,
+    "Crota's End": 13,
+    "Salvation's Edge": 14,
+  };
+  RAID_SORT_MAP.default = Object.keys(RAID_SORT_MAP).length + 1;
+  return res.json(Object.entries(content.DestinyActivityDefinition)
+    .filter(([_, data]) => data.activityModeTypes?.at(0) === 4) // n
+    .map(([hash, data]) => [data.originalDisplayProperties.name, hash, data.pgcrImage])
+    .filter(([name,]) => !name.includes("Pantheon")) // m
+    .sort(([raidA,], [raidB,]) => (RAID_SORT_MAP[raidA] ?? RAID_SORT_MAP.default++) - (RAID_SORT_MAP[raidB] ?? RAID_SORT_MAP.default++))
+    .reverse()
+    .reduce((raidMap, [raid, hash, image]) => { if (!raidMap[raid]) { raidMap[raid] = { ids: [], imgUrl: image }; } raidMap[raid].ids.push(hash); return raidMap; }, {})
+  );
 });
 
 d2.get('/aggregateRaids', async (req, res) => {
