@@ -89,7 +89,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
               Loading...
             </div>
           ) : results.length > 0 ? (
-            <ul className="bg-white dark:bg-gray-800 ">
+            <ul className="bg-white dark:bg-gray-800 pointer-events-auto">
               {results.map((result) => { 
                 const destinyMembership = result.destinyMemberships[0];
                 return (
@@ -104,8 +104,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
               ) })}
             </ul>
           ) : query.length >= 2 ? (
-            <div className="p-3 text-center text-sm text-muted-foreground">
-              No guardians found
+            <div className="bg-white dark:bg-gray-800 p-3 text-center text-sm">
+              No guardians found. Try updating your search.
             </div>
           ) : null}
         </div>
