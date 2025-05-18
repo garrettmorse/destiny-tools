@@ -17,7 +17,6 @@ const emblemStyles: Record<string, React.CSSProperties> = {
   }
 };
 
-
 const Emblem: React.FC<{ name: string; emblemUrl: string; }> = ({ name, emblemUrl }) => (
   <div style={emblemStyles.thumbnail}>
     <img style={emblemStyles.img} src={`${global.BNET}/${emblemUrl}`} />

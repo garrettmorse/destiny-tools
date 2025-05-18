@@ -26,28 +26,32 @@ const UserCard: React.FC<UserStats> = ({
 
   return (
       <div className="min-w-screen grid grid-cols-2 gap-4">
-        <div className="col-span-2 place-items-center min-w-md">
+        <div className="col-span-2 lg:col-span-1 justify-self-center lg:justify-self-end min-w-md">
           <Emblem name={name} emblemUrl={emblemFullUrl} />
         </div>
-        <div className="col-span-2 place-items-center relative max-w-screen sm:min-h-[300px] md:min-h-[400px] lg:min-h-[450px] min-h-[242px]">
-          <BarGraph 
-          labels={weaponKillLabels}  
-          dataset={{
-            label: "Weapon Kills", 
-            data: weaponKillLabels.map((weapon) => weaponKills[weapon]),
-            backgroundColor: 'rgba(50, 255, 132, 0.5)'
-          }} 
-          />
+        <div className="col-span-2 place-items-center relative max-w-screen">
+          <div className="container place-items-center sm:min-h-[300px] md:min-h-[400px] lg:max-w-[900px] lg:min-h-[450px] min-h-[242px]">
+            <BarGraph 
+            labels={weaponKillLabels}  
+            dataset={{
+              label: "Weapon Kills", 
+              data: weaponKillLabels.map((weapon) => weaponKills[weapon]),
+              backgroundColor: 'rgba(50, 255, 132, 0.5)'
+            }} 
+            />
+          </div>
         </div>
-        <div className="col-span-1 justify-items-end place-items-center relative max-w-screen sm:min-h-[150px] md:min-h-[200px] lg:min-h-[250px] min-h-[121px]">
-          <BarGraph 
-          labels={weaponTypes} 
-          dataset={{ 
-            label: 'Weapon Kills By Ammo Type', 
-            data: weaponTypes.map(weaponType => killsByType[weaponType]), 
-            backgroundColor: 'rgba(255, 99, 132, 0.5)',
-          }} 
-          />
+        <div className="col-span-1 justify-items-end place-items-center relative max-w-screen">
+          <div className="container place-items-center sm:min-h-[150px] md:min-h-[200px] lg:max-w-[500px] lg:min-h-[250px] min-h-[121px]">
+            <BarGraph 
+            labels={weaponTypes} 
+            dataset={{ 
+              label: 'Weapon Kills By Ammo Type', 
+              data: weaponTypes.map(weaponType => killsByType[weaponType]), 
+              backgroundColor: 'rgba(255, 99, 132, 0.5)',
+            }} 
+            />
+          </div>
         </div>
         <div className="bg-white col-span-1 justify-items-start place-items-center relative max-w-screen sm:min-h-[150px]  md:min-h-[200px]  lg:min-h-[225px]  min-h-[121px]">
           <StatCard kills={totalKills} deaths={totalDeaths} kd={killDeathRatio} />
