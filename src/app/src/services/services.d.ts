@@ -1,5 +1,6 @@
 interface UserStats {
   name: string;
+  lightLevel: number;
   attempts: number;
   totalKills: number;
   totalDeaths: number;
