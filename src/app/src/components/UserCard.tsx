@@ -4,13 +4,14 @@ import StatCard from "./StatCard";
 
 const UserCard: React.FC<UserStats> = ({
   name,
+  lightLevel,
+  attempts,
   totalKills,
   totalDeaths,
   killDeathRatio,
   weaponKills,
   weaponKillsByAmmoType,
   emblemFullUrl,
-  emblemIconUrl
 }) => {
   const killsByType = Object.entries(weaponKillsByAmmoType).reduce((byAmmoType, [weaponType, killsForType]) => {
     if (weaponType !== 'Primary' && weaponType !== "Special" && weaponType !== "Heavy") {
@@ -26,8 +27,8 @@ const UserCard: React.FC<UserStats> = ({
 
   return (
       <div className="min-w-screen grid grid-cols-2 gap-4">
-        <div className="col-span-2 lg:col-span-1 justify-self-center lg:justify-self-end min-w-md">
-          <Emblem name={name} emblemUrl={emblemFullUrl} />
+        <div className="col-span-2 my-2 lg:col-span-1 justify-self-center lg:justify-self-end min-w-md">
+          <Emblem name={name} lightLevel={lightLevel} emblemUrl={emblemFullUrl} />
         </div>
         <div className="col-span-2 place-items-center relative max-w-screen">
           <div className="container place-items-center sm:min-h-[300px] md:min-h-[400px] lg:max-w-[900px] lg:min-h-[450px] min-h-[242px]">
@@ -53,8 +54,10 @@ const UserCard: React.FC<UserStats> = ({
             />
           </div>
         </div>
-        <div className="bg-white col-span-1 justify-items-start place-items-center relative max-w-screen sm:min-h-[150px]  md:min-h-[200px]  lg:min-h-[225px]  min-h-[121px]">
-          <StatCard kills={totalKills} deaths={totalDeaths} kd={killDeathRatio} />
+        <div className="bg-white col-span-1 justify-items-start relative max-w-screen sm:min-h-[150px]  md:min-h-[200px] lg:max-w-[500px] lg:min-h-[250px]  min-h-[121px]">
+          <div className="m-auto place-content-center  h-full bg-white dark:bg-gray-900 shadow-lg">
+            <StatCard kills={totalKills} deaths={totalDeaths} kd={killDeathRatio} attempts={attempts} />
+          </div>
         </div>
       </div>
   );
