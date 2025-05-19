@@ -17,7 +17,8 @@ const Navbar: React.FC = () => {
     <header className="top-0 border-b">
       <div className="flex h-14">
         <div className="flex-initial pe-4 justify-between">
-          <Link to="/" className="flex items-center">
+          {/* @ts-expect-error cant figure out typing globalThis specifically for local dev with vite */}
+          <Link to={`${global.BASE_PATH}/`} className="flex items-center">
             <img src={icon} width={50} height={50} />
             <span className="hidden font-bold sm:inline-block text-xl">Raidlytics</span>
           </Link>
