@@ -46,7 +46,7 @@ const UserCard: React.FC<Stats> = ({ user, fireteam }) => {
             />
           </div>
         </div>
-        <div className="col-span-2 sm:col-span-1 justify-items-end place-items-center relative max-w-screen">
+        <div className="max-sm:col-span-2 sm:col-span-1 max-sm:justify-items-center sm:justify-items-end relative max-w-screen">
           <div className="container place-items-center sm:min-h-[150px] md:min-h-[200px] lg:max-w-[500px] lg:min-h-[250px] min-h-[172px]">
             <BarGraph 
             labels={weaponTypes as string[]} 
@@ -58,8 +58,8 @@ const UserCard: React.FC<Stats> = ({ user, fireteam }) => {
             />
           </div>
         </div>
-        <div className="bg-white col-span-2 sm:col-span-1 justify-items-start relative max-w-screen sm:min-h-[150px]  md:min-h-[200px] lg:max-w-[500px] lg:min-h-[250px]  min-h-[172px]">
-          <div className="m-auto place-content-center  h-full bg-white dark:bg-gray-900 shadow-lg">
+        <div className="max-sm:col-span-2 sm:col-span-1 max-sm:justify-items-center sm:justify-items-start  relative max-w-screen ">
+          <div className="container max-w-md lg:max-w-[500px] h-full dark:bg-gray-900 shadow-lg sm:min-h-[150px]  md:min-h-[200px] lg:min-h-[250px]  min-h-[172px]">
             <StatCard kills={totalKills} deaths={totalDeaths} kd={killDeathRatio} attempts={attempts} />
           </div>
         </div>
