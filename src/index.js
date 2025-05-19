@@ -17,6 +17,8 @@ ports.forEach(port => {
   
   app.use('/api/d2', d2);
   
+  app.set('trust proxy', 'process.env.TRUSTED_PROXY');
+
   app.use('/raidlytics', express.static('dist', { extensions: ['html'] }));
   
   app.disable('x-powered-by');
