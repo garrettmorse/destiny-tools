@@ -31,6 +31,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   placeholder = "Search for your Guardian..." 
 }) => {
   const [query, setQuery] = useState('');
+  const [userInput, setUserInput] = useState('');
   const [results, setResults] = useState<UserResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
@@ -69,6 +70,25 @@ const SearchBar: React.FC<SearchBarProps> = ({
     setShowResults(false);
   };
 
+  const handleSearchInput = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const [name] = event.target.value.split('#');
+    setUserInput(event.target.value);
+    setQuery(name);
+  }
+
+  const handleSearchEnter = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.code !== 'Enter') {
+      return;
+    }
+    event.preventDefault();
+    const user = results.find(result => `${result.bungieGlobalDisplayName}#${result.bungieGlobalDisplayNameCode}` === userInput);
+    if (!user) {
+      return;
+    }
+    onSearch(user.destinyMemberships[0].membershipId);
+    setShowResults(false);
+  }
+
   return (
     <div className="w-full z-100 max-w-md bg-white dark:bg-gray-800 mx-auto relative">
       <form
@@ -77,8 +97,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
         <div className="relative ">
           <input
             type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            value={userInput}
+            onKeyDown={handleSearchEnter}
+            onChange={handleSearchInput}
             placeholder={placeholder}
             className="pointer-events-auto w-full pl-10 pr-4 py-3 bg-secondary border rounded-lg text-foreground hover:outline-none hover:ring-4 focus:outline-none focus:ring-4 transition-colors duration-200"
             onFocus={() => query.length >= 2 && setShowResults(true)}
