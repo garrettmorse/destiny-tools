@@ -31,11 +31,11 @@ const UserCard: React.FC<Stats> = ({ user, fireteam }) => {
 
   return (
       <div className="min-w-screen grid grid-cols-2 gap-4">
-        <div className="col-span-2 my-2 lg:col-span-1 justify-self-center lg:justify-self-end min-w-md">
+        <div className="col-span-2 my-2 lg:col-span-1 justify-self-center lg:justify-self-end  px-1 sm:min-w-md">
           <Emblem name={name} lightLevel={lightLevel} emblemUrl={emblemFullUrl} />
         </div>
         <div className="col-span-2 place-items-center relative max-w-screen">
-          <div className="container place-items-center sm:min-h-[300px] md:min-h-[400px] lg:max-w-[900px] lg:min-h-[450px] min-h-[242px]">
+          <div className="container place-items-center sm:min-h-[300px] md:min-h-[400px] lg:max-w-[900px] lg:min-h-[450px] min-h-[172px]">
             <BarGraph 
             labels={weaponKillLabels}  
             dataset={{
@@ -46,8 +46,8 @@ const UserCard: React.FC<Stats> = ({ user, fireteam }) => {
             />
           </div>
         </div>
-        <div className="col-span-1 justify-items-end place-items-center relative max-w-screen">
-          <div className="container place-items-center sm:min-h-[150px] md:min-h-[200px] lg:max-w-[500px] lg:min-h-[250px] min-h-[121px]">
+        <div className="col-span-2 sm:col-span-1 justify-items-end place-items-center relative max-w-screen">
+          <div className="container place-items-center sm:min-h-[150px] md:min-h-[200px] lg:max-w-[500px] lg:min-h-[250px] min-h-[172px]">
             <BarGraph 
             labels={weaponTypes as string[]} 
             dataset={{ 
@@ -58,13 +58,13 @@ const UserCard: React.FC<Stats> = ({ user, fireteam }) => {
             />
           </div>
         </div>
-        <div className="bg-white col-span-1 justify-items-start relative max-w-screen sm:min-h-[150px]  md:min-h-[200px] lg:max-w-[500px] lg:min-h-[250px]  min-h-[121px]">
+        <div className="bg-white col-span-2 sm:col-span-1 justify-items-start relative max-w-screen sm:min-h-[150px]  md:min-h-[200px] lg:max-w-[500px] lg:min-h-[250px]  min-h-[172px]">
           <div className="m-auto place-content-center  h-full bg-white dark:bg-gray-900 shadow-lg">
             <StatCard kills={totalKills} deaths={totalDeaths} kd={killDeathRatio} attempts={attempts} />
           </div>
         </div>
         <div className="col-span-2 place-items-center relative max-w-screen">
-          <div className="container place-items-center sm:min-h-[300px] md:min-h-[400px] lg:max-w-[900px] lg:min-h-[450px] min-h-[242px]">
+          <div className="container place-items-center sm:min-h-[300px] md:min-h-[400px] lg:max-w-[900px] lg:min-h-[450px] min-h-[172px]">
             <BarGraph 
             labels={fireteamMembers}  
             dataset={{

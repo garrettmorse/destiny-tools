@@ -30,10 +30,10 @@ const Emblem: React.FC<{ name: string; lightLevel: number | string; emblemUrl: s
   <div className="shadow-md" style={emblemStyles.thumbnail}>
     {/* @ts-expect-error cant figure out typing globalThis specifically for local dev with vite */}
     <img className="rounded" style={emblemStyles.img} src={`${global.BNET}/${emblemUrl}`} />
-    <div className={`text-${textSize} text-left`}  style={{...emblemStyles.username, width: 424 }}>
+    <div className={`text-lg sm:text-${textSize} text-left`}  style={{...emblemStyles.username, width: 424 }}>
       <p>{name}</p>
     </div>
-    <div className="text-4xl"style={emblemStyles.light}>
+    <div className="text-2xl sm:text-4xl"style={emblemStyles.light}>
       <p>✦{lightLevel ?? 0}</p>
     </div>
   </div>
