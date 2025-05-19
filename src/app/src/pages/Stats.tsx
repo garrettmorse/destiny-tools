@@ -100,7 +100,6 @@ const Stats: React.FC = () => {
   }, [isStatsLoading])
 
   const handleRaidSelect = (raidName: string) => {
-    console.log(raidName);
     setSelectedRaid(raidName);
     setSearchParams({ raid: raidName });
   }
