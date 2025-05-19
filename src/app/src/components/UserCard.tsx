@@ -2,17 +2,18 @@ import BarGraph from "./BarGraph";
 import Emblem from "./Emblem";
 import StatCard from "./StatCard";
 
-const UserCard: React.FC<UserStats> = ({
-  name,
-  lightLevel,
-  attempts,
-  totalKills,
-  totalDeaths,
-  killDeathRatio,
-  weaponKills,
-  weaponKillsByAmmoType,
-  emblemFullUrl,
-}) => {
+const UserCard: React.FC<Stats> = ({ user, fireteam }) => {
+  const {
+    name,
+    lightLevel,
+    attempts,
+    totalKills,
+    totalDeaths,
+    killDeathRatio,
+    weaponKills,
+    weaponKillsByAmmoType,
+    emblemFullUrl,
+  } = user;
   const killsByType = Object.entries(weaponKillsByAmmoType).reduce((byAmmoType, [weaponType, killsForType]) => {
     if (weaponType !== 'Primary' && weaponType !== "Special" && weaponType !== "Heavy") {
       return byAmmoType;
@@ -24,6 +25,9 @@ const UserCard: React.FC<UserStats> = ({
   const weaponTypes = Object.keys(weaponKillsByAmmoType);
 
   const weaponKillLabels = Object.keys(weaponKills);
+
+  const fireteamMembers = Object.values(fireteam).map(member => member.name);
+  const fireteamAttempts = Object.values(fireteam).map(member => member.attempts);
 
   return (
       <div className="min-w-screen grid grid-cols-2 gap-4">
@@ -57,6 +61,28 @@ const UserCard: React.FC<UserStats> = ({
         <div className="bg-white col-span-1 justify-items-start relative max-w-screen sm:min-h-[150px]  md:min-h-[200px] lg:max-w-[500px] lg:min-h-[250px]  min-h-[121px]">
           <div className="m-auto place-content-center  h-full bg-white dark:bg-gray-900 shadow-lg">
             <StatCard kills={totalKills} deaths={totalDeaths} kd={killDeathRatio} attempts={attempts} />
+          </div>
+        </div>
+        <div className="col-span-2 place-items-center relative max-w-screen">
+          <div className="container place-items-center sm:min-h-[300px] md:min-h-[400px] lg:max-w-[900px] lg:min-h-[450px] min-h-[242px]">
+            <BarGraph 
+            labels={fireteamMembers}  
+            dataset={{
+              label: `${name}'s Best Friends`, 
+              data: fireteamAttempts,
+              backgroundColor: 'rgba(50, 255, 132, 0.5)'
+            }} 
+            extendedOptions={{
+              plugins: {
+                tooltip: {
+                  callbacks: {
+                    footer: (item) => `${item[0].raw === attempts ? `A true best friend: ${item[0].label} remained through it all.` : ''}`,
+                    label: (item) => `${item.formattedValue} attempt${item.raw !== 1 ? 's' : ''} with ${name}`
+                  }
+                }
+              }
+            }}
+            />
           </div>
         </div>
       </div>

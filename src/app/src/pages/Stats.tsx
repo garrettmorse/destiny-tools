@@ -136,7 +136,7 @@ const Stats: React.FC = () => {
                 <span className="px-4 py-2 rounded-l-md hover:ring-1 bg-violet-200 dark:bg-violet-600 peer-checked:bg-gray-300 peer-checked:dark:bg-gray-700">{stats.user.name}</span>
                 <span className="px-4 py-2 rounded-r-md hover:ring-1 bg-gray-300 dark:bg-gray-700 peer-checked:bg-violet-200 peer-checked:dark:bg-violet-600">Their Fireteam</span>
               </label>
-              {isFireteamToggled ? <Fireteam {...stats.fireteam} /> : <UserCard {...stats.user} /> }
+              {isFireteamToggled ? <Fireteam {...stats} /> : <UserCard {...stats} /> }
             </div>
           ) : selectedRaid ? (
           <div className="text-center py-12">
