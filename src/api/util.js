@@ -124,6 +124,9 @@ async function fetchAllRaidActivities(membershipType, membershipId, characterId)
     // Destiny2.GetActivityHistory
     const [activityErr, activityData] = await apiGet(`/Destiny2/${membershipType}/Account/${membershipId}/Character/${characterId}/Stats/Activities/?count=250&mode=4&page=${page}`);
     if (activityErr) return [activityErr, null];
+    if (!activityData.Response.activities) {
+      break;
+    }
     raidActivities.push(...activityData.Response.activities);
     exhausted = activityData.Response.activities.length < 250;
     page++;
