@@ -25,15 +25,15 @@ const emblemStyles: Record<string, React.CSSProperties> = {
 };
 
 const Emblem: React.FC<{ name: string; lightLevel: number | string; emblemUrl: string; }> = ({ name, lightLevel, emblemUrl }) => { 
-  const textSize = name.length < 12 ? '2xl' : name.length < 20 ? 'xl' : 'lg';
+  const textSize = name.length < 12 ? 'text-2xl' : name.length < 20 ? 'text-xl' : 'text-lg';
   return (
   <div className="shadow-md" style={emblemStyles.thumbnail}>
     {/* @ts-expect-error cant figure out typing globalThis specifically for local dev with vite */}
     <img className="rounded" style={emblemStyles.img} src={`${global.BNET}/${emblemUrl}`} />
-    <div className={`text-lg sm:text-${textSize} text-left`}  style={{...emblemStyles.username, width: 424 }}>
+    <div className={`text-md sm:${textSize} text-left`}  style={{...emblemStyles.username, width: 424 }}>
       <p>{name}</p>
     </div>
-    <div className="text-2xl sm:text-4xl"style={emblemStyles.light}>
+    <div className="max-sm:text-2xl sm:text-4xl"style={emblemStyles.light}>
       <p>✦{lightLevel ?? 0}</p>
     </div>
   </div>
