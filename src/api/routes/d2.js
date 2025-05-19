@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { rateLimit } from 'express-rate-limit'
 import { apiGet, apiPost } from '../client.js';
-import { fetchAllRaidActivities, fetchPGCR, gatherUserRaidStats, gatherFireteamRaidStats, getD2Content } from "../util.js";
+import { fetchAllRaidActivities, fetchPGCR, gatherFireteamRaidStats, getD2Content } from "../util.js";
 import CONSTANTS from '../constants.js';
 const d2 = Router();
 
@@ -165,11 +165,8 @@ d2.get('/aggregateRaids', async (req, res) => {
   }
   
   const fireteam = gatherFireteamRaidStats(allActivityReports, content.DestinyInventoryItemDefinition);
-
   const userStats = fireteam[membershipId]; 
-
   delete fireteam[membershipId];
-
   return res.json({
     user: {
       name,

@@ -136,7 +136,7 @@ async function fetchAllRaidActivities(membershipType, membershipId, characterId)
 }
 
 /**
- * @typedef {{ bungieGlobalDisplayName: string; bungieGlobalDisplayNameCode: number; membershipId: string }} D2UserInfo
+ * @typedef {{ bungieGlobalDisplayName: string; bungieGlobalDisplayNameCode: number; membershipId: string; isPublic: boolean }} D2UserInfo
  * 
  * @typedef {{ destinyUserInfo: D2UserInfo; characterClass: string; emblemHash: number; }} D2Player
  * 
@@ -182,7 +182,7 @@ async function fetchPGCR(activityId) {
 function gatherUserRaidStats(raidPgcrs, accountId, manifest) {
   const allUserPgcrStats = /** @type {Omit<User, 'name'>[]} */ ([]);
   for (const pgcr of raidPgcrs) {
-    const userEntries = pgcr.entries.filter(entry => entry.player.destinyUserInfo.membershipId === accountId);
+    const userEntries = pgcr.entries.filter(entry => entry.player.destinyUserInfo.isPublic && entry.player.destinyUserInfo.membershipId === accountId);
     if (userEntries.length === 0) {
       continue;
     }
@@ -275,7 +275,7 @@ function gatherFireteamRaidStats(raidPgcrs, manifest) {
   const idToNameMap = {}
   const allFireteamMembers = new Set();
   for (const pgcr of raidPgcrs) {
-    pgcr.entries.map(entry => {
+    pgcr.entries.filter(entry => entry.player.destinyUserInfo.isPublic).map(entry => {
       const id = entry.player.destinyUserInfo.membershipId;
       idToNameMap[id] = [entry.player.destinyUserInfo.bungieGlobalDisplayName, entry.player.emblemHash, entry.player.lightLevel];
       return id;
