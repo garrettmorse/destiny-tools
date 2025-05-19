@@ -22,7 +22,7 @@ const UserCard: React.FC<Stats> = ({ user, fireteam }) => {
     return byAmmoType;
   }, { Primary: 0, Special: 0, Heavy: 0 });
 
-  const weaponTypes = Object.keys(weaponKillsByAmmoType);
+  const weaponTypes = Object.keys(weaponKillsByAmmoType) as ("Primary" | "Special" | "Heavy")[];
 
   const weaponKillLabels = Object.keys(weaponKills);
 
@@ -49,7 +49,7 @@ const UserCard: React.FC<Stats> = ({ user, fireteam }) => {
         <div className="col-span-1 justify-items-end place-items-center relative max-w-screen">
           <div className="container place-items-center sm:min-h-[150px] md:min-h-[200px] lg:max-w-[500px] lg:min-h-[250px] min-h-[121px]">
             <BarGraph 
-            labels={weaponTypes} 
+            labels={weaponTypes as string[]} 
             dataset={{ 
               label: 'Weapon Kills By Ammo Type', 
               data: weaponTypes.map(weaponType => killsByType[weaponType]), 

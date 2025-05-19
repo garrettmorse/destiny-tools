@@ -8,7 +8,11 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig(({ mode }) => {
   console.log(mode);
   return {
-    define: process.env.NODE_ENV === 'development' ? { global: { BNET: 'https://bungie.net', SERVICE_URL: 'http://localhost:8080' } } : { global: { BNET: 'https://bungie.net', SERVICE_URL: '' }},
+    base: process.env.NODE_ENV === 'development' ? "" : "/raidlytics",
+    server: {
+      port: process.env.NODE_ENV === 'development' ? 5173 : 8080
+    },
+    define: process.env.NODE_ENV === 'development' ? { global: { BNET: 'https://bungie.net', SERVICE_URL: 'http://localhost:8080', BASE_PATH: '' } } : { global: { BNET: 'https://bungie.net', SERVICE_URL: '', BASE_PATH: '/raidlytics' }},
     plugins: [react(), tailwindcss()],
   }
 })

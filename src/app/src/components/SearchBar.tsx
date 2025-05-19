@@ -3,17 +3,30 @@ import { Search } from 'lucide-react';
 import { fetchUser } from '../services/user';
 
 interface SearchBarProps {
+  useBase?: boolean;
   onSearch: (query: string) => void;
   placeholder?: string;
 }
-const membershipTypeLogoMap = {
-  "1": "../xbox.webp",
-  "2": "../psn.webp",
-  "3": "../steam.png",
-  "4": "../epic.webp",
+const baseMembershipTypeLogoMap = {
+  /* @ts-expect-error cant figure out typing globalThis specifically for local dev with vite */
+  "1": `..${global.BASE_PATH}/xbox.webp`,
+  /* @ts-expect-error cant figure out typing globalThis specifically for local dev with vite */
+  "2": `..${global.BASE_PATH}/psn.webp`,
+  /* @ts-expect-error cant figure out typing globalThis specifically for local dev with vite */
+  "3": `..${global.BASE_PATH}/steam.png`,
+  /* @ts-expect-error cant figure out typing globalThis specifically for local dev with vite */
+  "4": `..${global.BASE_PATH}/epic.webp`,
 }
 
-const SearchBar: React.FC<SearchBarProps> = ({ 
+const membershipTypeLogoMap = {
+  "1": `../xbox.webp`,
+  "2": `../psn.webp`,
+  "3": `../steam.png`,
+  "4": `../epic.webp`,
+}
+
+const SearchBar: React.FC<SearchBarProps> = ({
+  useBase,
   onSearch, 
   placeholder = "Search for your Guardian..." 
 }) => {
@@ -98,7 +111,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
                   className="px-4 py-2 dark:hover:text-black hover:bg-gray-200 hover:text-blue-600 cursor-pointer text-md"
                   onClick={() => handleResultClick(destinyMembership.membershipId)}
                 >
-                  <img style={{ float: 'left', }}src={membershipTypeLogoMap[destinyMembership.membershipType]} width={25} height={25} />
+                  <img style={{ float: 'left', }}src={useBase ? baseMembershipTypeLogoMap[destinyMembership.membershipType] : membershipTypeLogoMap[destinyMembership.membershipType]} width={25} height={25} />
                   &nbsp;{result.bungieGlobalDisplayName}#{result.bungieGlobalDisplayNameCode}
                 </li>
               ) })}

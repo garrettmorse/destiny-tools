@@ -28,6 +28,7 @@ const Emblem: React.FC<{ name: string; lightLevel: number | string; emblemUrl: s
   const textSize = name.length < 12 ? '2xl' : name.length < 20 ? 'xl' : 'lg';
   return (
   <div className="shadow-md" style={emblemStyles.thumbnail}>
+    {/* @ts-expect-error cant figure out typing globalThis specifically for local dev with vite */}
     <img className="rounded" style={emblemStyles.img} src={`${global.BNET}/${emblemUrl}`} />
     <div className={`text-${textSize} text-left`}  style={{...emblemStyles.username, width: 424 }}>
       <p>{name}</p>

@@ -7,8 +7,10 @@ const App = () => (
   <div className="dark:bg-gray-800 dark:text-white">
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/player/:userId" element={<Stats />} />
+          {/* @ts-expect-error cant figure out typing globalThis specifically for local dev with vite */}
+          <Route path={`${global.BASE_PATH}/`} element={<Home />} />
+          {/* @ts-expect-error cant figure out typing globalThis specifically for local dev with vite */}
+          <Route path={`${global.BASE_PATH}/player/:userId`} element={<Stats />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

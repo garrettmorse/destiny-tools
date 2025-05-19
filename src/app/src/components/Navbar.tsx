@@ -8,7 +8,8 @@ const Navbar: React.FC = () => {
   const navigate = useNavigate();
 
   const handleSearch = (query: string) => {
-    navigate(`/player/${query}`);
+    /* @ts-expect-error cant figure out typing globalThis specifically for local dev with vite */
+    navigate(`${global.BASE_PATH}/player/${query}`);
   };
 
   if (window.location.pathname === '/') return <></>;

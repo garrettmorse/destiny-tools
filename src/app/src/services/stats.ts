@@ -1,5 +1,6 @@
 export const fetchStats = async (userId: string, raidIds: string[]): Promise<APIResponse<Stats>> => {
   try {
+    // @ts-expect-error cant figure out typing globalThis specifically for local dev with vite
     const response = await fetch(`${global.SERVICE_URL}/api/d2/aggregateRaids?userId=${encodeURIComponent(userId)}&raidIds=${encodeURIComponent(raidIds.join(','))}`)
     if (!response.ok) {
       throw new Error('Failed to fetch stats');

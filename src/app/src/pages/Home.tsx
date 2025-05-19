@@ -7,7 +7,8 @@ const HomePage: React.FC = () => {
   const navigate = useNavigate();
 
   const handleSearch = (query: string) => {
-    navigate(`/player/${query}`);
+    /* @ts-expect-error cant figure out typing globalThis specifically for local dev with vite */
+    navigate(`${global.BASE_PATH}/player/${query}`);
   };
 
   return (
@@ -17,7 +18,7 @@ const HomePage: React.FC = () => {
         <p className="dark:text-gray-400 text-xl md:text-2xl lg:text-3xl mb-8 text-center">
           Track your raid stats across attempts
         </p>
-        <SearchBar onSearch={handleSearch} />
+        <SearchBar useBase onSearch={handleSearch} />
       </div>
     </div>
   );

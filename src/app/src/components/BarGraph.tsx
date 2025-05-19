@@ -25,7 +25,7 @@ function isObject(item: unknown): item is Record<string, unknown> {
 }
 
 function deepMerge<T>(target: T, ...sources: T[]) {
-    if (!sources.length) return target;
+    if (!sources?.length) return target;
     const source = sources.shift();
 
     if (isObject(target) && isObject(source)) {
@@ -42,7 +42,7 @@ function deepMerge<T>(target: T, ...sources: T[]) {
 }
 
 
-const Graph: React.FC<{ labels: string[]; dataset: { label: string; data: number[]; backgroundColor: string; }, extendedOptions: React.ComponentProps<typeof Bar>['options']; }> = ({ labels, dataset, extendedOptions }) => {
+const Graph: React.FC<{ labels: string[]; dataset: { label: string; data: number[]; backgroundColor: string; }, extendedOptions?: React.ComponentProps<typeof Bar>['options']; }> = ({ labels, dataset, extendedOptions }) => {
   // for customizing chartjs since tailwind can't
   const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
   ChartJS.defaults.color = isDark ? "white": "black";
