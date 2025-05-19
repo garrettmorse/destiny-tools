@@ -7,6 +7,7 @@ import UserCard from '../components/UserCard';
 import Navbar from '../components/Navbar';
 import Loading from '../components/Loading';
 import RaidCard from '../components/RaidCard';
+import Fireteam from '../components/Fireteam';
 
 const Stats: React.FC = () => {
   const { userId = '' } = useParams<{ userId: string }>();
@@ -17,6 +18,7 @@ const Stats: React.FC = () => {
   const [raids, setRaids] = useState<Raids | null>(null);
   const [selectedRaid, setSelectedRaid] = useState<string>(searchParams.get('raid') ?? '');
   const [loadingMessage, setLoadingMessage] = useState("Loading Guardian Data...")
+  const [isFireteamToggled, setIsFireteamToggled] = useState(false);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const interval1Ref = useRef<NodeJS.Timeout | null>(null);
   const interval2Ref = useRef<NodeJS.Timeout | null>(null);
@@ -86,11 +88,9 @@ const Stats: React.FC = () => {
       clearInterval(interval2Ref.current);
     }
     interval1Ref.current = setInterval(() => {
-      console.log('interval 1')
       setLoadingMessage("Still Loading Guardian Data...")
     }, 5000);
     interval2Ref.current = setInterval(() => {
-      console.log('interval 2')
       setLoadingMessage("Yep, Still Loading Guardian Data...") }, 10000);
     return () => {
       setLoadingMessage("Loading Guardian Data...");
@@ -104,11 +104,11 @@ const Stats: React.FC = () => {
     setSelectedRaid(raidName);
     setSearchParams({ raid: raidName });
   }
-  
+
   return (
-    <div>
+    <div className="min-h-screen">
       <Navbar />
-      <div className="min-h-screen overflow-hidden place-items-center py-6">
+      <div className="overflow-hidden place-items-center py-6">
         {isError ? <div>something went wrong. try again later.</div> : (
           <>
           <div className="container flex min-h-20 overflow-x-auto [&::-webkit-scrollbar]:w-2
@@ -121,7 +121,7 @@ const Stats: React.FC = () => {
           {isRaidsLoading ? (
             <Loading message="Loading Raids..."/>
           ) : Object.entries(raids ?? {}).map(([raidName, data]) => (
-            <div className="flex mx-1 min-w-25 place-items-center" onClick={() => handleRaidSelect(raidName)} key={raidName}>
+            <div className="flex mx-1 min-w-25 cursor-pointer place-items-center" onClick={() => handleRaidSelect(raidName)} key={raidName}>
               <RaidCard isActive={selectedRaid === raidName} raid={raidName} splash={data.imgUrl} />
             </div>
             )
@@ -130,7 +130,14 @@ const Stats: React.FC = () => {
           {isStatsLoading ? (
             <Loading message={loadingMessage}/>
           ) : stats ? (
-            <UserCard {...stats.user} />
+            <div className="place-items-center">
+              <label className="inline-flex place-items-center p-2 col-span-2 rounded-md cursor-pointer dark:text-gray-100">
+                <input type="checkbox" onChange={(e) => setIsFireteamToggled(e.target.checked)} defaultChecked={isFireteamToggled} className="hidden peer" />
+                <span className="px-4 py-2 rounded-l-md hover:ring-1 bg-violet-200 dark:bg-violet-600 peer-checked:bg-gray-300 peer-checked:dark:bg-gray-700">{stats.user.name}</span>
+                <span className="px-4 py-2 rounded-r-md hover:ring-1 bg-gray-300 dark:bg-gray-700 peer-checked:bg-violet-200 peer-checked:dark:bg-violet-600">Their Fireteam</span>
+              </label>
+              {isFireteamToggled ? <Fireteam {...stats.fireteam} /> : <UserCard {...stats.user} /> }
+            </div>
           ) : selectedRaid ? (
           <div className="text-center py-12">
             <h2 className="px-2 text-2xl font-bold mb-2">No {selectedRaid} Clears Found</h2>
