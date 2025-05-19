@@ -100,9 +100,11 @@ d2.get('/aggregateRaids', async (req, res) => {
     console.error('Kaboom while retrieving Linked D2 Profiles');
     return res.status(500).json(CONSTANTS.ERRORS[500]);
   }
-
-  const { profiles } = linkedData.Response
-  const { membershipType, membershipId, bungieGlobalDisplayName: name } = profiles.find(_profile => _profile.isCrossSavePrimary);
+  
+  const  { profiles } = /** @type {{ profiles: any[]}} */ (linkedData.Response);
+  const sortedProfiles = profiles.sort(({ dateLastPlayedA }, { dateLastPlayedB }) => new Date(dateLastPlayedB) - new Date(dateLastPlayedA));
+  const mostRecentlyPlayedProfile = sortedProfiles[0];
+  const { membershipType, membershipId, bungieGlobalDisplayName: name } = mostRecentlyPlayedProfile;
   // Destiny2.GetProfile
   const [profileErr, profileData] = await apiGet(`/Destiny2/${membershipType}/Profile/${membershipId}/?components=200`);
   if (profileErr) {

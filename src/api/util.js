@@ -186,7 +186,7 @@ function gatherUserRaidStats(raidPgcrs, accountId, manifest) {
     const userPgcrStats = userEntries.reduce((stats, userEntry) => {
       stats.totalKills += userEntry.values.kills.basic.value;
       stats.totalDeaths += userEntry.values.deaths.basic.value;
-      stats.killDeathRatio = stats.totalKills / stats.totalDeaths;
+      stats.killDeathRatio = stats.totalKills / (stats.totalDeaths === 0 ? 1 : stats.totalDeaths);
       stats.weaponKills = { 
         ...stats.weaponKills,
         ...userEntry.extended.weapons?.reduce((_weaponKills, weapon) => {
@@ -231,7 +231,7 @@ function gatherUserRaidStats(raidPgcrs, accountId, manifest) {
   const allStats = allUserPgcrStats.reduce((aggregateUserPgcr, pgcr) => {
     aggregateUserPgcr.totalKills = pgcr.totalKills + aggregateUserPgcr.totalKills;
     aggregateUserPgcr.totalDeaths = pgcr.totalDeaths + aggregateUserPgcr.totalDeaths;
-    aggregateUserPgcr.killDeathRatio = aggregateUserPgcr.totalKills / aggregateUserPgcr.totalDeaths;
+    aggregateUserPgcr.killDeathRatio = aggregateUserPgcr.totalKills / (aggregateUserPgcr.totalDeaths === 0 ? 1 : aggregateUserPgcr.totalDeaths);
     aggregateUserPgcr.attempts += pgcr.attempts;
     for (const [weaponName, kills] of Object.entries(pgcr.weaponKills)) {
       aggregateUserPgcr.weaponKills[weaponName] = kills + (aggregateUserPgcr.weaponKills[weaponName] ?? 0);
