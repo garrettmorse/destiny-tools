@@ -130,12 +130,15 @@ const Stats: React.FC = () => {
             <Loading message={loadingMessage}/>
           ) : stats ? (
             <div className="place-items-center">
-              <label className="inline-flex place-items-center p-2 col-span-2 rounded-md cursor-pointer dark:text-gray-100">
-                <input type="checkbox" onChange={(e) => setIsFireteamToggled(e.target.checked)} defaultChecked={isFireteamToggled} className="hidden peer" />
-                <span className="px-4 py-2 rounded-l-md hover:ring-1 bg-violet-200 dark:bg-violet-600 peer-checked:bg-gray-300 peer-checked:dark:bg-gray-700">{stats.user.name}</span>
-                <span className="px-4 py-2 rounded-r-md hover:ring-1 bg-gray-300 dark:bg-gray-700 peer-checked:bg-violet-200 peer-checked:dark:bg-violet-600">Their Fireteam</span>
-              </label>
-              {isFireteamToggled ? <Fireteam {...stats} /> : <UserCard {...stats} /> }
+              <p className="text-gray-200 mt-2">Activity Period: {stats.fireteam.periodRange}</p>
+              <div className="place-items-center">
+                <label className="inline-flex place-items-center p-2 col-span-2 rounded-md cursor-pointer dark:text-gray-100">
+                  <input type="checkbox" onChange={(e) => setIsFireteamToggled(e.target.checked)} defaultChecked={isFireteamToggled} className="hidden peer" />
+                  <span className="px-4 py-2 rounded-l-md hover:ring-1 bg-violet-200 dark:bg-violet-600 peer-checked:bg-gray-300 peer-checked:dark:bg-gray-700">{stats.user.name}</span>
+                  <span className="px-4 py-2 rounded-r-md hover:ring-1 bg-gray-300 dark:bg-gray-700 peer-checked:bg-violet-200 peer-checked:dark:bg-violet-600">Their Fireteam</span>
+                </label>
+                {isFireteamToggled ? <Fireteam {...stats} /> : <UserCard {...stats} /> }
+              </div>
             </div>
           ) : selectedRaid ? (
           <div className="text-center py-12">

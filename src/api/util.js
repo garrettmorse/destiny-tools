@@ -273,8 +273,11 @@ function gatherUserRaidStats(raidPgcrs, accountId, manifest) {
 function gatherFireteamRaidStats(raidPgcrs, manifest) {
   const fireteam = /** @type {Record<string, User>} */ ({});
   const idToNameMap = {}
+  const activityPeriods = [];
+  let periodStart, periodEnd;
   const allFireteamMembers = new Set();
   for (const pgcr of raidPgcrs) {
+    activityPeriods.push(pgcr.period);
     pgcr.entries.filter(entry => entry.player.destinyUserInfo.isPublic).map(entry => {
       const id = entry.player.destinyUserInfo.membershipId;
       idToNameMap[id] = [entry.player.destinyUserInfo.bungieGlobalDisplayName, entry.player.emblemHash, entry.player.lightLevel];
@@ -294,6 +297,8 @@ function gatherFireteamRaidStats(raidPgcrs, manifest) {
     };
   }
 
+  const sorted = activityPeriods.map(period => new Date(period)).sort((a,b) => a - b);
+  fireteam.periodRange = sorted.length === 1 ? sorted[0].toLocaleString() : `${sorted.at(0).toLocaleString()} to ${sorted.at(-1).toLocaleString()}`;
   return fireteam;
 }
 

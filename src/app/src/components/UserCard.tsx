@@ -26,8 +26,8 @@ const UserCard: React.FC<Stats> = ({ user, fireteam }) => {
 
   const weaponKillLabels = Object.keys(weaponKills);
 
-  const fireteamMembers = Object.values(fireteam).map(member => member.name);
-  const fireteamAttempts = Object.values(fireteam).map(member => member.attempts);
+  const fireteamMembers = Object.values(fireteam).filter(o => typeof o !== 'string').map(member => member.name);
+  const fireteamAttempts = Object.values(fireteam).filter(o => typeof o !== 'string').map(member => member.attempts);
   return (
       <div className="min-w-screen grid grid-cols-2 gap-4">
         <div className="col-span-2 my-2 lg:col-span-1 justify-self-center lg:justify-self-end  px-1 sm:min-w-md">

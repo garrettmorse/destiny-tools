@@ -14,7 +14,10 @@ interface UserStats {
 
 interface Stats {
   user: UserStats;
-  fireteam: Record<string, UserStats>;
+  fireteam: {
+    [hash: string]: UserStats;
+    periodRange: string
+  };
 }
 
 interface Raids {
