@@ -8,8 +8,9 @@ import Navbar from '../components/Navbar';
 import Loading from '../components/Loading';
 import RaidCard from '../components/RaidCard';
 import Fireteam from '../components/Fireteam';
+import type {Raids, Stats} from '../services/services';
 
-const Stats: React.FC = () => {
+const StatPage: React.FC = () => {
   const { userId = '' } = useParams<{ userId: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
   const [stats, setStats] = useState<Stats | null>(null);
@@ -163,4 +164,4 @@ const Stats: React.FC = () => {
   );
 };
 
-export default Stats;
+export default StatPage;

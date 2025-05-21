@@ -1,5 +1,8 @@
 import PieGraph from "../graphs/PieGraph";
 import LineGraph from "../graphs/LineGraph";
+import PlayerBreakdownCard from "./PlayerBreakdownCard";
+import type { Stats } from "../services/services";
+
 const CLASS_COLORS = {
   Titan: 'rgb(240,71,71)',
   Warlock: 'rgb(255,215,0)',
@@ -7,8 +10,10 @@ const CLASS_COLORS = {
 }
 const Fireteam: React.FC<Stats> = ({user, fireteam}) => {
   const { timePlayed, killsByPeriod, class: userClassName } = user;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { periodRange, ...members } = fireteam;
   const totalKillsByPeriod = structuredClone(killsByPeriod);
-  const fireteamMembers = Object.values(fireteam).filter(o => typeof o !== 'string');
+  const fireteamMembers = Object.values(members);
   const totalTimePlayedByPeriod = Object.values(timePlayed).map(seconds => (seconds / 60)).reverse()
   const fireteamKills: [string, number][] = [];
   const fireteamClasses: Record<string, number> = { [userClassName]: 1 };
@@ -25,7 +30,6 @@ const Fireteam: React.FC<Stats> = ({user, fireteam}) => {
   fireteamKills.sort(([,a], [,b]) => b - a);
   const totalFireteamKills = fireteamKills.reduce((sum, [,kills]) => sum += kills, 0);
 
-  console.log([Object.keys(fireteamClasses).map((_class:string) => CLASS_COLORS[_class as "Titan" | "Warlock" | "Hunter"])])
   return (
     <div className="min-w-screen grid grid-cols-2 h-full gap-4">
         <div className="max-sm:col-span-2 place-items-center sm:col-span-1 max-w-screen">
@@ -46,7 +50,7 @@ const Fireteam: React.FC<Stats> = ({user, fireteam}) => {
             <PieGraph 
             tableName="Class Distribution"
             labels={Object.keys(fireteamClasses)}  
-            format={(item: { label: string; raw: number }) => { console.log(item); return ` ${item.raw} ${item.label}${item.raw !== 1 ? 's' : ''}`; }}
+            format={(item: { label: string; raw: number }) =>  ` ${item.raw} ${item.label}${item.raw !== 1 ? 's' : ''}`}
             dataset={{
               label: '', 
               data: Object.values(fireteamClasses),
@@ -56,7 +60,7 @@ const Fireteam: React.FC<Stats> = ({user, fireteam}) => {
           </div>
         </div>
         <div className="col-span-2 place-items-center relative max-w-screen">
-          <div className="container place-items-center min-h-[500px] max-sm:max-h-[186px] sm:max-h-[500px] max-w-[500px]">
+          <div className="container place-items-center sm:min-h-[300px] md:min-h-[400px] lg:max-w-[900px] lg:min-h-[450px] min-h-[172px]">
             <LineGraph 
             tableName="Session Timeline"
             labels={Object.keys(timePlayed).reverse()}
@@ -83,11 +87,11 @@ const Fireteam: React.FC<Stats> = ({user, fireteam}) => {
             />
           </div>
         </div>
-        {/* <div className="col-span-2 place-items-center relative max-w-screen">
-          <div className="container place-items-center min-h-[500px] max-h-[500px] max-w-[500px]">
-           <PlayerBreakdownCard fireteam={fireteam} />
+        <div className="col-span-2 place-items-center relative max-w-screen">
+          <div className="container place-items-center">
+           <PlayerBreakdownCard fireteam={members} />
           </div>
-        </div> */}
+        </div>
     </div>
   );
 }

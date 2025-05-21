@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
 import { fetchUser } from '../services/user';
-
+import type { UserResult } from '../services/services';
 interface SearchBarProps {
   useBase?: boolean;
   onSearch: (query: string) => void;

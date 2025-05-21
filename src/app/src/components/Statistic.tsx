@@ -5,10 +5,10 @@ interface StatisticProps {
 
 const Statistic: React.FC<StatisticProps> = ({ stat, label }) => (
   <div className="text-center">
-    <div className="text-4xl">
+    <div className="text-3xl font-bold">
       {stat}
     </div>
-    <div>
+    <div className="dark:text-gray-300">
       {label}
     </div>
   </div>

@@ -1,4 +1,4 @@
-interface UserStats {
+export interface UserStats {
   name: string;
   lightLevel: number;
   timePlayed: Record<string, number>;
@@ -15,15 +15,14 @@ interface UserStats {
 }
 
 
-interface Stats {
+export interface Stats {
   user: UserStats;
-  fireteam: {
-    [hash: string]: UserStats;
+  fireteam: Record<string, UserStats> & {
     periodRange: string
   };
 }
 
-interface Raids {
+export interface Raids {
   [raidName: string]: {
     ids: string[];
     imgUrl: string;
@@ -41,14 +40,14 @@ interface DestinyPlayer {
   membershipType:  1 | 2 | 3 | 4;
 }
 
-interface UserResult {
+export interface UserResult {
   bungieGlobalDisplayName: string;
   bungieGlobalDisplayNameCode: number;
   bungieNetMembershipId: string;
   destinyMemberships: DestinyPlayer[];
 }
 
-type APIResponse<T> = [Error, null] | [null, T];
+export type APIResponse<T> = [Error, null] | [null, T];
 
 // declare global {
 //   var SERVICE_URL: string;

@@ -1,6 +1,7 @@
 import BarGraph from "../graphs/BarGraph";
 import Emblem from "./Emblem";
 import StatCard from "./StatCard";
+import type {Stats} from "../services/services";
 
 const UserCard: React.FC<Stats> = ({ user, fireteam }) => {
   const {

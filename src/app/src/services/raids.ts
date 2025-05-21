@@ -1,3 +1,4 @@
+import type { APIResponse, Raids } from "./services";
 export const fetchRaids = async (): Promise<APIResponse<Raids>> => {
   try {
     // @ts-expect-error cant figure out typing globalThis specifically for local dev with vite

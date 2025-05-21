@@ -1,3 +1,4 @@
+import type { APIResponse, UserResult } from "./services";
 export const fetchUser = async (userName: string): Promise<APIResponse<UserResult[]>> => {
   try {
     // @ts-expect-error cant figure out typing globalThis specifically for local dev with vite
