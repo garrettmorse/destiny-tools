@@ -2,11 +2,11 @@ import { Router } from "express";
 import { apiGet, apiPost } from '../client.js';
 import { fetchAllRaidActivities, fetchPGCR, gatherFireteamRaidStats, getD2Content } from "../util.js";
 import CONSTANTS from '../constants.js';
-import fs from "fs";
 const d2 = Router();
 
 // we only retrieve
 // - DestinyActivityDefinition
+// - DestinyActivityTypeDefinition
 // - DestinyInventoryItemDefinition 
 //  - items with ammotypes only
 const content = await getD2Content();
@@ -26,10 +26,6 @@ d2.get('/searchUser', async (req, res) => {
   const searchResults = data.Response.searchResults.filter(result => result?.destinyMemberships?.length > 0);
   return res.json(searchResults);
 });
-
-
-
-
 
 d2.get('/raids', async (_, res) => {
     const RAID_SORT_MAP = {
@@ -51,7 +47,7 @@ d2.get('/raids', async (_, res) => {
   };
   RAID_SORT_MAP.default = Object.keys(RAID_SORT_MAP).length + 1;
   return res.json(Object.entries(content.DestinyActivityDefinition)
-    .filter(([_, data]) => data.activityModeTypes?.at(0) === 4) // n
+    .filter(([_, data]) => data.activityTypeHash !== 0 && content.DestinyActivityTypeDefinition[data.activityTypeHash].displayProperties.name === 'Raid') // n
     .map(([hash, data]) => [data.originalDisplayProperties.name, hash, data.pgcrImage])
     .filter(([name,]) => !name.includes("Pantheon")) // m
     .sort(([raidA,], [raidB,]) => (RAID_SORT_MAP[raidA] ?? RAID_SORT_MAP.default++) - (RAID_SORT_MAP[raidB] ?? RAID_SORT_MAP.default++))
