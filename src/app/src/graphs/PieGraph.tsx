@@ -20,7 +20,7 @@ ChartJS.register(
   Colors
 );
 
-const Graph: React.FC<{ format: (item: { label: string; raw: number }) => string, tableName: string; labels: string[]; dataset: { label: string; data: number[]; backgroundColor: string[]; }}> = ({ format, tableName, labels, dataset }) => {
+const Graph: React.FC<{ format: (item: { label: string; raw: number }) => string, tableName: string; labels: string[]; dataset: { label: string; data: number[]; backgroundColor?: string[]; }}> = ({ format, tableName, labels, dataset }) => {
   // for customizing chartjs since tailwind can't
   const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
   ChartJS.defaults.color = isDark ? "white": "black";
