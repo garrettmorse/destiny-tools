@@ -2,6 +2,7 @@ import { Router } from "express";
 import { apiGet, apiPost } from '../client.js';
 import { fetchAllRaidActivities, fetchPGCR, gatherFireteamRaidStats, getD2Content } from "../util.js";
 import CONSTANTS from '../constants.js';
+import fs from "fs";
 const d2 = Router();
 
 // we only retrieve
@@ -123,7 +124,7 @@ d2.get('/aggregateRaids', async (req, res) => {
     const requestedRaidActivities = allRaidActivities.filter(activity => String(activity.activityDetails.referenceId) === raidId);
     allRequestedRaidActivities.push(...requestedRaidActivities);
   }
-  
+  allRequestedRaidActivities.sort((activityA, activityB) => new Date(activityB.period) - new Date(activityA.period));
   // find most recent completion
   const mostRecentCompletion = allRequestedRaidActivities.find(activity => activity.values.completed.basic.value === 1);
   if (!mostRecentCompletion) {
@@ -155,6 +156,7 @@ d2.get('/aggregateRaids', async (req, res) => {
     }
     allActivityReports.push(pgcrData);
   }
+  
   
   const fireteam = gatherFireteamRaidStats(allActivityReports, content.DestinyInventoryItemDefinition);
   const userStats = fireteam[membershipId]; 
