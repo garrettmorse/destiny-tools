@@ -1,5 +1,4 @@
 import { Router } from "express";
-import { rateLimit } from 'express-rate-limit'
 import { apiGet, apiPost } from '../client.js';
 import { fetchAllRaidActivities, fetchPGCR, gatherFireteamRaidStats, getD2Content } from "../util.js";
 import CONSTANTS from '../constants.js';
@@ -10,13 +9,6 @@ const d2 = Router();
 // - DestinyInventoryItemDefinition 
 //  - items with ammotypes only
 const content = await getD2Content();
-
-d2.use(rateLimit({
-  windowMs: 200, // 15 minutes
-  limit: 1, // Limit each IP to 1 request per 200ms
-  standardHeaders: 'draft-8',
-  legacyHeaders: false,
-}));
 
 // UI will debounce and call this every 0.5 sec
 d2.get('/searchUser', async (req, res) => {

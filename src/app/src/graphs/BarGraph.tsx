@@ -74,8 +74,7 @@ const Graph: React.FC<{ labels: string[]; dataset: { label: string; data: number
   } as React.ComponentProps<typeof Bar>['options'];
 
   return (
-      <Bar className="bg-white dark:bg-gray-900 shadow-lg" options={deepMerge(defaultOptions, extendedOptions)} data={{ labels, datasets: [dataset] }} />
-      
+      <Bar className="bg-white dark:bg-gray-800 shadow-lg" options={deepMerge(defaultOptions, extendedOptions)} data={{ labels, datasets: [dataset] }} />
     );
 }
 

@@ -1,6 +1,9 @@
 interface UserStats {
   name: string;
   lightLevel: number;
+  timePlayed: Record<string, number>;
+  killsByPeriod: Record<string, number>;
+  class: "Titan" | "Warlock" | "Hunter";
   attempts: number;
   totalKills: number;
   totalDeaths: number;

@@ -4,7 +4,7 @@ import Stats from "./pages/Stats";
 import NotFound from "./pages/NotFound";
 import "./out.css";
 const App = () => (
-  <div className="dark:bg-gray-800 dark:text-white">
+  <div className="bg-gray-100 dark:bg-gray-900 dark:text-white">
       <BrowserRouter>
         <Routes>
           {/* @ts-expect-error cant figure out typing globalThis specifically for local dev with vite */}

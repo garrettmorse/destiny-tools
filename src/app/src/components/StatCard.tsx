@@ -9,7 +9,7 @@ interface StatCardProps {
 
 const StatCard: React.FC<StatCardProps> = ({ kills, deaths, kd, attempts }) => {
   return (
-    <div className="grid h-full grid-cols-2">
+    <div className="grid h-full grid-cols-2 bg-white dark:bg-gray-800">
       <div className="content-center">
         <Statistic stat={kills} label={`Kill${kills !== 1 ? 's' : ''}`} />
       </div>

@@ -170,7 +170,7 @@ async function fetchPGCR(activityId) {
  * 
  * @typedef {Record<string, FireteamMember>} Fireteam
  * 
- * @typedef {{ name: string; lightLevel: number; attempts: number; emblemFullUrl: string; emblemIconUrl:string; totalKills: number; totalDeaths: number; killDeathRatio: number; weaponKills: WeaponKills; weaponKillsByAmmoType: { Primary: WeaponKills; Special: WeaponKills; Heavy: WeaponKills }}} User
+ * @typedef {{ name: string; class: 'Titan' | 'Warlock' | 'Hunter'; lightLevel: number; timePlayed: Record<string, number>; killsByPeriod: Record<string, number>; attempts: number; emblemFullUrl: string; emblemIconUrl:string; totalKills: number; totalDeaths: number; killDeathRatio: number; weaponKills: WeaponKills; weaponKillsByAmmoType: { Primary: WeaponKills; Special: WeaponKills; Heavy: WeaponKills }}} User
  */
 
 /**
@@ -274,24 +274,38 @@ function gatherFireteamRaidStats(raidPgcrs, manifest) {
   const fireteam = /** @type {Record<string, User>} */ ({});
   const idToNameMap = {}
   const activityPeriods = [];
-  let periodStart, periodEnd;
   const allFireteamMembers = new Set();
   for (const pgcr of raidPgcrs) {
     activityPeriods.push(pgcr.period);
     pgcr.entries.filter(entry => entry.player.destinyUserInfo.isPublic).map(entry => {
       const id = entry.player.destinyUserInfo.membershipId;
-      idToNameMap[id] = [entry.player.destinyUserInfo.bungieGlobalDisplayName, entry.player.emblemHash, entry.player.lightLevel];
+      if (id in idToNameMap) {
+        // aggregate time in raid
+        idToNameMap[id][3] = { ...idToNameMap[id][3], [pgcr.period]: entry.values.activityDurationSeconds.basic.value } 
+        idToNameMap[id][4] = { ...idToNameMap[id][4], [pgcr.period]: entry.values.kills.basic.value } 
+      } else {
+        idToNameMap[id] = [
+          entry.player.destinyUserInfo.bungieGlobalDisplayName, 
+          entry.player.emblemHash, entry.player.lightLevel, 
+          { [pgcr.period]: entry.values.activityDurationSeconds.basic.value },
+          { [pgcr.period]: entry.values.kills.basic.value },
+          entry.player.characterClass
+        ];
+      }
       return id;
     }).forEach(id => allFireteamMembers.add(id));
   }
 
   for (const fireteamId of allFireteamMembers) {
-    const [name, emblemHash, lightLevel] = idToNameMap[fireteamId];
+    const [name, emblemHash, lightLevel, timePlayed, killsByPeriod, className] = idToNameMap[fireteamId];
     const { displayProperties, secondaryIcon } = manifest[emblemHash];
     fireteam[fireteamId] = { 
       ...gatherUserRaidStats(raidPgcrs, fireteamId, manifest),
       name,
       lightLevel,
+      timePlayed,
+      class: className,
+      killsByPeriod,
       emblemIconUrl: displayProperties.icon,
       emblemFullUrl: secondaryIcon
     };

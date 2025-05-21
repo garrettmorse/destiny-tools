@@ -130,7 +130,7 @@ const Stats: React.FC = () => {
             <Loading message={loadingMessage}/>
           ) : stats ? (
             <div className="place-items-center">
-              <p className="text-gray-200 mt-2">Activity Period: {stats.fireteam.periodRange}</p>
+              <p className="text-black dark:text-gray-200 py-1">Activity Period: {stats.fireteam.periodRange}</p>
               <div className="place-items-center">
                 <label className="inline-flex place-items-center p-2 col-span-2 rounded-md cursor-pointer dark:text-gray-100">
                   <input type="checkbox" onChange={(e) => setIsFireteamToggled(e.target.checked)} defaultChecked={isFireteamToggled} className="hidden peer" />
