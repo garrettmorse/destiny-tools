@@ -29,7 +29,7 @@ const Fireteam: React.FC<Stats> = ({user, fireteam}) => {
   return (
     <div className="min-w-screen grid grid-cols-2 h-full gap-4">
         <div className="max-sm:col-span-2 place-items-center sm:col-span-1 max-w-screen">
-          <div className="container max-sm:place-items-center sm:place-items-end min-h-[500px] max-h-[500px] max-w-[500px]">
+          <div className="container max-sm:place-items-center sm:place-items-end max-sm:max-h-[372px] md:min-h-[377px] lg:min-h-[500px] max-h-[500px] max-w-[500px]">
             <PieGraph 
             tableName="Kill Distribution"
             labels={fireteamKills.map(o => o[0])}  
@@ -42,7 +42,7 @@ const Fireteam: React.FC<Stats> = ({user, fireteam}) => {
           </div>
         </div>
         <div className="max-sm:col-span-2 place-items-center sm:col-span-1 max-w-screen">
-          <div className="container max-sm:place-items-center sm:place-items-start min-h-[500px] max-h-[500px] max-w-[500px]">
+          <div className="container max-sm:place-items-center sm:place-items-start max-sm:max-h-[372px] md:min-h-[377px] lg:min-h-[500px] max-h-[500px] max-w-[500px]">
             <PieGraph 
             tableName="Class Distribution"
             labels={Object.keys(fireteamClasses)}  
@@ -56,7 +56,7 @@ const Fireteam: React.FC<Stats> = ({user, fireteam}) => {
           </div>
         </div>
         <div className="col-span-2 place-items-center relative max-w-screen">
-          <div className="container place-items-center min-h-[500px] max-h-[500px] max-w-[500px]">
+          <div className="container place-items-center min-h-[500px] max-sm:max-h-[186px] sm:max-h-[500px] max-w-[500px]">
             <LineGraph 
             tableName="Session Timeline"
             labels={Object.keys(timePlayed).reverse()}
