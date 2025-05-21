@@ -1,3 +1,5 @@
 node_modules
 .env
 dist
+content_full.json
+content_small.json
