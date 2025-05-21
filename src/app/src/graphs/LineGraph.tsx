@@ -29,7 +29,7 @@ interface LineGraphProps {
     label: string; 
     data: number[] | string[]; 
     yTitle: string; 
-    yAxisId: string; 
+    yAxisID: string; 
     fill?: { target: string; } | boolean; 
     backgroundColor: string; 
     borderColor: string; 
@@ -50,7 +50,7 @@ const Graph: React.FC<LineGraphProps> = ({ tableName, labels, datasets }) => {
     plugins: {
       title: {
           align: "start",
-          fullSize: false,
+          fullSize: true,
           display: true,
           text: '  ' + tableName,
           font: {
@@ -68,7 +68,7 @@ const Graph: React.FC<LineGraphProps> = ({ tableName, labels, datasets }) => {
         type: 'linear' as const,
         display: true,
         position: 'left' as const,
-        stacked: true,
+        stacked: false,
       },
       y1: {
         title: {
@@ -79,7 +79,7 @@ const Graph: React.FC<LineGraphProps> = ({ tableName, labels, datasets }) => {
         type: 'linear' as const,
         display: true,
         position: 'right' as const,
-        min: datasets[0]?.axisRange?.at(0),
+        min: datasets[1]?.axisRange?.at(0),
         max: datasets[1]?.axisRange?.at(1),
         grid: {
           drawOnChartArea: false,
