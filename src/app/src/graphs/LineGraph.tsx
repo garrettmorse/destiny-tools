@@ -68,7 +68,6 @@ const Graph: React.FC<LineGraphProps> = ({ tableName, labels, datasets }) => {
         type: 'linear' as const,
         display: true,
         position: 'left' as const,
-        stacked: false,
       },
       y1: {
         title: {
@@ -79,8 +78,6 @@ const Graph: React.FC<LineGraphProps> = ({ tableName, labels, datasets }) => {
         type: 'linear' as const,
         display: true,
         position: 'right' as const,
-        min: datasets[1]?.axisRange?.at(0),
-        max: datasets[1]?.axisRange?.at(1),
         grid: {
           drawOnChartArea: false,
         },
