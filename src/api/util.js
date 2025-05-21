@@ -8,9 +8,11 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const fileExists = async path => !!(await fs.stat(path).catch(e => false));
 
-const MANIFEST_ENDPOINTS = /** @type {const} */ (["DestinyActivityDefinition", "DestinyInventoryItemDefinition"]);
+const MANIFEST_ENDPOINTS = /** @type {const} */ (["DestinyActivityDefinition", "DestinyActivityTypeDefinition", "DestinyInventoryItemDefinition"]);
 
 const MANIFEST_LOCATION = __dirname + path.sep + 'content_small.json';
+
+const MANIFEST_FULL_LOCATION = __dirname + path.sep + 'content_full.json';
 
 const DESTINY_AMMO_TYPE = /** @type {const} */ ({
   "1": "Primary",
@@ -39,6 +41,17 @@ async function fetchManifest(retry) {
     if (retry) return fetchManifest(false);
   }
   return manifestData.Response.jsonWorldComponentContentPaths.en;
+}
+
+async function fetchAllContent() {
+  const [manifestErr, manifestData] = await apiGet('/Destiny2/Manifest');
+  if (manifestErr) {
+    console.error('Kaboom while retrieving D2 Manifest');
+    if (retry) return fetchManifest(false);
+  }
+  const fullEndpoint = manifestData.Response.jsonWorldContentPaths.en;
+  const response = (await apiClient.get(fullEndpoint)).data;
+  return response;
 }
 
 /**
@@ -73,7 +86,7 @@ async function fetchContent() {
 }
 
 /**
- * @typedef {{ originalDisplayProperties: { name: string }; pgcrImage: string }} DestinyActivityEntry
+ * @typedef {{ activityTypeHash: number; originalDisplayProperties: { name: string }; pgcrImage: string }} DestinyActivityEntry
  * 
  * @typedef {Record<string, DestinyActivityEntry>} DestinyActivityDefinition
  * 
@@ -85,7 +98,11 @@ async function fetchContent() {
  * 
  * @typedef {Record<string, DestinyItemCategoryEntry>} DestinyItemCategoryDefinition
  * 
- * @typedef  {{ DestinyActivityDefinition: DestinyActivityDefinition; DestinyInventoryItemDefinition: DestinyInventoryItemDefinition; }} DestinyManifest
+ * @typedef {{ displayProperties: { name: string; }; }} DestinyActivityTypeEntry
+ * 
+ * @typedef {Record<string, DestinyActivityTypeEntry>} DestinyActivityTypeDefinition
+ * 
+ * @typedef  {{ DestinyActivityDefinition: DestinyActivityDefinition; DestinyInventoryItemDefinition: DestinyInventoryItemDefinition; DestinyActivityTypeDefinition: DestinyActivityTypeDefinition }} DestinyManifest
  */ 
 
 /** 
@@ -99,6 +116,16 @@ async function getD2Content() {
   fs.writeFile(MANIFEST_LOCATION, JSON.stringify(content, null, 2));
   return content;
 }
+
+async function getAllD2Content() {
+  if (await fileExists(MANIFEST_FULL_LOCATION)) {
+    return JSON.parse(await fs.readFile(MANIFEST_FULL_LOCATION, { encoding: 'utf8' }));
+  }
+  const content = await fetchAllContent();
+  fs.writeFile(MANIFEST_FULL_LOCATION, JSON.stringify(content, null, 2));
+  return content;
+}
+
 
 /**
  * @typedef {{ statId: string; basic: { value: number; displayValue: string } }} Stat
