@@ -17,18 +17,24 @@ ports.forEach(port => {
   
   app.use('/api/d2', d2);
   
+  app.disable('x-powered-by');
+
   app.set('trust proxy', 'process.env.TRUSTED_PROXY');
 
-  app.use('/raidlytics', express.static('dist', { extensions: ['html'] }));
+  app.use('/raidlytics', express.static('dist/raidlytics', { extensions: ['html'] }));
   
-  app.disable('x-powered-by');
-  
+  app.use('/edgestats', express.static('dist/edgestats', { extensions: ['html'] }));
+
   app.listen(port, () => console.log(`server listening on ${port}`));
   
   app.get('/', (_, res) => res.send('hey'));
   
-  app.get('*none', (_, res) => {
-    res.sendFile(path.join(__dirname, "..", "dist", "index.html"));
+  app.get('/raidlytics*none', (_, res) => {
+    res.sendFile(path.join(__dirname, "..", "dist/raidlytics", "index.html"));
+  });
+
+  app.get('/edgestats*none', (_, res) => {
+    res.sendFile(path.join(__dirname, "..", "dist/edgestats", "index.html"));
   });
 });
 
