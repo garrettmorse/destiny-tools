@@ -7,6 +7,7 @@ const d2 = Router();
 // we only retrieve
 // - DestinyActivityDefinition
 // - DestinyActivityTypeDefinition
+// - DestinyCollectibleDefinition
 // - DestinyInventoryItemDefinition 
 //  - items with ammotypes only
 const content = await getD2Content();
@@ -25,6 +26,12 @@ d2.get('/searchUser', async (req, res) => {
   }
   const searchResults = data.Response.searchResults.filter(result => result?.destinyMemberships?.length > 0);
   return res.json(searchResults);
+});
+
+d2.get('/mods', async (_, res) => {
+  return res.json(Object.values(content.DestinyCollectibleDefinition).reduce((acc, mod) => ({ 
+    ...acc, [mod.displayProperties.name]: mod.displayProperties.icon
+  }), {}))
 });
 
 d2.get('/raids', async (_, res) => {

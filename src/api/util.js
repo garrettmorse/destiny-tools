@@ -8,7 +8,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const fileExists = async path => !!(await fs.stat(path).catch(e => false));
 
-const MANIFEST_ENDPOINTS = /** @type {const} */ (["DestinyActivityDefinition", "DestinyActivityTypeDefinition", "DestinyInventoryItemDefinition"]);
+const MANIFEST_ENDPOINTS = /** @type {const} */ (["DestinyActivityDefinition", "DestinyActivityTypeDefinition", "DestinyCollectibleDefinition", "DestinyInventoryItemDefinition"]);
 
 const MANIFEST_LOCATION = __dirname + path.sep + 'content_small.json';
 
@@ -74,6 +74,13 @@ async function fetchContent() {
             data[manifestEndpoint][hash] = response[hash];
           }
         }
+      } else if (manifestEndpoint === "DestinyCollectibleDefinition") {
+        // only collect mods
+        for (const hash in response) {
+          if (response[hash]?.scope === 0 && response[hash]?.presentationNodeType === 1 && response[hash]?.parentNodeHashes[0] === 1929360037) {
+            data[manifestEndpoint][hash] = response[hash];
+          }
+        }
       } else {
         data[manifestEndpoint] = response;
       }
@@ -98,11 +105,15 @@ async function fetchContent() {
  * 
  * @typedef {Record<string, DestinyItemCategoryEntry>} DestinyItemCategoryDefinition
  * 
+ * @typedef {{ displayProperties: { name: string; icon: string; }; scope: number; presentationNodeType: number; }} DestinyCollectibleEntry
+ * 
+ * @typedef {Record<string, DestinyCollectibleEntry>} DestinyCollectibleDefinition
+ * 
  * @typedef {{ displayProperties: { name: string; }; }} DestinyActivityTypeEntry
  * 
  * @typedef {Record<string, DestinyActivityTypeEntry>} DestinyActivityTypeDefinition
  * 
- * @typedef  {{ DestinyActivityDefinition: DestinyActivityDefinition; DestinyInventoryItemDefinition: DestinyInventoryItemDefinition; DestinyActivityTypeDefinition: DestinyActivityTypeDefinition }} DestinyManifest
+ * @typedef  {{ DestinyActivityDefinition: DestinyActivityDefinition; DestinyCollectibleDefinition: DestinyCollectibleDefinition; DestinyInventoryItemDefinition: DestinyInventoryItemDefinition; DestinyActivityTypeDefinition: DestinyActivityTypeDefinition }} DestinyManifest
  */ 
 
 /** 
