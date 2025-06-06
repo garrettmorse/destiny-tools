@@ -8,6 +8,10 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig(() => {
   return {
     base: process.env.NODE_ENV === 'development' ? "" : "/raidlytics",
+    build: {
+      outDir: './dist/raidlytics',
+      emptyOutDir: true
+    },
     server: {
       port: process.env.NODE_ENV === 'development' ? 5173 : 8080
     },
