@@ -1,24 +1,37 @@
 
-import React from 'react';
-import SearchBar from '../components/SearchBar';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { fetchMods } from '../services/mods';
+import Stats from '../components/Stats';
+import Loading from '../components/Loading';
+import type { Mods } from '../services/services';
 
 const HomePage: React.FC = () => {
-  const navigate = useNavigate();
+  const [isModsLoading, setIsModsLoading] = useState(false);
+  const [mods, setMods] = useState<Mods | null>(null);
+  const [isError, setIsError] = useState(false);
 
-  const handleSearch = (query: string) => {
-    /* @ts-expect-error cant figure out typing globalThis specifically for local dev with vite */
-    navigate(`${global.BASE_PATH}/player/${query}`);
-  };
-
+  useEffect(() => {
+    const _fetchMods = async () => {
+      setIsModsLoading(true);
+      const [modsError, modsData] = await fetchMods();
+      if (modsError) {
+        setIsError(true);
+      } else {
+        setMods(modsData);
+      }
+      setIsModsLoading(false);
+    }
+    _fetchMods();
+  }, []);
+  
   return (
     <div className="min-h-screen flex-none sm:flex flex-col">
-      <div className="flex-1 flex flex-col items-center justify-center px-4 py-16">
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-2 text-center">Raidlytics</h1>
+      <div className="flex-1 flex flex-col items-center justify-top px-4 py-16">
+        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-2 text-center">Edgestats</h1>
         <p className="dark:text-gray-400 text-xl md:text-2xl lg:text-3xl mb-8 text-center">
-          Track your raid stats across attempts
+          Preview the Edge of Fate armor stats
         </p>
-        <SearchBar useBase onSearch={handleSearch} />
+        {isError ? <div>Something went wrong. Try again later.</div> : (<>{isModsLoading ? <Loading message='Loading...' /> : <Stats mods={mods} />}</>)}
       </div>
     </div>
   );
