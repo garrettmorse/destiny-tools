@@ -2,6 +2,8 @@ import { useState } from "react";
 import ArchetypeDialog from "./ArchetypeDialog";
 import type { Mods } from "../services/services";
 import Slot from "./Slot";
+import StatChart from "./StatChart";
+import "./Stats.css";
 interface StatsProps {
   mods: Mods
 };
@@ -110,23 +112,34 @@ const Stats: React.FC<StatsProps> = ({ mods }) => {
     });
   };
 
-  const handleArchetypeLeave = () => {
-    setCurrentArmorHover(null);
+  let dialogTimeout: NodeJS.Timeout;
+  const handleArchetypeEnter = (armor: ArmorKind) => {
+    const el = document.getElementById(`dialog-${armor}`);
+    el?.classList.toggle("fade-in");
+    clearTimeout(dialogTimeout)
+    setCurrentArmorHover(armor);
+  }
+
+  const handleArchetypeLeave = (armor: ArmorKind) => {
+    const el = document.getElementById(`dialog-${armor}`);
+    el?.classList.toggle("fade-out");
+    dialogTimeout = setTimeout(() => setCurrentArmorHover(null), 200);
   };
 
   return (
       <div className="my-5">
         <div className="flex flex-col items-center">
-          {ARMOR.map(armor => 
+          {ARMOR.map((armor, idx) => 
             (<div className="relative" key={armor}>
-              <div className="flex items-center" onMouseEnter={() => setCurrentArmorHover(armor)}>
+              <div className="flex items-center" onMouseEnter={() => handleArchetypeEnter(armor)} onMouseLeave={() => handleArchetypeLeave(armor)}>
                 <div className="text-center">
                   <p className='text-md'>{STATE_MAP[armor].get?.archetype ?? "Select Type"}</p>
-                  <Slot kind={STATE_MAP[armor].get?.archetype ?? armor} />
+                  <Slot identifier={idx} kind={STATE_MAP[armor].get?.archetype ?? armor} />
                 </div>
                   {currentArmorHover === armor && (
-                    <div onMouseLeave={handleArchetypeLeave} className="absolute left-full top-6 z-50">
-                      <ArchetypeDialog 
+                    <div id={`dialog-${armor}`} className={`absolute left-full fade-in top-6 z-50`}>
+                      <ArchetypeDialog
+                      identifier={idx}
                       armor={armor} 
                       handleClick={(archetype: ArmorArchetype | null) => handleDialogClick(armor, archetype)} 
                       />
@@ -135,6 +148,14 @@ const Stats: React.FC<StatsProps> = ({ mods }) => {
               </div>
             </div>)
           )}
+          <StatChart 
+            Health={10}
+            Melee={20}
+            Grenade={30}
+            Super={40}
+            Class={50}
+            Weapons={100}
+          />
         </div>
       </div>
   );

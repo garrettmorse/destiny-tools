@@ -1,0 +1,27 @@
+@keyframes slot-gradient { 
+    0%{background-position:10% 0%}
+    50%{background-position:91% 100%}
+    100%{background-position:10% 0%}
+}
+
+.slot {
+  transition: all 0.3s;
+}
+
+.slot-inner {
+  margin: 10px;
+  filter: invert(73%) sepia(0%) saturate(1471%) hue-rotate(143deg) brightness(92%) contrast(107%);
+}
+
+.slot-outer {
+  filter: invert(20%);
+}
+
+.slot-click {
+  background: linear-gradient(transparent, #FFF);
+  background-size: 200px 200px;
+}
+
+.slot-animate {
+  background-position: 0% 200%;
+}
