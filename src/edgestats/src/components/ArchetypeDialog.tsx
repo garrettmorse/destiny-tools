@@ -8,9 +8,14 @@ const ArchetypeDialog: React.FC<{ identifier: number; armor: ArmorKind; handleCl
   // 3x2 grid
   return (
     <div className="bg-dialog grid grid-cols-3 min-w-[300px] gap-y-[1px] gap-x-2 mx-2 place-items-center">
-      <div className="cursor-pointer" onClick={() => handleClick(null)}><Slot light animate kind={armor} /></div>
+      <div className="group relative">
+        <span className="left-[50%] -top-6 translate-x-[-50%] absolute group-hover:opacity-100 transition-opacity bg-purple-800 px-1 text-lg text-gray-100 rounded-md opacity-0 text-center z-100">None</span>
+        <div className="cursor-pointer" onClick={() => handleClick(null)}><Slot light animate kind={armor} /></div>
+      </div>
+      
       {STAT.map((stat, idx) => (
-          <div className="cursor-pointer" key={stat} onClick={() => handleClick(stat)}>
+          <div className="group relative cursor-pointer place-items-center" key={stat} onClick={() => handleClick(stat)}>
+            <span className="left-[50%] -top-6 translate-x-[-50%] absolute group-hover:opacity-100 transition-opacity bg-purple-800 px-1 text-lg text-gray-100 rounded-md opacity-0 text-center z-100">{stat}</span>
             <Slot identifier={identifier + "-" + idx} animate kind={stat} />
           </div>
       ))}
