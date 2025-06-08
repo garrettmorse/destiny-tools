@@ -3,12 +3,11 @@ import { STAT_DESCRIPTION_MAP, type StatType } from "../util";
 interface BlockProps {
   value: string;
   isHighlighted: boolean;
-  index: number;
   fractionFilled?: number; // 0-1 for partial fill, undefined for full blocks
   greenFilled?: number; // 0-1 for green portion, undefined for no green
 }
 
-const Block: React.FC<BlockProps> = ({ value, isHighlighted, index, fractionFilled, greenFilled }) => {
+const Block: React.FC<BlockProps> = ({ value, isHighlighted, fractionFilled, greenFilled }) => {
   const isFractional = fractionFilled !== undefined;
   const hasGreen = greenFilled !== undefined;
   
@@ -160,7 +159,6 @@ const BlockRow: React.FC<BlockRowProps> = ({ stat, input, totalBlocks = 10 }) =>
               key={index}
               value={displayValue}
               isHighlighted={isFullBlock}
-              index={index}
               fractionFilled={isFractionalBlock ? fractionValue : undefined}
               greenFilled={greenFilled}
             />
@@ -177,17 +175,19 @@ interface TooltipProps {
 }
 
 const StatTooltip: React.FC<TooltipProps> = ({ stat, value }) => {
-  const topOffset = stat === "Health" ? value > 100 ? 130 : 115 :
-  stat === "Melee" ? value > 100 ? 120 : 105 :
-  stat === "Grenade" ? value > 100 ? 120 : 105 :
-  stat === "Super" ? value > 100 ? 105 : 90 :
-  stat === "Class" ? value > 100 ? 120 : 105 :
-  value > 100 ? 158 : 124;
-  return (<span className={`pointer-events-none
-    translate-x-[-50%] absolute left-[50%] -top-${topOffset}
+  
+  const topOffset = stat === "Health" ? value > 100 ? "-top-130" : "-top-115" :
+  stat === "Melee" ? value > 100 ? '-top-120' : "-top-105" :
+  stat === "Grenade" ? value > 100 ? '-top-120' : "-top-105" :
+  stat === "Super" ? value > 100 ? "-top-105" : "-top-90" :
+  stat === "Class" ? value > 100 ? '-top-120' : "-top-105" :
+  value > 100 ? '-top-158' : '-top-124';
+  const className = `pointer-events-none
+    translate-x-[-50%] absolute left-[50%] ${topOffset}
     group-hover:opacity-100 transition-opacity opacity-0
     text-lg text-gray-100 text-center
-    rounded-md z-100 container`}>
+    rounded-md z-100 container`
+  return (<span className={className}>
       <StatTooltipCard statName={stat} value={value}/>
     </span>
   );

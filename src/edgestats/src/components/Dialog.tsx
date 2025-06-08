@@ -1,6 +1,6 @@
 import Slot from "./Slot";
 import type { ArmorArchetype, ArmorKind, StatType, ModType } from "../util";
-import { ARCHETYPES, MODS, STATS, ARCHETYPE_TERTIARY_STAT_MAP, PRIMARY_STAT_ARCHETYPE_MAP } from "../util";
+import { ARCHETYPES, MODS, ARCHETYPE_TERTIARY_STAT_MAP, PRIMARY_STAT_ARCHETYPE_MAP } from "../util";
 import "./Dialog.css";
 
 interface BaseProps {
