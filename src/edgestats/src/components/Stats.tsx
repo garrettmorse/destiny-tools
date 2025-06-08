@@ -3,73 +3,12 @@ import ArchetypeDialog from "./ArchetypeDialog";
 import type { Mods } from "../services/services";
 import Slot from "./Slot";
 import StatChart from "./StatChart";
+import { ARMOR, getStats } from "../util";
+import type { ArmorArchetype, ArmorKind, ArmorState } from "../util";
 import "./Stats.css";
+
 interface StatsProps {
   mods: Mods
-};
-
-export type ArmorKind = "Helmet" | "Gloves" | "Chest" | "Boots" | "Class";
-
-export type ArmorArchetype = "Brawler" | "Gunner" | "Specialist" | "Grenadier" | "Paragon" | "Bulwark";
-
-export type StatType = "Weapons" | "Melee" | "Health" | "Super" | "Grenade" | "Class";
-
-interface ArmorState {
-  archetype: ArmorArchetype;
-  kind: Partial<ArmorArchetypeOptions[ArmorState["archetype"]]>;
-  mod: string;
-  tuning: boolean;
-  masterwork: boolean;
-};
-
-interface ArmorArchetypeOptions {
-  Brawler: {
-    PRIMARY: 'Melee',
-    SECONDARY: 'Health',
-    TERTIARY: Omit<StatType, 'Melee' | 'Health' | 'Weapons'>
-  };
-  Gunner: {
-    PRIMARY: 'Weapons',
-    SECONDARY: 'Grenade',
-    TERTIARY: Omit<StatType, 'Weapons' | 'Grenade' | 'Melee'>
-  };
-  Specialist: {
-    PRIMARY: 'Class',
-    SECONDARY: 'Weapons',
-    TERTIARY: Omit<StatType, 'Class' | 'Weapons' | 'Super'>
-  };
-  Grenadier: {
-    PRIMARY: 'Grenade',
-    SECONDARY: 'Super',
-    TERTIARY: Omit<StatType, 'Grenade' | 'Super' | 'Health'>
-  };
-  Paragon: {
-    PRIMARY: 'Super',
-    SECONDARY: 'Melee',
-    TERTIARY: Omit<StatType, 'Super' | 'Melee' | 'Class'>
-  };
-  Bulwark: {
-    PRIMARY: 'Health',
-    SECONDARY: 'Class',
-    TERTIARY: Omit<StatType, 'Health' | 'Class' | 'Grenade'>
-  };
-};
-
-const ARMOR = ["Helmet", "Gloves", "Chest", "Boots", "Class"] as const;
-
-const STAT_COUNT_MAP = {
-  PRIMARY: 30,
-  SECONDARY: 25,
-  TERTIARY: 20
-} as const;
-
-const STAT_ARCHETYPE_MAP: Record<StatType, ArmorArchetype> = {
-  Class: 'Specialist',
-  Grenade: 'Grenadier',
-  Weapons: 'Gunner',
-  Super: 'Paragon',
-  Health: 'Bulwark',
-  Melee: 'Brawler'
 };
 
 const Stats: React.FC<StatsProps> = ({ mods }) => {
@@ -112,6 +51,10 @@ const Stats: React.FC<StatsProps> = ({ mods }) => {
     });
   };
 
+  // @ts-expect-error cba
+  const PLAYER_STATS = getStats(Object.keys(STATE_MAP).reduce((acc, armor) => ({ ...acc, [armor]: STATE_MAP[armor].get}), {}));
+
+  console.log(PLAYER_STATS);
   let dialogTimeout: NodeJS.Timeout;
   const handleArchetypeEnter = (armor: ArmorKind) => {
     const el = document.getElementById(`dialog-${armor}`);
@@ -128,40 +71,37 @@ const Stats: React.FC<StatsProps> = ({ mods }) => {
 
   return (
       <div className="my-5">
-        <div className="flex flex-col items-center">
-          {ARMOR.map((armor, idx) => 
-            (<div className="relative" key={armor}>
-              <div className="flex items-center" onMouseEnter={() => handleArchetypeEnter(armor)} onMouseLeave={() => handleArchetypeLeave(armor)}>
-                <div className="text-center">
-                  <p className='text-md'>{STATE_MAP[armor].get?.archetype ?? "Select Type"}</p>
-                  <Slot identifier={idx} kind={STATE_MAP[armor].get?.archetype ?? armor} />
+        <div className="grid grid-cols-3 items-center">
+          {ARMOR.map((armor, idx) =>
+            (<div key={armor} className='col-span-3 grid grid-cols-subgrid'>
+              <div className="relative col-span-1">
+                <div className="flex items-center" onMouseEnter={() => handleArchetypeEnter(armor)} onMouseLeave={() => handleArchetypeLeave(armor)}>
+                  <div className="text-center">
+                    <p className='text-md'>{STATE_MAP[armor].get?.archetype ?? "Select Type"}</p>
+                    <Slot identifier={idx} kind={STATE_MAP[armor].get?.archetype ?? armor} />
+                  </div>
+                    {currentArmorHover === armor && (
+                      <div id={`dialog-${armor}`} className={`absolute left-full fade-in top-6 z-50`}>
+                        <ArchetypeDialog
+                        identifier={idx}
+                        armor={armor} 
+                        handleClick={(archetype: ArmorArchetype | null) => handleDialogClick(armor, archetype)} 
+                        />
+                      </div>
+                    )}
                 </div>
-                  {currentArmorHover === armor && (
-                    <div id={`dialog-${armor}`} className={`absolute left-full fade-in top-6 z-50`}>
-                      <ArchetypeDialog
-                      identifier={idx}
-                      armor={armor} 
-                      handleClick={(archetype: ArmorArchetype | null) => handleDialogClick(armor, archetype)} 
-                      />
-                    </div>
-                  )}
               </div>
-            </div>)
+            <div className='col-span-1'>hello world</div>
+            </div>
+                )
           )}
-          <StatChart 
-            Health={10}
-            Melee={20}
-            Grenade={30}
-            Super={40}
-            Class={50}
-            Weapons={100}
-          />
         </div>
+          <StatChart 
+            {...PLAYER_STATS}
+          />
       </div>
   );
 }
-
-const STAT = ["Gunner", "Brawler", "Bulwark", "Paragon", "Grenadier", "Specialist"] as const;
 
 
 export default Stats;
