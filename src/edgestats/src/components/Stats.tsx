@@ -91,7 +91,8 @@ const Stats: React.FC<StatsProps> = ({ mods }) => {
                     )}
                 </div>
               </div>
-            <div className='col-span-1'>hello world</div>
+              <div className='col-span-1'>this is where the tertiary selection goes</div>
+              <div className='col-span-1'>this is where the mods go</div>
             </div>
                 )
           )}

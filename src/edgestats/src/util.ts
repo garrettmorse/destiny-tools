@@ -132,8 +132,4 @@ export const getStats = (archetypes: Record<ArmorKind, ArmorState | null>) => {
     }
   }
   return stats;
-}
-
-export {
-  getStats
 };
