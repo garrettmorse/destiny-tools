@@ -2,20 +2,23 @@ import { useState } from "react";
 import Dialog from "./Dialog";
 import Slot from "./Slot";
 import StatChart from "./StatChart";
-import { ARMOR, getStats, PRIMARY_STAT_ARCHETYPE_MAP } from "../util";
+import { ARMOR, getStats, PRIMARY_STAT_ARCHETYPE_MAP, useSearchParamEncoder } from "../util";
 import { type ArmorArchetype, type ArmorKind, type ArmorState, ARCHETYPE_TERTIARY_STAT_MAP, type StatType, type ModType } from "../util";
 import "./Stats.css";
+import { useSearchParams } from "react-router";
 
 const Stats: React.FC = () => {
-  const [helmetArchetype, setHelmetArchetype] = useState<ArmorState | null>(null);
-  const [glovesArchetype, setGlovesArchetype] = useState<ArmorState | null>(null);
-  const [chestArchetype, setChestArchetype] = useState<ArmorState | null>(null);
-  const [bootsArchetype, setBootsArchetype] = useState<ArmorState | null>(null);
-  const [classItemArchetype, setClassItemArchetype] = useState<ArmorState | null>(null);
+  const { decodeFromUrl, encodeToUrl } = useSearchParamEncoder();
+  const [, setSearchParams] = useSearchParams();
+  const params = decodeFromUrl(window.location.href);
+  const [helmetArchetype, setHelmetArchetype] = useState<ArmorState | null>(params.Helmet as unknown as ArmorState);
+  const [glovesArchetype, setGlovesArchetype] = useState<ArmorState | null>(params.Gloves as unknown as ArmorState);
+  const [chestArchetype, setChestArchetype] = useState<ArmorState | null>(params.Chest as unknown as ArmorState);
+  const [bootsArchetype, setBootsArchetype] = useState<ArmorState | null>(params.Boots as unknown as ArmorState);
+  const [classItemArchetype, setClassItemArchetype] = useState<ArmorState | null>(params.Class as unknown as ArmorState);
   const [currentArchetypeHover, setCurrentArchetypeHover] = useState<ArmorKind | null>(null);
   const [currentTertiaryHover, setCurrentTertiaryHover] = useState<ArmorKind | null>(null);
   const [currentModHover, setCurrentModHover] = useState<ArmorKind | null>(null);
-  
   const STATE_MAP = {
     Helmet: {
       get: helmetArchetype,
@@ -48,6 +51,13 @@ const Stats: React.FC = () => {
         tertiary = undefined;
       }
     }
+    const encodedParams = encodeToUrl(Object.keys(STATE_MAP).reduce((acc, armor) => {
+        const key = armor as keyof typeof STATE_MAP;
+        const _archetype = armor === armorKind ? archetype : STATE_MAP[key].get?.archetype;
+        // @ts-expect-error cba
+        acc[armor] = [_archetype, STATE_MAP[key].get?.tertiary, STATE_MAP[key].get?.mod];
+        return acc;
+      }, {}));
     STATE_MAP[armorKind].set({
       ...STATE_MAP[armorKind].get,
       // @ts-expect-error cba
@@ -55,23 +65,39 @@ const Stats: React.FC = () => {
       // @ts-expect-error cba
       tertiary
     });
-  };
+    setSearchParams(encodedParams);
+  }
 
   const handleTertiaryDialogClick = (armorKind: ArmorKind, stat: StatType | null) => {
+    const encodedParams = encodeToUrl(Object.keys(STATE_MAP).reduce((acc, armor) => {
+        const key = armor as keyof typeof STATE_MAP;
+        const _stat = armor === armorKind ? stat : STATE_MAP[key].get?.tertiary;
+        // @ts-expect-error cba
+        acc[armor] = [STATE_MAP[key].get?.archetype, _stat, STATE_MAP[key].get?.mod];
+        return acc;
+      }, {}));
     STATE_MAP[armorKind].set({
       ...STATE_MAP[armorKind].get,
       // @ts-expect-error cba
       tertiary: stat
-    })
+    });
+    setSearchParams(encodedParams);
   };
 
   const handleModDialogClick = (armorKind: ArmorKind, mod: ModType | null) => {
-    // TODO
+    const encodedParams = encodeToUrl(Object.keys(STATE_MAP).reduce((acc, armor) => {
+        const key = armor as keyof typeof STATE_MAP;
+        const _mod = armor === armorKind ? mod : STATE_MAP[key].get?.mod;
+        // @ts-expect-error cba
+        acc[armor] = [STATE_MAP[key].get?.archetype, STATE_MAP[key].get?.tertiary, _mod];
+        return acc;
+      }, {}));
     STATE_MAP[armorKind].set({
       ...STATE_MAP[armorKind].get,
       // @ts-expect-error cba
       mod
-    })
+    });
+    setSearchParams(encodedParams);
   };
 
   // @ts-expect-error cba

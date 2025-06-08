@@ -217,3 +217,203 @@ export const getStats = (archetypes: Record<ArmorKind, ArmorState | null>) => {
   }
   return stats;
 };
+
+// URL format: ?h=06g&c=1a&b=5 (helmet, chest, boots with their respective params)
+
+const SLOT_MAP = {
+  Gunner: "archetype",
+  Brawler: "archetype",
+  Bulwark: "archetype",
+  Paragon: "archetype",
+  Grenadier: "archetype",
+  Specialist: "archetype",
+  Health: "tertiary",
+  Melee: "tertiary",
+  Grenade: "tertiary",
+  Super: "tertiary",
+  Class: "tertiary",
+  Weapons: "tertiary",
+  "Grenade Mod": "mod",
+  "Super Mod": "mod",
+  "Weapons Mod": "mod",
+  "Class Mod": "mod",
+  "Health Mod": "mod",
+  "Melee Mod": "mod",
+  "Minor Grenade Mod": "mod",
+  "Minor Super Mod": "mod",
+  "Minor Weapons Mod": "mod",
+  "Minor Class Mod": "mod",
+  "Minor Health Mod": "mod",
+  "Minor Melee Mod": "mod",
+} as const;
+
+const PARAM_CODES = {
+  // Archetypes (0-5)
+  "Gunner": 0,
+  "Brawler": 1,
+  "Bulwark": 2,
+  "Paragon": 3,
+  "Grenadier": 4,
+  "Specialist": 5,
+  // Stats (6-11)
+  "Health": 6,
+  "Melee": 7,
+  "Grenade": 8,
+  "Super": 9,
+  "Class": 10,
+  "Weapons": 11,
+  // Major Mods (12-17)
+  "Grenade Mod": 12,
+  "Super Mod": 13,
+  "Weapons Mod": 14,
+  "Class Mod": 15,
+  "Health Mod": 16,
+  "Melee Mod": 17,
+  // Minor Mods (18-23)
+  "Minor Grenade Mod": 18,
+  "Minor Super Mod": 19,
+  "Minor Weapons Mod": 20,
+  "Minor Class Mod": 21,
+  "Minor Health Mod": 22,
+  "Minor Melee Mod": 23,
+} as const;
+
+const ARMOR_PARAMS = {
+  "Helmet": 'h',
+  "Gloves": 'g',
+  "Chest": 'c',
+  "Boots": 'b',
+  "Class": 'l',
+} as const;
+
+// Reverse lookup maps for decoding
+const PARAM_CODES_REVERSE = Object.fromEntries(
+  Object.entries(PARAM_CODES).map(([key, value]) => [value, key])
+) as Record<number, keyof typeof PARAM_CODES>;
+
+// const ARMOR_PARAMS_REVERSE = Object.fromEntries(
+//   Object.entries(ARMOR_PARAMS).map(([key, value]) => [value, key])
+// ) as Record<string, keyof typeof ARMOR_PARAMS>;
+
+// Type definitions
+type ParamCode = keyof typeof PARAM_CODES;
+type ArmorParam = keyof typeof ARMOR_PARAMS;
+type ArmorSlotParams = Partial<Record<ArmorParam, ParamCode[]>>;
+
+// Encoding/Decoding utilities
+class SearchParamEncoder {
+  /**
+   * Encodes an array of selected parameters into a compact base36 string
+   * @param params Array of parameter names
+   * @returns Base36 encoded string
+   */
+  static encodeParamList(params: ParamCode[]): string {
+    if (params.length === 0) return '';
+    const codes = params
+      .filter(param => !!param)
+      .map(param => PARAM_CODES[param])
+      .sort((a, b) => a - b); // Sort for consistent encoding
+    
+    return codes.map(code => code.toString(36)).join('');
+  }
+
+  /**
+   * Decodes a compact string back into parameter names
+   * @param encoded Base36 encoded string
+   * @returns Array of parameter names
+   */
+  static decodeParamList(encoded: string): ParamCode[] {
+    if (!encoded) return [];
+    
+    // Handle multi-character base36 numbers by trying different parsing strategies
+    const codes: number[] = [];
+    let i = 0;
+    
+    while (i < encoded.length) {
+      // Try parsing 2-character sequences first (for numbers > 35)
+      if (i + 1 < encoded.length) {
+        const twoChar = parseInt(encoded.slice(i, i + 2), 36);
+        if (twoChar in PARAM_CODES_REVERSE && twoChar > 35) {
+          codes.push(twoChar);
+          i += 2;
+          continue;
+        }
+      }
+      
+      // Parse single character
+      const oneChar = parseInt(encoded[i], 36);
+      if (oneChar in PARAM_CODES_REVERSE) {
+        codes.push(oneChar);
+      }
+      i++;
+    }
+    
+    return codes
+      .sort((a, b) => a - b)
+      .map(code => PARAM_CODES_REVERSE[code]);
+  }
+
+  /**
+   * Creates a complete search URL with per-armor-slot encoded parameters
+   * @param armorParams Object mapping armor slots to their parameter arrays
+   * @returns Complete URL with encoded parameters
+   */
+  static createSearchUrl(
+    armorParams: ArmorSlotParams = {},
+  ): string {
+    const searchParams = new URLSearchParams();
+    
+    // Encode each armor slot's parameters
+    Object.entries(armorParams).forEach(([armorSlot, params]) => {
+      if (params && params.length > 0) {
+        const armorCode = ARMOR_PARAMS[armorSlot as ArmorParam];
+        const encodedParams = this.encodeParamList(params);
+        if (encodedParams) {
+          searchParams.set(armorCode, encodedParams);
+        }
+      }
+    });
+    
+    return searchParams.toString();
+  }
+
+  /**
+   * Parses a search URL and returns decoded parameters per armor slot
+   * @param url Full URL or search params string
+   * @returns Decoded parameters organized by armor slot
+   */
+  static parseSearchUrl(url: string): Record<string, Record<string, string>> {
+    const urlObj = new URL(url);
+    const searchParams = urlObj.searchParams;
+    const result: Record<string, Record<string, string>> = {};
+    
+    // Check each armor slot code in the URL
+    Object.entries(ARMOR_PARAMS).forEach(([armorSlot, armorCode]) => {
+      const encodedParams = searchParams.get(armorCode);
+      if (encodedParams) {
+        const decodedParams = this.decodeParamList(encodedParams);
+        const mappedParams = decodedParams.reduce((params, param) => ({ ...params, [SLOT_MAP[param]]: param }), {});
+        if (decodedParams.length > 0) {
+          result[armorSlot as ArmorParam] = mappedParams as Record<string, string>;
+        }
+      }
+    });
+    
+    return result;
+  }
+}
+
+
+export const useSearchParamEncoder = () => {
+  const encodeToUrl = (
+    armorParams: ArmorSlotParams,
+  ) => {
+    return SearchParamEncoder.createSearchUrl(armorParams);
+  };
+
+  const decodeFromUrl = (url: string = window.location.href): ArmorSlotParams => {
+    return SearchParamEncoder.parseSearchUrl(url);
+  };
+
+  return { encodeToUrl, decodeFromUrl };
+};
