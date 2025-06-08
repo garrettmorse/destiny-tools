@@ -1,43 +1,17 @@
-interface ArmorArchetypeOptions {
-  Brawler: {
-    PRIMARY: 'Melee',
-    SECONDARY: 'Health',
-    TERTIARY: Exclude<StatType, 'Melee' | 'Health' | 'Weapons'>
-  };
-  Gunner: {
-    PRIMARY: 'Weapons',
-    SECONDARY: 'Grenade',
-    TERTIARY: Exclude<StatType, 'Weapons' | 'Grenade' | 'Melee'>
-  };
-  Specialist: {
-    PRIMARY: 'Class',
-    SECONDARY: 'Weapons',
-    TERTIARY: Exclude<StatType, 'Class' | 'Weapons' | 'Super'>
-  };
-  Grenadier: {
-    PRIMARY: 'Grenade',
-    SECONDARY: 'Super',
-    TERTIARY: Exclude<StatType, 'Grenade' | 'Super' | 'Health'>
-  };
-  Paragon: {
-    PRIMARY: 'Super',
-    SECONDARY: 'Melee',
-    TERTIARY: Exclude<StatType, 'Super' | 'Melee' | 'Class'>
-  };
-  Bulwark: {
-    PRIMARY: 'Health',
-    SECONDARY: 'Class',
-    TERTIARY: Exclude<StatType, 'Health' | 'Class' | 'Grenade'>
-  };
-};
-
-export interface ArmorState {
-  archetype: ArmorArchetype;
-  tertiary: ArmorArchetypeOptions[ArmorState["archetype"]]['TERTIARY']
-  mod: string;
+type ArmorStateBase = {
+  mod: ModType;
   tuning: boolean;
   masterwork: boolean;
 };
+
+type ArmorStateMap = {
+  [K in ArmorArchetype]: {
+    archetype: K;
+    tertiary: TertiaryArmorStat<K>[number];
+  } & ArmorStateBase
+};
+
+export type ArmorState = ArmorStateMap[ArmorArchetype];
 
 export type ArmorKind = "Helmet" | "Gloves" | "Chest" | "Boots" | "Class";
 
@@ -45,11 +19,27 @@ export type ArmorArchetype = "Brawler" | "Gunner" | "Specialist" | "Grenadier" |
 
 export type StatType = "Weapons" | "Melee" | "Health" | "Super" | "Grenade" | "Class";
 
+export const ARCHETYPES: ArmorArchetype[] = ["Gunner", "Brawler", "Bulwark", "Paragon", "Grenadier", "Specialist"] as const;
+
 export const STATS: StatType[] = ["Weapons", "Melee", "Health", "Super", "Grenade", "Class"] as const;
 
-export const ARMOR: ArmorKind[] = ["Helmet", "Gloves", "Chest", "Boots", "Class"] as const;
+type CanonicalModType = "Grenade Mod" | "Minor Grenade Mod" | 
+"Melee Mod" | "Minor Melee Mod" | 
+"Super Mod" | "Minor Super Mod" |
+"Weapons Mod" | "Minor Weapons Mod" |
+"Class Mod" | "Minor Class Mod" |
+"Health Mod" | "Minor Health Mod";
 
-export const ARCHETYPES: ArmorArchetype[] = ["Gunner", "Brawler", "Bulwark", "Paragon", "Grenadier", "Specialist"] as const;
+export const MODS: [ModType, CanonicalModType][] = [
+  ["Discipline Mod", "Grenade Mod"], ["Minor Discipline Mod", "Minor Grenade Mod"],
+  ["Intellect Mod", "Super Mod"], ["Minor Intellect Mod", "Minor Super Mod"],
+  ["Mobility Mod", "Weapons Mod"], ["Minor Mobility Mod", "Minor Weapons Mod"],
+  ["Resilience Mod", "Class Mod"], ["Minor Resilience Mod", "Minor Class Mod"],
+  ["Recovery Mod", "Health Mod"], ["Minor Recovery Mod", "Minor Health Mod"],
+  ["Strength Mod", "Melee Mod"], ["Minor Strength Mod", "Minor Melee Mod"]
+];
+
+export const ARMOR: ArmorKind[] = ["Helmet", "Gloves", "Chest", "Boots", "Class"] as const;
 
 export const STAT_COUNT = {
   PRIMARY: 30,
@@ -58,6 +48,15 @@ export const STAT_COUNT = {
   MAJOR_MOD: 10,
   MINOR_MOD: 5,
   MASTERWORK: 5,
+} as const;
+
+export const PRIMARY_STAT_ARCHETYPE_MAP: Record<StatType, ArmorArchetype> = {
+  Class: 'Specialist',
+  Grenade: 'Grenadier',
+  Weapons: 'Gunner',
+  Super: 'Paragon',
+  Health: 'Bulwark',
+  Melee: 'Brawler'
 } as const;
 
 export const ARCHETYPE_PRIMARY_STAT_MAP: Record<ArmorArchetype, StatType> = {
@@ -78,7 +77,36 @@ export const ARCHETYPE_SECONDARY_STAT_MAP: Record<ArmorArchetype, StatType> = {
   Brawler: 'Health'
 } as const;
 
-export const MOD_STAT_MAP: Record<string, [StatType, number]> = {
+interface ArmorArchetypeConfig<T extends ArmorArchetype> {
+  PRIMARY: StatType,
+  SECONDARY: StatType,
+  TERTIARY: Exclude<StatType, T extends "Brawler"
+  ? 'Melee' | 'Health' | 'Weapons'
+  : T extends "Gunner"
+  ? 'Weapons' | 'Grenade' | 'Melee'
+  : T extends "Specialist"
+  ? 'Class' | 'Weapons' | 'Super'
+  : T extends "Grenadier"
+  ? 'Grenade' | 'Super' | 'Health'
+  : T extends "Paragon"
+  ? 'Super' | 'Melee' | 'Class'
+  : T extends "Bulwark"
+  ? 'Health' | 'Class' | 'Grenade'
+  : never>;
+};
+
+type TertiaryArmorStat<T extends ArmorArchetype> = ArmorArchetypeConfig<T>["TERTIARY"];
+
+export const ARCHETYPE_TERTIARY_STAT_MAP: {[K in ArmorArchetype]: TertiaryArmorStat<K>[] } = {
+  Brawler: ["Grenade", "Super", "Class"],
+  Bulwark: ["Melee", "Super", "Weapons"],
+  Grenadier: ["Class", "Melee", "Weapons"],
+  Gunner: ["Super", "Class", "Health"],
+  Specialist: ["Grenade", "Health", "Melee"],
+  Paragon: ["Grenade", "Health", "Weapons"],
+} as const;
+
+export const MOD_STAT_MAP = {
 "Discipline Mod": ["Grenade", STAT_COUNT.MAJOR_MOD],
 "Minor Discipline Mod": ["Grenade", STAT_COUNT.MINOR_MOD],
 "Intellect Mod": ["Super", STAT_COUNT.MAJOR_MOD],
@@ -92,6 +120,8 @@ export const MOD_STAT_MAP: Record<string, [StatType, number]> = {
 "Strength Mod": ["Melee", STAT_COUNT.MAJOR_MOD],
 "Minor Strength Mod": ["Melee", STAT_COUNT.MINOR_MOD],
 } as const;
+
+export type ModType = keyof typeof MOD_STAT_MAP;
 
 export const getStats = (archetypes: Record<ArmorKind, ArmorState | null>) => {
   const stats: Record<StatType, number> = {
@@ -110,14 +140,14 @@ export const getStats = (archetypes: Record<ArmorKind, ArmorState | null>) => {
     const { archetype } = archetypes[armor]
     const primaryStat = ARCHETYPE_PRIMARY_STAT_MAP[archetype];
     const secondaryStat = ARCHETYPE_SECONDARY_STAT_MAP[archetype];
-    const tertiaryStat = archetypes[armor]?.tertiary;
+    const tertiaryStat = archetypes[armor]?.tertiary as StatType;
     stats[primaryStat] += STAT_COUNT.PRIMARY;
     stats[secondaryStat] += STAT_COUNT.SECONDARY;
     if (tertiaryStat) {
       stats[tertiaryStat] += STAT_COUNT.TERTIARY;
     }
     if (archetypes[armor].mod) {
-      const [stat, amount] = MOD_STAT_MAP[archetypes[armor].mod];
+      const [stat, amount] = MOD_STAT_MAP[archetypes[armor].mod as ModType];
       stats[stat] += amount;
     }
     if (archetypes[armor].masterwork && tertiaryStat) {

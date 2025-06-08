@@ -2,13 +2,21 @@ import "./Slot.css";
 
 const ARMOR = ["Helmet", "Gloves", "Class", "Chest", "Boots"] as const;
 
-type Kind = "Specialist" | "Grenadier" | "Bulwark" | "Brawler" | "Paragon" | "Gunner" | "Helmet" | "Gloves" | "Chest" | "Class" | "Boots"
+type ArmorKind = "Helmet" | "Gloves" | "Chest" 
+| "Class" | "Boots";
+
+type ArchetypeKind = "Specialist" | "Grenadier" | "Bulwark" 
+| "Brawler" | "Paragon" | "Gunner";
+
+type ModKind = "Class" | "Health" | "Super" | "Weapons" | "Melee" | "Grenade"; 
+
+type SlotKind = ArmorKind | ArchetypeKind | ModKind;
 
 interface SlotProps {
   identifier?: string | number
   light?: boolean
   animate?: boolean
-  kind: Kind
+  kind: SlotKind
 }
 
 const Slot: React.FC<SlotProps> = ({ identifier, kind, light, animate }) => {
