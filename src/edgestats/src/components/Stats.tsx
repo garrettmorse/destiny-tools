@@ -111,6 +111,20 @@ const Stats: React.FC<StatsProps> = ({ mods }) => {
     tertiaryTimeout = setTimeout(() => setCurrentTertiaryHover(null), 200);
   }
 
+  let modTimeout: NodeJS.Timeout;
+  const handleModEnter = (armor: ArmorKind) => {
+    const el = document.getElementById(`mod-dialog-${armor}`);
+    el?.classList.toggle("fade-in");
+    clearTimeout(modTimeout);
+    setCurrentModHover(armor);
+  }
+
+  const handleModLeave = (armor: ArmorKind) => {
+    const el = document.getElementById(`mod-dialog-${armor}`);
+    el?.classList.toggle("fade-out");
+    modTimeout = setTimeout(() => setCurrentModHover(null), 200);
+  }
+
   return (
       <div className="my-5">
         <div className="grid grid-cols-3 items-center">
@@ -126,7 +140,7 @@ const Stats: React.FC<StatsProps> = ({ mods }) => {
                     <Slot identifier={`archetype-${idx}`} kind={STATE_MAP[armor].get?.archetype ?? armor} />
                   </div>
                     {currentArchetypeHover === armor && (
-                      <div id={`archetype-dialog-${armor}`} className="absolute left-full fade-in top-6 z-50">
+                      <div id={`archetype-dialog-${armor}`} className="absolute left-full fade-in top-6 ps-3 z-50">
                         <Dialog
                         identifier={idx}
                         armor={armor} 
@@ -144,7 +158,7 @@ const Stats: React.FC<StatsProps> = ({ mods }) => {
                     <Slot identifier={`tertiary-${idx}`} kind={PRIMARY_STAT_ARCHETYPE_MAP[STATE_MAP[armor].get?.tertiary as StatType] ?? armor} />
                   </div>
                   {currentTertiaryHover === armor && (
-                    <div id={`tertiary-dialog-${armor}`} className={`absolute left-full fade-in top-6 z-50`}>
+                    <div id={`tertiary-dialog-${armor}`} className={`absolute left-full fade-in top-6 ps-3 z-50`}>
                       <Dialog 
                       identifier={idx}
                       armor={armor}
@@ -156,7 +170,24 @@ const Stats: React.FC<StatsProps> = ({ mods }) => {
                   )}
                 </div>
               </div>
-              <div className='col-span-1'>this is where the mods go</div>
+              <div className={`relative col-span-1`}>
+                <div className="flex items-center" onMouseEnter={() => handleModEnter(armor)} onMouseLeave={() => handleModLeave(armor)}>
+                  <div className="text-center place-items-center">
+                    <p className='text-md'>{STATE_MAP[armor].get?.mod?.slice(0, -3) ?? "Select Mod"}</p>
+                    <Slot identifier={`mod-${idx}`} kind={STATE_MAP[armor].get?.mod as ModType ?? 'Mod'} />
+                  </div>
+                  {currentModHover === armor && (
+                    <div id={`mod-dialog-${armor}`} className={`absolute left-full fade-in top-6 ps-3 z-50`}>
+                      <Dialog 
+                      identifier={idx}
+                      armor={armor}
+                      mod
+                      handleClick={(mod: ModType | null) => handleModDialogClick(armor, mod)}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
                 )
           )}

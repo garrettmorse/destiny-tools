@@ -23,21 +23,12 @@ export const ARCHETYPES: ArmorArchetype[] = ["Gunner", "Brawler", "Bulwark", "Pa
 
 export const STATS: StatType[] = ["Weapons", "Melee", "Health", "Super", "Grenade", "Class"] as const;
 
-type CanonicalModType = "Grenade Mod" | "Minor Grenade Mod" | 
-"Melee Mod" | "Minor Melee Mod" | 
-"Super Mod" | "Minor Super Mod" |
-"Weapons Mod" | "Minor Weapons Mod" |
-"Class Mod" | "Minor Class Mod" |
-"Health Mod" | "Minor Health Mod";
-
-export const MODS: [ModType, CanonicalModType][] = [
-  ["Discipline Mod", "Grenade Mod"], ["Minor Discipline Mod", "Minor Grenade Mod"],
-  ["Intellect Mod", "Super Mod"], ["Minor Intellect Mod", "Minor Super Mod"],
-  ["Mobility Mod", "Weapons Mod"], ["Minor Mobility Mod", "Minor Weapons Mod"],
-  ["Resilience Mod", "Class Mod"], ["Minor Resilience Mod", "Minor Class Mod"],
-  ["Recovery Mod", "Health Mod"], ["Minor Recovery Mod", "Minor Health Mod"],
-  ["Strength Mod", "Melee Mod"], ["Minor Strength Mod", "Minor Melee Mod"]
-];
+export const MODS: ModType[] = ["Grenade Mod", "Minor Grenade Mod", 
+  "Super Mod", "Minor Super Mod", 
+  "Weapons Mod", "Minor Weapons Mod", 
+  "Class Mod", "Minor Class Mod", 
+  "Health Mod", "Minor Health Mod", 
+  "Melee Mod", "Minor Melee Mod"];
 
 export const ARMOR: ArmorKind[] = ["Helmet", "Gloves", "Chest", "Boots", "Class"] as const;
 
@@ -107,18 +98,18 @@ export const ARCHETYPE_TERTIARY_STAT_MAP: {[K in ArmorArchetype]: TertiaryArmorS
 } as const;
 
 export const MOD_STAT_MAP = {
-"Discipline Mod": ["Grenade", STAT_COUNT.MAJOR_MOD],
-"Minor Discipline Mod": ["Grenade", STAT_COUNT.MINOR_MOD],
-"Intellect Mod": ["Super", STAT_COUNT.MAJOR_MOD],
-"Minor Intellect Mod": ["Super", STAT_COUNT.MINOR_MOD],
-"Mobility Mod": ["Class", STAT_COUNT.MAJOR_MOD],
-"Minor Mobility Mod": ["Class", STAT_COUNT.MINOR_MOD],
-"Recovery Mod": ["Health", STAT_COUNT.MAJOR_MOD],
-"Minor Recovery Mod": ["Health", STAT_COUNT.MINOR_MOD],
-"Resilience Mod": ["Weapons", STAT_COUNT.MAJOR_MOD],
-"Minor Resilience Mod": ["Weapons", STAT_COUNT.MINOR_MOD],
-"Strength Mod": ["Melee", STAT_COUNT.MAJOR_MOD],
-"Minor Strength Mod": ["Melee", STAT_COUNT.MINOR_MOD],
+"Grenade Mod": ["Grenade", STAT_COUNT.MAJOR_MOD],
+"Minor Grenade Mod": ["Grenade", STAT_COUNT.MINOR_MOD],
+"Super Mod": ["Super", STAT_COUNT.MAJOR_MOD],
+"Minor Super Mod": ["Super", STAT_COUNT.MINOR_MOD],
+"Weapons Mod": ["Weapons", STAT_COUNT.MAJOR_MOD],
+"Minor Weapons Mod": ["Weapons", STAT_COUNT.MINOR_MOD],
+"Class Mod": ["Class", STAT_COUNT.MAJOR_MOD],
+"Minor Class Mod": ["Class", STAT_COUNT.MINOR_MOD],
+"Health Mod": ["Health", STAT_COUNT.MAJOR_MOD],
+"Minor Health Mod": ["Health", STAT_COUNT.MINOR_MOD],
+"Melee Mod": ["Melee", STAT_COUNT.MAJOR_MOD],
+"Minor Melee Mod": ["Melee", STAT_COUNT.MINOR_MOD],
 } as const;
 
 export type ModType = keyof typeof MOD_STAT_MAP;

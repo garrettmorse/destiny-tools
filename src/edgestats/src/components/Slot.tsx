@@ -1,3 +1,4 @@
+import { MOD_STAT_MAP } from "../util";
 import "./Slot.css";
 
 const ARMOR = ["Helmet", "Gloves", "Class", "Chest", "Boots"] as const;
@@ -6,9 +7,14 @@ type ArmorKind = "Helmet" | "Gloves" | "Chest"
 | "Class" | "Boots";
 
 type ArchetypeKind = "Specialist" | "Grenadier" | "Bulwark" 
-| "Brawler" | "Paragon" | "Gunner";
+| "Brawler" | "Paragon" | "Gunner" | "Mod";
 
-type ModKind = "Class" | "Health" | "Super" | "Weapons" | "Melee" | "Grenade"; 
+type ModKind = "Minor Class Mod" | "Class Mod" | 
+"Health Mod" | "Minor Health Mod" | 
+"Super Mod" | "Minor Super Mod" | 
+"Weapons Mod" | "Minor Weapons Mod" | 
+"Melee Mod" | "Minor Melee Mod" | 
+"Grenade Mod" | "Minor Grenade Mod"; 
 
 type SlotKind = ArmorKind | ArchetypeKind | ModKind;
 
@@ -19,7 +25,13 @@ interface SlotProps {
   kind: SlotKind
 }
 
+const MODS = Object.keys(MOD_STAT_MAP) as (keyof typeof MOD_STAT_MAP)[];
+
 const Slot: React.FC<SlotProps> = ({ identifier, kind, light, animate }) => {
+  /* @ts-expect-error cant be asked */
+  const slotKind = ARMOR.indexOf(kind) > -1 ? "armor" : MODS.indexOf(kind) > -1 ? "mod" : "stat";
+  const fileType = slotKind === "mod" ? "png" : "svg";
+  const fileName = (slotKind === "mod" ? kind.slice(0, 5) === "Minor" ? kind.split(" ").slice(0,2).join("_") : `Major ${kind}`.split(" ").slice(0,2).join("_") : kind).toLowerCase();
   const handleSlotClick = () => {
     if (animate) {
       const el = document.getElementById(`slot-${kind}-${identifier}`);
@@ -38,8 +50,7 @@ const Slot: React.FC<SlotProps> = ({ identifier, kind, light, animate }) => {
       <div onClick={handleSlotClick} className='hover:ring-1 relative min-w-[100px] min-h-[100px]'>
           <img className={light ? 'slot-outer' : ''} src='/slot.svg' width={100} height={100} />
           <div id={`slot-${kind}-${identifier}`} className='slot absolute inset-0 flex'>
-            {/* @ts-expect-error cant be asked */}
-            <img className="slot-inner" src={`/${ARMOR.indexOf(kind) > -1 ? "armor" : "stat"}/${kind.toLowerCase()}.svg`} width={80} height={80} />
+            <img className={`${slotKind === "mod" ? "" : "slot-inner"}`} src={`/${slotKind}/${fileName}.${fileType}`} />
           </div>
       </div>
   );

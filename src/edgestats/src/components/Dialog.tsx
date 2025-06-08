@@ -41,7 +41,7 @@ const Dialog: React.FC<DialogProps> = (props) => {
     <div className="bg-dialog grid grid-cols-3 min-w-[300px] gap-y-[1px] gap-x-2 mx-2 place-items-center">
       <div className="group relative">
         <span className="left-[50%] -top-6 translate-x-[-50%] absolute group-hover:opacity-100 transition-opacity bg-purple-800 px-1 text-lg text-gray-100 rounded-md opacity-0 text-center z-100">None</span>
-        <div className="cursor-pointer" onClick={() => handleClick(null)}><Slot light animate kind={armor} /></div>
+        <div className="cursor-pointer" onClick={() => handleClick(null)}><Slot light animate kind={props.mod ? 'Mod' : armor} /></div>
       </div>
       
       {props.archetype && ARCHETYPES.map((archetype, idx) => (
@@ -61,6 +61,16 @@ const Dialog: React.FC<DialogProps> = (props) => {
            }}>
             <span className="left-[50%] -top-13 pointer-events-none translate-x-[-50%] absolute group-hover:opacity-100 transition-opacity bg-purple-800 px-1 text-lg text-gray-100 rounded-md opacity-0 text-center z-100">{stat} +20</span>
            <Slot identifier={identifier + "-" + idx} animate kind={PRIMARY_STAT_ARCHETYPE_MAP[stat]} />
+        </div>
+      ))}
+
+      {props.mod && MODS.map((mod, idx) => (
+        <div className="group relative cursor-pointer place-items-center" key={mod} onClick={() => {
+            /* @ts-expect-error cba */
+           return handleClick(mod);
+           }}>
+          <span className="left-[50%] -top-13 pointer-events-none translate-x-[-50%] absolute group-hover:opacity-100 transition-opacity bg-purple-800 px-1 text-lg text-gray-100 rounded-md opacity-0 text-center z-100">{mod} {mod.indexOf("Minor") > -1 ? '+5' : '+10'}</span>
+          <Slot identifier={identifier + '-' + idx} animate kind={mod} />
         </div>
       ))}
     </div>
