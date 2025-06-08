@@ -114,17 +114,84 @@ export const MOD_STAT_MAP = {
 
 export type ModType = keyof typeof MOD_STAT_MAP;
 
+export const STAT_DESCRIPTION_MAP = {
+  Health: {
+    description: "Increases the amount of health you gain each time you pick up an Orb of Power. Reduces flinching from incoming fire while aiming a weapon.",
+    statBonus: [{ type: "int", midValue: 35, maxValue: 70 }, { type: "pct", midValue: 5.0, maxValue: 10.0 }],
+    statBonusDescription: ["Health Per Orb", "Flinch Resistance"],
+    overflow: {
+      description: "Your shields recharge more quickly and have additional health when facing combatants",
+      statBonus: [{ type: 'pct', midValue: 31.6, maxValue: 45.0 }, { type: 'int', midValue: 14, maxValue: 20 }],
+      statBonusDescription: ["Shield Recharge Rate", "Shield Health"]
+    }
+  },
+  Melee: {
+    description: "Reduces your melee cooldown. Increases the amount of melee energy from all sources.",
+    statBonus: [{ type: "pct", midValue: 35.0, maxValue: 65.0 }, { type: "pct", midValue: 56.0, maxValue: 190.0 }],
+    statBonusDescription: ["Melee Ability Cooldown", "Melee Energy"],
+    overflow: {
+      description: "Increases the damage done by your melee attacks.",
+      statBonus: [{ type: 'pct', midValue: 15.0, maxValue: 30.0}, { type: 'pct', midValue: 10.0, maxValue: 20.0 }],
+      statBonusDescription: ["PVE Damage", "PVP Damage"]
+    }
+  },
+  Grenade: {
+    description: "Reduces your grenade ability cooldown. Increases the amount of grenade energy from all sources.",
+    statBonus: [{ type: "pct", midValue: 35.0, maxValue: 65.0 }, { type: "pct", midValue: 56.0, maxValue: 190.0 }],
+    statBonusDescription: ["Grenade Ability Cooldown", "Grenade Energy"],
+    overflow: {
+      description: "Increases the damage done by your grenades.",
+      statBonus: [{ type: 'pct', midValue: 32.3, maxValue: 65.0}, { type: 'pct', midValue: 9.9, maxValue: 20.0 }],
+      statBonusDescription: ["PVE Damage", "PVP Damage"]
+    }
+  },
+  Super: {
+    description: "Increases the amount of Super energy from all sources.",
+    statBonus: [{ type: 'pct', midValue: 56.0, maxValue: 190.0 }], // TODO
+    statBonusDescription: ["Super Energy"],
+    overflow: {
+      description: "Increases the damage done by your Super.",
+      statBonus: [{ type: 'pct', midValue: 22.3, maxValue: 45.0 }, { type: 'pct', midValue: 7.4, maxValue: 15.0 }],
+      statBonusDescription: ["PVE Damage", "PVP Damage"]
+    }
+  },
+  Class: {
+    description: "Reduces your class ability cooldown. Increases the amount of class ability energy provided by all sources.",
+    statBonus: [{ type: 'pct', midValue: 35.0, maxValue: 65.0 }, { type: 'pct', midValue: 56.0, maxValue: 190.0 }],
+    statBonusDescription: ["Class Ability Cooldown", "Class Ability Energy"],
+    overflow: {
+      description: "You gain an overshield when you use your class ability.",
+      statBonus: [{ type: 'int', midValue: 19.8, maxValue: 40 }, { type: 'int', midValue: 4.9, maxValue: 10 }],
+      statBonusDescription: ["PVE Overshield", "PVP Overshield"]
+    }
+  },
+  Weapons: {
+    description: "Increases weapon reload speed and handling. Increases weapon damage against minor and major combatants.",
+    statBonus: [{type: 'pct', midValue: 5.0, maxValue: 10.0 }, { type: 'pct', midValue: 7.5, maxValue: 15.0 }, { type: 'pct', midValue: 4.9, maxValue: 10.0 }],
+    statBonusDescription: ["Weapon Reload and Handling Speed", "Minor/Major Primary/Special Damage", "Minor/Major Heavy Damage"],
+    overflow: {
+      description: "Ammo bricks from defeated targets have a chance to contain additional rounds. Increases weapon damage against bosses and opposing Guardians.",
+      statBonus: [{ type: 'pct', midValue: 49.0, maxValue: 100.0 }, { type: 'pct', midValue: 7.4, maxValue: 15.0 }, { type: 'pct', midValue: 4.9, maxValue: 10.0 }, { type: 'pct', midValue: 3.0, maxValue: 6.0 }],
+      statBonusDescription: ["Large Ammo Brick Chance", "Boss Primary/Special Damage", "Boss Heavy Damage", "PVP Damage"]
+    }
+  }
+} as const;
+
 export const getStats = (archetypes: Record<ArmorKind, ArmorState | null>) => {
   const stats: Record<StatType, number> = {
-    Class: 0,
     Health: 0,
+    Melee: 0,
     Grenade: 0,
     Super: 0,
+    Class: 0,
     Weapons: 0,
-    Melee: 0
   };
 
   for (const armor of Object.keys(archetypes) as ArmorKind[]) {
+    if (archetypes[armor]?.mod) {
+      const [stat, amount] = MOD_STAT_MAP[archetypes[armor].mod as ModType];
+      stats[stat] += amount;
+    }
     if (!archetypes[armor]?.archetype) {
       continue;
     }
@@ -136,10 +203,6 @@ export const getStats = (archetypes: Record<ArmorKind, ArmorState | null>) => {
     stats[secondaryStat] += STAT_COUNT.SECONDARY;
     if (tertiaryStat) {
       stats[tertiaryStat] += STAT_COUNT.TERTIARY;
-    }
-    if (archetypes[armor].mod) {
-      const [stat, amount] = MOD_STAT_MAP[archetypes[armor].mod as ModType];
-      stats[stat] += amount;
     }
     if (archetypes[armor].masterwork && tertiaryStat) {
       // get the 3 stats that arent primary, secondary, tertiary

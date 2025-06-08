@@ -1,17 +1,12 @@
 import { useState } from "react";
 import Dialog from "./Dialog";
-import type { Mods } from "../services/services";
 import Slot from "./Slot";
 import StatChart from "./StatChart";
 import { ARMOR, getStats, PRIMARY_STAT_ARCHETYPE_MAP } from "../util";
 import { type ArmorArchetype, type ArmorKind, type ArmorState, ARCHETYPE_TERTIARY_STAT_MAP, type StatType, type ModType } from "../util";
 import "./Stats.css";
 
-interface StatsProps {
-  mods: Mods
-};
-
-const Stats: React.FC<StatsProps> = ({ mods }) => {
+const Stats: React.FC = () => {
   const [helmetArchetype, setHelmetArchetype] = useState<ArmorState | null>(null);
   const [glovesArchetype, setGlovesArchetype] = useState<ArmorState | null>(null);
   const [chestArchetype, setChestArchetype] = useState<ArmorState | null>(null);
@@ -81,7 +76,6 @@ const Stats: React.FC<StatsProps> = ({ mods }) => {
 
   // @ts-expect-error cba
   const PLAYER_STATS = getStats(Object.keys(STATE_MAP).reduce((acc, armor) => ({ ...acc, [armor]: STATE_MAP[armor].get}), {}));
-  console.log(PLAYER_STATS);
 
   let archetypeTimeout: NodeJS.Timeout;
   const handleArchetypeEnter = (armor: ArmorKind) => {
@@ -94,7 +88,7 @@ const Stats: React.FC<StatsProps> = ({ mods }) => {
   const handleArchetypeLeave = (armor: ArmorKind) => {
     const el = document.getElementById(`archetype-dialog-${armor}`);
     el?.classList.toggle("fade-out");
-    archetypeTimeout = setTimeout(() => setCurrentArchetypeHover(null), 200);
+    archetypeTimeout = setTimeout(() => setCurrentArchetypeHover(null), 100);
   };
 
   let tertiaryTimeout: NodeJS.Timeout;
@@ -108,7 +102,7 @@ const Stats: React.FC<StatsProps> = ({ mods }) => {
   const handleTertiaryLeave = (armor: ArmorKind) => {
     const el = document.getElementById(`tertiary-dialog-${armor}`);
     el?.classList.toggle("fade-out");
-    tertiaryTimeout = setTimeout(() => setCurrentTertiaryHover(null), 200);
+    tertiaryTimeout = setTimeout(() => setCurrentTertiaryHover(null), 100);
   }
 
   let modTimeout: NodeJS.Timeout;
@@ -122,12 +116,12 @@ const Stats: React.FC<StatsProps> = ({ mods }) => {
   const handleModLeave = (armor: ArmorKind) => {
     const el = document.getElementById(`mod-dialog-${armor}`);
     el?.classList.toggle("fade-out");
-    modTimeout = setTimeout(() => setCurrentModHover(null), 200);
+    modTimeout = setTimeout(() => setCurrentModHover(null), 100);
   }
 
   return (
       <div className="my-5">
-        <div className="grid grid-cols-3 items-center">
+        <div className="mx-50 grid grid-cols-3 items-center">
           <div className="text-2xl font-bold text-center">Archetype</div>
           <div className="text-2xl font-bold text-center">Tertiary</div>
           <div className="text-2xl font-bold text-center">Mod</div>
@@ -136,7 +130,7 @@ const Stats: React.FC<StatsProps> = ({ mods }) => {
               <div className="relative col-span-1">
                 <div className="flex items-center" onMouseEnter={() => handleArchetypeEnter(armor)} onMouseLeave={() => handleArchetypeLeave(armor)}>
                   <div className="text-center">
-                    <p className='text-md'>{STATE_MAP[armor].get?.archetype ?? "Select Type"}</p>
+                    <p className='text-sm'>{STATE_MAP[armor].get?.archetype ?? "Select Type"}</p>
                     <Slot identifier={`archetype-${idx}`} kind={STATE_MAP[armor].get?.archetype ?? armor} />
                   </div>
                     {currentArchetypeHover === armor && (
@@ -154,11 +148,12 @@ const Stats: React.FC<StatsProps> = ({ mods }) => {
               <div className={`relative col-span-1 ${STATE_MAP[armor].get?.archetype ? '' : 'select-none pointer-events-none opacity-40'}`}>
                 <div className="flex items-center" onMouseEnter={() => handleTertiaryEnter(armor)} onMouseLeave={() => handleTertiaryLeave(armor)}>
                   <div className="text-center">
-                    <p className='text-md'>{STATE_MAP[armor].get?.tertiary ?? "Select Tertiary"}</p>
+                    <p className='text-sm'>{STATE_MAP[armor].get?.tertiary ?? "Select Tertiary"}</p>
                     <Slot identifier={`tertiary-${idx}`} kind={PRIMARY_STAT_ARCHETYPE_MAP[STATE_MAP[armor].get?.tertiary as StatType] ?? armor} />
                   </div>
                   {currentTertiaryHover === armor && (
                     <div id={`tertiary-dialog-${armor}`} className={`absolute left-full fade-in top-6 ps-3 z-50`}>
+                      {/* @ts-expect-error cba */}
                       <Dialog 
                       identifier={idx}
                       armor={armor}
@@ -173,7 +168,7 @@ const Stats: React.FC<StatsProps> = ({ mods }) => {
               <div className={`relative col-span-1`}>
                 <div className="flex items-center" onMouseEnter={() => handleModEnter(armor)} onMouseLeave={() => handleModLeave(armor)}>
                   <div className="text-center place-items-center">
-                    <p className='text-md'>{STATE_MAP[armor].get?.mod?.slice(0, -3) ?? "Select Mod"}</p>
+                    <p className='text-sm'>{STATE_MAP[armor].get?.mod?.slice(0, -3) ?? "Select Mod"}</p>
                     <Slot identifier={`mod-${idx}`} kind={STATE_MAP[armor].get?.mod as ModType ?? 'Mod'} />
                   </div>
                   {currentModHover === armor && (

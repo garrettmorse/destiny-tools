@@ -40,7 +40,7 @@ const Dialog: React.FC<DialogProps> = (props) => {
   return (
     <div className="bg-dialog grid grid-cols-3 min-w-[300px] gap-y-[1px] gap-x-2 mx-2 place-items-center">
       <div className="group relative">
-        <span className="left-[50%] -top-6 translate-x-[-50%] absolute group-hover:opacity-100 transition-opacity bg-purple-800 px-1 text-lg text-gray-100 rounded-md opacity-0 text-center z-100">None</span>
+        <span className="left-[50%] -top-6 pointer-events-none translate-x-[-50%] absolute group-hover:opacity-100 transition-opacity bg-purple-800 px-1 text-lg text-gray-100 rounded-md opacity-0 text-center z-100">None</span>
         <div className="cursor-pointer" onClick={() => handleClick(null)}><Slot light animate kind={props.mod ? 'Mod' : armor} /></div>
       </div>
       
