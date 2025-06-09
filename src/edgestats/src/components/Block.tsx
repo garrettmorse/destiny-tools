@@ -1,4 +1,5 @@
 import { STAT_DESCRIPTION_MAP, type StatType } from "../util";
+import { useMediaQuery } from "react-responsive";
 
 interface BlockProps {
   value: string;
@@ -13,7 +14,7 @@ const Block: React.FC<BlockProps> = ({ value, isHighlighted, fractionFilled, gre
   
   if (isFractional) {
     return (
-      <div className="w-12 h-12 border border-gray-400 flex items-center justify-center text-sm font-mono relative overflow-hidden">
+      <div className="max-sm:w-6 max-sm:h-6 sm:w-8 sm:h-8 md:w-12 md:h-12 border border-gray-400 flex items-center justify-center text-sm font-mono relative overflow-hidden">
         {/* Background (unfilled part) */}
         <div className="absolute inset-0 bg-gray-700"></div>
         {/* Filled part */}
@@ -43,14 +44,14 @@ const Block: React.FC<BlockProps> = ({ value, isHighlighted, fractionFilled, gre
     if (greenFilled === 1) {
       // Fully green block
       return (
-        <div className="w-12 h-12 border border-gray-400 flex items-center justify-center text-sm font-mono bg-green-500 text-black font-bold">
+        <div className="max-sm:w-6 max-sm:h-6 sm:w-8 sm:h-8 md:w-12 md:h-12 border border-gray-400 flex items-center justify-center text-sm font-mono bg-green-500 text-black font-bold">
           {value}
         </div>
       );
     } else {
       // Partially green block
       return (
-        <div className="w-12 h-12 border border-gray-400 flex items-center justify-center text-sm font-mono relative overflow-hidden">
+        <div className="max-sm:w-6 max-sm:h-6 sm:w-8 sm:h-8 md:w-12 md:h-12 border border-gray-400 flex items-center justify-center text-sm font-mono relative overflow-hidden">
           {/* White background */}
           <div className="absolute inset-0 bg-white"></div>
           {/* Green part */}
@@ -70,8 +71,8 @@ const Block: React.FC<BlockProps> = ({ value, isHighlighted, fractionFilled, gre
   return (
     <div
       className={`
-        w-12 h-12 border border-gray-400 flex items-center justify-center text-sm font-mono
-        ${isHighlighted ? 'bg-white text-black' : 'bg-gray-700 text-gray-300'}
+        max-sm:w-6 max-sm:h-6 sm:w-8 sm:h-8 md:w-12 md:h-12 border border-gray-400 flex items-center justify-center text-sm font-mono
+        ${isHighlighted ? "bg-white text-black" : "bg-gray-700 text-gray-300"}
         font-bold
       `}
     >
@@ -117,11 +118,6 @@ const BlockRow: React.FC<BlockRowProps> = ({ stat, input, totalBlocks = 10 }) =>
   const fractionalBlockIndex = fullBlockCount;
   const fractionValue = onesDigit / 10;
 
-{/* <div className="group relative">
-        <span className="left-[50%] -top-6 pointer-events-none translate-x-[-50%] absolute group-hover:opacity-100 transition-opacity bg-purple-800 px-1 text-lg text-gray-100 rounded-md opacity-0 text-center z-100">None</span>
-        <div className="cursor-pointer" onClick={() => handleClick(null)}><Slot light animate kind={props.mod ? 'Mod' : armor} /></div>
-      </div> */}
-
 
   return (
     <div className="group relative">
@@ -144,7 +140,7 @@ const BlockRow: React.FC<BlockRowProps> = ({ stat, input, totalBlocks = 10 }) =>
             }
           }
           
-          let displayValue = '';
+          let displayValue = "";
           if (isLastFullBlock && fullBlockCount > 0 && !isOverflow) {
             // For multiples of 10, show the tens value (10, 20, 30, etc.)
             // For other numbers, show the tens digit
@@ -174,16 +170,82 @@ interface TooltipProps {
   value: number
 }
 
+const getTooltipOffset = (stat: StatType, value: number, large: boolean) => {
+  switch(stat) {
+    case "Health":
+      if (value > 100) {
+        if (large) {
+          return '-top-130';
+        }
+        return '-top-98';
+      }
+      if (large) {
+        return '-top-115';
+      }
+      return '-top-86';
+    case "Melee":
+      if (value > 100) {
+        if (large) {
+          return '-top-120';
+        }
+        return '-top-90';
+      }
+      if (large) {
+        return '-top-105';
+      }
+      return '-top-78';
+    case "Grenade":
+      if (value > 100) {
+        if (large) {
+          return '-top-120';
+        }
+        return '-top-90';
+      }
+      if (large) {
+        return '-top-105';
+      }
+      return '-top-78';
+    case "Super":
+      if (value > 100) {
+        if (large) {
+          return '-top-105';
+        }
+        return '-top-81';
+      }
+      if (large) {
+        return '-top-90';
+      }
+      return '-top-69';
+    case "Class":
+      if (value > 100) {
+        if (large) {
+          return '-top-120';
+        }
+        return '-top-90';
+      }
+      if (large) {
+        return '-top-105';
+      }
+      return '-top-78';
+    case "Weapons":
+      if (value > 100) {
+        if (large) {
+          return '-top-158';
+        }
+        return '-top-122';
+      }
+      if (large) {
+        return '-top-124';
+      }
+      return '-top-92';
+  }
+}
+
 const StatTooltip: React.FC<TooltipProps> = ({ stat, value }) => {
-  
-  const topOffset = stat === "Health" ? value > 100 ? "-top-130" : "-top-115" :
-  stat === "Melee" ? value > 100 ? '-top-120' : "-top-105" :
-  stat === "Grenade" ? value > 100 ? '-top-120' : "-top-105" :
-  stat === "Super" ? value > 100 ? "-top-105" : "-top-90" :
-  stat === "Class" ? value > 100 ? '-top-120' : "-top-105" :
-  value > 100 ? '-top-158' : '-top-124';
-  const className = `pointer-events-none
-    translate-x-[-50%] absolute left-[50%] ${topOffset}
+  const isSm = useMediaQuery({ query: '(min-width: 640px)'});
+  const baseOffset = getTooltipOffset(stat, value, isSm);
+  const className = `pointer-events-none max-md:min-w-screen
+    translate-x-[-50%] absolute left-[50%] ${baseOffset}
     group-hover:opacity-100 transition-opacity opacity-0
     text-lg text-gray-100 text-center
     rounded-md z-100 container`
@@ -216,31 +278,31 @@ const StatTooltipCard: React.FC<TooltipStatCardProps> = ({
   const overflowBaseValue = value - 100;
 
   return (
-    <div className="bg-gradient-to-br from-purple-900 via-gray-900 to-purple-800 p-6 rounded-lg shadow-2xl max-w-md mx-auto border border-purple-700/30">
+    <div className="bg-gradient-to-br from-purple-900 via-gray-900 to-purple-800 p-6 rounded-lg shadow-2xl max-sm:max-w-sm sm:max-w-md mx-auto border border-purple-700/30">
       {/* Header Section */}
-      <div className="mb-4">
-        <h2 className="text-left text-white font-bold text-2xl tracking-wider mb-1">
+      <div className="max-sm:mb-1 sm:mb-4">
+        <h2 className="text-left text-white font-bold max-sm:text-lg sm:text-2xl tracking-wider mb-1">
           {statName}
         </h2>
-        <p className="text-left text-gray-400 text-md font-medium">
+        <p className="text-left text-gray-400 max-sm:text-sm sm:text-md font-medium">
           Character Stat
         </p>
       </div>
 
       {/* Description */}
-      <div className="mb-6">
-        <p className="text-gray-300 text-sm text-left leading-relaxed">
+      <div className="max-sm:mb-3 sm:mb-6">
+        <p className="text-gray-300 max-sm:text-xs sm:text-sm text-left leading-relaxed">
           {description}
         </p>
       </div>
 
       {/* Current Tier and Progress */}
       <div className="mb-4">
-        <div className="flex justify-between items-center mb-2">
-          <span className="text-gray-300">
+        <div className="flex justify-between items-center sm:mb-2">
+          <span className="text-gray-300 max-sm:text-sm sm:text-md">
             {statName} Tier {currentTier}
           </span>
-          <span className="text-white font-bold">
+          <span className="text-white font-bold max-sm:text-sm sm:text-lg">
             {value}/200
           </span>
         </div>
@@ -250,12 +312,12 @@ const StatTooltipCard: React.FC<TooltipStatCardProps> = ({
           const lerpEnd = shouldLerpMid ? statBonus[idx].midValue : statBonus[idx].maxValue;
           const lerpInterpolation = (shouldLerpMid ? baseValue : baseValue - 50) / 50;
           return (
-            <div key={bonusDescription} className="flex justify-between items-center mb-2">
-              <span className="text-gray-300 text-md">
+            <div key={bonusDescription} className="flex justify-between items-center sm:mb-2">
+              <span className="text-gray-300 max-sm:text-sm sm:text-md">
                 {bonusDescription}
               </span>
-              <span className="text-white font-bold text-lg">
-                {`${statBonus[idx].type === 'int' ? '+' : ''}${lerp(lerpEnd, lerpStart, lerpInterpolation).toFixed(3)}${statBonus[idx].type === "pct" ? '%' : ''}`}
+              <span className="text-white font-bold max-sm:text-sm sm:text-lg">
+                {`${statBonus[idx].type === "int" ? "+" : ""}${lerp(lerpEnd, lerpStart, lerpInterpolation).toFixed(3)}${statBonus[idx].type === "pct" ? "%" : ""}`}
               </span>
             </div>
           )
@@ -263,11 +325,11 @@ const StatTooltipCard: React.FC<TooltipStatCardProps> = ({
               {/* Next Tier Preview */}
         {isOverflow ? (
           <div className="border-t border-gray-700 pt-2">
-            <div className="flex justify-between items-center mb-2">
+            <div className="flex justify-between items-center sm:mb-2">
               <span className="text-white text-xl">ENHANCED BENEFIT</span>
             </div>
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-left text-gray-300 text-sm">
+            <div className="flex justify-between items-center sm:mb-4">
+              <span className="text-left text-gray-300 max-sm:text-xs sm:text-sm">
                 {overflow.description}
               </span>
             </div>
@@ -281,7 +343,7 @@ const StatTooltipCard: React.FC<TooltipStatCardProps> = ({
                     {overflowBonusDescription}
                   </span>
                   <span className="text-white font-bold text-lg">
-                    {`${overflow.statBonus[idx].type === 'int' ? '+' : ''}${lerp(overflowLerpEnd, overflowLerpStart, overflowInterpolation).toFixed(3)}${overflow.statBonus[idx].type === "pct" ? '%' : ''}`}
+                    {`${overflow.statBonus[idx].type === "int" ? "+" : ""}${lerp(overflowLerpEnd, overflowLerpStart, overflowInterpolation).toFixed(3)}${overflow.statBonus[idx].type === "pct" ? "%" : ""}`}
                   </span>
                 </div>
               );
@@ -289,16 +351,16 @@ const StatTooltipCard: React.FC<TooltipStatCardProps> = ({
           </div>
         ) : (
         <div className="border-t border-gray-700 pt-2">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-gray-400 text-xl">ENHANCED BENEFIT</span>
+          <div className="flex justify-between items-center sm:mb-2">
+            <span className="text-gray-400 max-sm:text-md sm:text-xl">ENHANCED BENEFIT</span>
             </div>
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-left text-gray-400 text-sm">
+          <div className="flex justify-between items-center sm:mb-4">
+            <span className="text-left text-gray-400 max-sm:text-xs sm:text-sm">
               {overflow.description}
             </span>
           </div>
           <div className="flex justify-between items-center mb-[-30px] mt-4">
-            <span className="text-gray-200 text-xl">
+            <span className="text-gray-200 max-sm:text-md sm:text-xl">
               Activates above Stat Level 100.
             </span>
           </div>

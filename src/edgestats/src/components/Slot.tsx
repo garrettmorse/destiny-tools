@@ -47,10 +47,10 @@ const Slot: React.FC<SlotProps> = ({ identifier, kind, light, animate }) => {
   };
 
   return (
-      <div onClick={handleSlotClick} className='hover:ring-1 relative min-w-[100px] min-h-[100px]'>
-          <img className={light ? 'slot-outer' : ''} src='./slot.svg' width={100} height={100} />
+      <div onClick={handleSlotClick} className='hover:ring-1 relative sm:min-w-[100px] sm:min-w-[100px] max-sm:max-w-[50px] max-sm:max-h-[50px]'>
+          <img className={`${light ? 'slot-outer' : ''} sm:min-w-[100px] sm:min-w-[100px] max-sm:max-w-[50px]`} src='./slot.svg' />
           <div id={`slot-${kind}-${identifier}`} className='slot absolute inset-0 flex'>
-            <img className={`${slotKind === "mod" ? "" : "slot-inner"}`} src={`./${slotKind}/${fileName}.${fileType}`} />
+            <img className={`${slotKind === "mod" ? "" : "slot-inner"} sm:min-w-[80px] sm:min-w-[80px] max-sm:max-w-[50px] bg-none max-sm:max-h-[50px]`} src={`./${slotKind}/${fileName}.${fileType}`} />
           </div>
       </div>
   );

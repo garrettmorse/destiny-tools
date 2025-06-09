@@ -15,7 +15,7 @@ const StatChart: React.FC<ChartProps> = (props) => {
   <div className="flex flex-col min-w-100">
     {Object.entries(props).map(([stat, value]) => (
       <div className="flex items-center" key={stat}>
-        <div className="text-right w-30 font-bold text-2xl">
+        <div className="text-right w-30 font-bold max-sm:text-lg sm:text-xl md:text-2xl">
           {stat}
         </div>
           <div className="flex-1 flex m-2 justify-center">
@@ -24,7 +24,7 @@ const StatChart: React.FC<ChartProps> = (props) => {
               input={value}
             />
           </div>
-        <div className="text-left w-30 font-bold text-2xl">
+        <div className="text-left w-30 font-bold max-sm:text-lg sm:text-xl md:text-2xl">
           {value}
           </div>
       </div>
