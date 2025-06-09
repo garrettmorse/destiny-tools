@@ -27,7 +27,9 @@ const Block: React.FC<BlockProps> = ({
         <div
           className="absolute inset-0 bg-white"
           style={{
-            clipPath: `polygon(0 0, ${fractionFilled * 100}% 0, ${fractionFilled * 100}% 100%, 0 100%)`,
+            clipPath: `polygon(0 0, ${fractionFilled * 100}% 0, ${
+              fractionFilled * 100
+            }% 100%, 0 100%)`,
           }}
         ></div>
         {/* Green part (if any) */}
@@ -35,7 +37,9 @@ const Block: React.FC<BlockProps> = ({
           <div
             className="absolute inset-0 bg-green-500"
             style={{
-              clipPath: `polygon(0 0, ${greenFilled * 100}% 0, ${greenFilled * 100}% 100%, 0 100%)`,
+              clipPath: `polygon(0 0, ${greenFilled * 100}% 0, ${
+                greenFilled * 100
+              }% 100%, 0 100%)`,
             }}
           ></div>
         )}
@@ -64,7 +68,9 @@ const Block: React.FC<BlockProps> = ({
           <div
             className="absolute inset-0 bg-green-500"
             style={{
-              clipPath: `polygon(0 0, ${greenFilled * 100}% 0, ${greenFilled * 100}% 100%, 0 100%)`,
+              clipPath: `polygon(0 0, ${greenFilled * 100}% 0, ${
+                greenFilled * 100
+              }% 100%, 0 100%)`,
             }}
           ></div>
           {/* Value text */}
@@ -125,11 +131,11 @@ const BlockRow: React.FC<BlockRowProps> = ({
   const fullBlockCount = isOverflow
     ? totalBlocks
     : isMultipleOf10
-      ? tensDigit
-      : Math.floor(fullValue / 10);
+    ? tensDigit
+    : Math.floor(fullValue / 10);
   const fullBlockIndices = Array.from(
     { length: Math.min(fullBlockCount, totalBlocks) },
-    (_, i) => i,
+    (_, i) => i
   );
 
   // Fractional block (if ones digit > 0 and we haven't filled all blocks)
@@ -360,7 +366,11 @@ const StatTooltipCard: React.FC<TooltipStatCardProps> = ({
                 {bonusDescription}
               </span>
               <span className="text-white font-bold max-sm:text-sm sm:text-lg">
-                {`${statBonus[idx].type === "int" ? "+" : ""}${lerp(lerpEnd, lerpStart, lerpInterpolation).toFixed(3)}${statBonus[idx].type === "pct" ? "%" : ""}`}
+                {`${statBonus[idx].type === "int" ? "+" : ""}${lerp(
+                  lerpEnd,
+                  lerpStart,
+                  lerpInterpolation
+                ).toFixed(3)}${statBonus[idx].type === "pct" ? "%" : ""}`}
               </span>
             </div>
           );
@@ -397,11 +407,19 @@ const StatTooltipCard: React.FC<TooltipStatCardProps> = ({
                       {overflowBonusDescription}
                     </span>
                     <span className="text-white font-bold text-lg">
-                      {`${overflow.statBonus[idx].type === "int" ? "+" : ""}${lerp(overflowLerpEnd, overflowLerpStart, overflowInterpolation).toFixed(3)}${overflow.statBonus[idx].type === "pct" ? "%" : ""}`}
+                      {`${
+                        overflow.statBonus[idx].type === "int" ? "+" : ""
+                      }${lerp(
+                        overflowLerpEnd,
+                        overflowLerpStart,
+                        overflowInterpolation
+                      ).toFixed(3)}${
+                        overflow.statBonus[idx].type === "pct" ? "%" : ""
+                      }`}
                     </span>
                   </div>
                 );
-              },
+              }
             )}
           </div>
         ) : (

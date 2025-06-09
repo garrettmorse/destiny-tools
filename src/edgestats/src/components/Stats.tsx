@@ -207,174 +207,173 @@ const Stats: React.FC = () => {
   };
 
   return (
-    <div className="my-4 place-items-center">
-      <div className="grid grid-cols-3 max-w-md">
-        <div className="max-sm:text-lg sm:text-2xl font-bold text-center">
-          Archetype
-        </div>
-        <div className="max-sm:text-lg sm:text-2xl font-bold text-center">
-          Tertiary
-        </div>
-        <div className="max-sm:text-lg sm:text-2xl font-bold text-center">
-          Mod
-        </div>
-        {ARMOR.map((armor, idx) => (
-          <div
-            key={armor}
-            className="place-items-center col-span-3 grid grid-cols-subgrid"
-          >
-            <div className="col-span-1">
-              <div
-                className="flex flex-col items-center"
-                onMouseEnter={() => handleArchetypeEnter(armor)}
-                onMouseLeave={() => handleArchetypeLeave(armor)}
-              >
-                <div className="text-center place-items-center">
-                  <p className="max-sm:text-xs sm:text-sm">
-                    {STATE_MAP[armor].get?.archetype ?? "Select Type"}
-                  </p>
-                </div>
-                <div className="relative">
-                  <div
-                    onClick={() =>
-                      currentArchetypeHover === armor
-                        ? handleArchetypeLeave(armor)
-                        : handleArchetypeEnter(armor)
-                    }
-                  >
-                    <Slot
-                      identifier={`archetype-${idx}`}
-                      kind={STATE_MAP[armor].get?.archetype ?? armor}
-                    />
-                  </div>
-                  {currentArchetypeHover === armor && (
-                    <div
-                      id={`archetype-dialog-${armor}`}
-                      className="absolute max-xl:left-full xl:right-full fade-in -top-1 z-50"
-                    >
-                      <Dialog
-                        identifier={idx}
-                        armor={armor}
-                        archetype
-                        handleClick={(archetype: ArmorArchetype | null) =>
-                          handleArchetypeDialogClick(armor, archetype)
-                        }
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
+    <div className="my-4">
+      <div className="">
+        <div className="flex flex-col">
+          <div className="flex  justify-center gap-4 mb-2">
+            <div className="border-b max-sm:w-24 sm:w-36 justify-center flex max-sm:text-lg sm:text-2xl font-bold text-center">
+              Archetype
             </div>
-            <div
-              className={`col-span-1 ${
-                STATE_MAP[armor].get?.archetype
-                  ? ""
-                  : "select-none pointer-events-none opacity-40"
-              }`}
-            >
-              <div
-                className="flex flex-col items-center"
-                onMouseEnter={() => handleTertiaryEnter(armor)}
-                onMouseLeave={() => handleTertiaryLeave(armor)}
-              >
-                <div className="text-center place-items-center">
-                  <p className="max-sm:text-xs sm:text-sm text-center">
-                    {STATE_MAP[armor].get?.tertiary ?? "Select Tertiary"}
-                  </p>
-                </div>
-                <div className="relative">
-                  <div
-                    onClick={() =>
-                      currentTertiaryHover === armor
-                        ? handleTertiaryLeave(armor)
-                        : handleTertiaryEnter(armor)
-                    }
-                  >
-                    <Slot
-                      identifier={`tertiary-${idx}`}
-                      kind={
-                        PRIMARY_STAT_ARCHETYPE_MAP[
-                          STATE_MAP[armor].get?.tertiary as StatType
-                        ] ?? armor
-                      }
-                    />
-                  </div>
-                  {currentTertiaryHover === armor && (
-                    <div
-                      id={`tertiary-dialog-${armor}`}
-                      className={`absolute fade-in max-sm:top-12 max-sm:-left-[58px] sm:top-25 sm:-left-27 z-50`}
-                    >
-                      {/* @ts-expect-error cba */}
-                      <Dialog
-                        identifier={idx}
-                        armor={armor}
-                        tertiary
-                        withArchetype={STATE_MAP[armor].get?.archetype}
-                        handleClick={(tertiary: StatType | null) =>
-                          handleTertiaryDialogClick(armor, tertiary)
-                        }
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
+            <div className="border-b max-sm:w-24 sm:w-36 justify-center flex max-sm:text-lg sm:text-2xl font-bold text-center">
+              Tertiary
             </div>
-            <div className={`col-span-1`}>
-              <div
-                className="flex flex-col items-center"
-                onMouseEnter={() => handleModEnter(armor)}
-                onMouseLeave={() => handleModLeave(armor)}
-              >
-                <div className="text-center place-items-center">
-                  <p className="max-sm:text-xs sm:text-sm">
-                    {STATE_MAP[armor].get?.mod?.slice(0, -3) ?? "Select Mod"}
-                  </p>
-                </div>
-                <div className="relative">
-                  <div
-                    onClick={() =>
-                      currentModHover === armor
-                        ? handleModLeave(armor)
-                        : handleModEnter(armor)
-                    }
-                  >
-                    <Slot
-                      identifier={`mod-${idx}`}
-                      kind={(STATE_MAP[armor].get?.mod as ModType) ?? "Mod"}
-                    />
-                  </div>
-                  {currentModHover === armor && (
-                    <div
-                      id={`mod-dialog-${armor}`}
-                      className={`absolute max-xl:right-full xl:left-full fade-in -top-1 z-50`}
-                    >
-                      <Dialog
-                        identifier={idx}
-                        armor={armor}
-                        mod
-                        handleClick={(mod: ModType | null) =>
-                          handleModDialogClick(armor, mod)
-                        }
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
+            <div className="border-b max-sm:w-24 sm:w-36 justify-center flex max-sm:text-lg sm:text-2xl font-bold text-center">
+              Mod
             </div>
           </div>
-        ))}
+          {ARMOR.map((armor, idx) => (
+            <div key={armor} className="flex justify-center gap-4">
+              <div className="flex max-sm:w-24 sm:w-36">
+                <div
+                  className="flex flex-col items-center"
+                  onMouseLeave={() => handleArchetypeLeave(armor)}
+                >
+                  <div className="text-center max-sm:w-24 sm:w-36 max-sm:text-xs sm:text-sm">
+                    {STATE_MAP[armor].get?.archetype ?? "Select Type"}
+                  </div>
+                  <div className="relative">
+                    <div
+                      onMouseEnter={() => handleArchetypeEnter(armor)}
+                      onClick={() =>
+                        currentArchetypeHover === armor
+                          ? handleArchetypeLeave(armor)
+                          : handleArchetypeEnter(armor)
+                      }
+                    >
+                      <Slot
+                        identifier={`archetype-${idx}`}
+                        kind={STATE_MAP[armor].get?.archetype ?? armor}
+                      />
+                    </div>
+                    {currentArchetypeHover === armor && (
+                      <div
+                        id={`archetype-dialog-${armor}`}
+                        className="absolute max-xl:left-full xl:right-full fade-in -top-1 z-50"
+                      >
+                        <Dialog
+                          identifier={idx}
+                          armor={armor}
+                          archetype
+                          handleClick={(archetype: ArmorArchetype | null) =>
+                            handleArchetypeDialogClick(armor, archetype)
+                          }
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div
+                className={`flex max-sm:w-24 sm:w-36 ${
+                  STATE_MAP[armor].get?.archetype
+                    ? ""
+                    : "select-none pointer-events-none opacity-40"
+                }`}
+              >
+                <div
+                  className="flex flex-col items-center"
+                  onMouseLeave={() => handleTertiaryLeave(armor)}
+                >
+                  <div className="text-center max-sm:w-24 sm:w-36 max-sm:text-xs sm:text-sm text-center">
+                    {STATE_MAP[armor].get?.tertiary ?? "Select Tertiary"}
+                  </div>
+                  <div className="relative">
+                    <div
+                      onMouseEnter={() => handleTertiaryEnter(armor)}
+                      onClick={() =>
+                        currentTertiaryHover === armor
+                          ? handleTertiaryLeave(armor)
+                          : handleTertiaryEnter(armor)
+                      }
+                    >
+                      <Slot
+                        identifier={`tertiary-${idx}`}
+                        kind={
+                          PRIMARY_STAT_ARCHETYPE_MAP[
+                            STATE_MAP[armor].get?.tertiary as StatType
+                          ] ?? armor
+                        }
+                      />
+                    </div>
+                    {currentTertiaryHover === armor && (
+                      <div
+                        id={`tertiary-dialog-${armor}`}
+                        className={`absolute fade-in max-sm:top-12 max-sm:-left-[58px] sm:top-25 sm:-left-27 z-50`}
+                      >
+                        {/* @ts-expect-error cba */}
+                        <Dialog
+                          identifier={idx}
+                          armor={armor}
+                          tertiary
+                          withArchetype={STATE_MAP[armor].get?.archetype}
+                          handleClick={(tertiary: StatType | null) =>
+                            handleTertiaryDialogClick(armor, tertiary)
+                          }
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div className={`flex max-sm:w-24 sm:w-36`}>
+                <div
+                  className="flex flex-col items-center"
+                  onMouseLeave={() => handleModLeave(armor)}
+                >
+                  <div className="text-center max-sm:w-24 sm:w-36 max-sm:text-xs sm:text-sm">
+                    {STATE_MAP[armor].get?.mod?.slice(0, -3) ?? "Select Mod"}
+                  </div>
+                  <div className="relative">
+                    <div
+                      onMouseEnter={() => handleModEnter(armor)}
+                      onClick={() =>
+                        currentModHover === armor
+                          ? handleModLeave(armor)
+                          : handleModEnter(armor)
+                      }
+                    >
+                      <Slot
+                        identifier={`mod-${idx}`}
+                        kind={(STATE_MAP[armor].get?.mod as ModType) ?? "Mod"}
+                      />
+                    </div>
+                    {currentModHover === armor && (
+                      <div
+                        id={`mod-dialog-${armor}`}
+                        className={`absolute max-xl:right-full xl:left-full fade-in -top-1 z-50`}
+                      >
+                        <Dialog
+                          identifier={idx}
+                          armor={armor}
+                          mod
+                          handleClick={(mod: ModType | null) =>
+                            handleModDialogClick(armor, mod)
+                          }
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
-      <StatChart {...PLAYER_STATS} />
-      <button
-        className={`${
-          masterwork
-            ? "bg-yellow-500 hover:bg-gradient-to-r active:bg-gradient-to-r from-yellow-500 to-blue-500"
-            : "bg-blue-500 hover:bg-gradient-to-r active:bg-gradient-to-r from-blue-500 to-yellow-500"
-        } bg-size-200 bg-pos-0 hover:bg-pos-100 via-yellow transition-all duration-1000 p-1 rounded`}
-        onClick={() => toggleMasterwork(!masterwork)}
-      >
-        Masterwork
-      </button>
+      <div className="flex flex-col items-center">
+        <StatChart {...PLAYER_STATS} />
+      </div>
+      <div className="flex flex-col items-center">
+        <button
+          className={`${
+            masterwork
+              ? "bg-yellow-500 hover:bg-gradient-to-r active:bg-gradient-to-r from-yellow-500 to-blue-500"
+              : "bg-blue-500 hover:bg-gradient-to-r active:bg-gradient-to-r from-blue-500 to-yellow-500"
+          } bg-size-200 bg-pos-0 hover:bg-pos-100 via-yellow items-center transition-all duration-1000 p-1 rounded`}
+          onClick={() => toggleMasterwork(!masterwork)}
+        >
+          Masterwork
+        </button>
+      </div>
     </div>
   );
 };
