@@ -69,6 +69,12 @@ const Stats: React.FC = () => {
     },
   };
 
+  const clearState = () => {
+    for (const state of Object.values(STATE_MAP)) {
+      state.set(null);
+    }
+  };
+
   const handleArchetypeDialogClick = (
     armorKind: ArmorKind,
     archetype: ArmorArchetype | null
@@ -248,7 +254,7 @@ const Stats: React.FC = () => {
                     {currentArchetypeHover === armor && (
                       <div
                         id={`archetype-dialog-${armor}`}
-                        className="absolute max-xl:left-full xl:right-full fade-in -top-1 z-50"
+                        className="absolute max-lg:left-full lg:right-full fade-in -top-1 z-50"
                       >
                         <Dialog
                           identifier={idx}
@@ -340,7 +346,7 @@ const Stats: React.FC = () => {
                     {currentModHover === armor && (
                       <div
                         id={`mod-dialog-${armor}`}
-                        className={`absolute max-xl:right-full xl:left-full fade-in -top-1 z-50`}
+                        className={`absolute max-lg:right-full lg:left-full fade-in -top-1 z-50`}
                       >
                         <Dialog
                           identifier={idx}
@@ -362,16 +368,22 @@ const Stats: React.FC = () => {
       <div className="flex flex-col items-center">
         <StatChart {...PLAYER_STATS} />
       </div>
-      <div className="flex flex-col items-center">
+      <div className="flex justify-center gap-2">
         <button
           className={`${
             masterwork
-              ? "bg-yellow-500 hover:bg-gradient-to-r active:bg-gradient-to-r from-yellow-500 to-blue-500"
-              : "bg-blue-500 hover:bg-gradient-to-r active:bg-gradient-to-r from-blue-500 to-yellow-500"
-          } bg-size-200 bg-pos-0 hover:bg-pos-100 via-yellow items-center transition-all duration-1000 p-1 rounded`}
+              ? "bg-yellow-500 hover:bg-gradient-to-l active:bg-gradient-to-r from-yellow-500 to-blue-500"
+              : "bg-blue-500 hover:bg-gradient-to-l active:bg-gradient-to-r from-blue-500 to-yellow-500"
+          } bg-size-200 hover:ring-1 active:scale-99 bg-pos-0 hover:bg-pos-100 via-yellow items-center transition-all duration-1000 p-1 rounded`}
           onClick={() => toggleMasterwork(!masterwork)}
         >
           Masterwork
+        </button>
+        <button
+          className="bg-gradient-to-t hover:bg-gradient-to-b hover:ring-1 active:scale-99 from-red-400 to-red-800 bg-size-200 bg-pos-0 hover:bg-pos-100 via-yellow items-center transition-all p-1 rounded"
+          onClick={() => clearState()}
+        >
+          Reset Options
         </button>
       </div>
     </div>

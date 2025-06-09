@@ -66,10 +66,10 @@ const Tooltip: React.FC<TooltipProps> = (props) => {
       {props.mod && (
         <div>
           <div className="mb-1 max-sm:text-sm sm:text-lg text-nowrap font-bold text-left">
-            {props.mod}
+            {MOD_STAT_MAP[props.mod][0]}
           </div>
           <div className="text-left text-nowrap">
-            {MOD_STAT_MAP[props.mod][0]} +{MOD_STAT_MAP[props.mod][1]}
+            {MOD_STAT_MAP[props.mod][1]} +{MOD_STAT_MAP[props.mod][2]}
           </div>
         </div>
       )}

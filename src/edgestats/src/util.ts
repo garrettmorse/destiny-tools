@@ -116,16 +116,16 @@ interface ArmorArchetypeConfig<T extends ArmorArchetype> {
     T extends "Brawler"
       ? "Melee" | "Health" | "Weapons"
       : T extends "Gunner"
-        ? "Weapons" | "Grenade" | "Melee"
-        : T extends "Specialist"
-          ? "Class" | "Weapons" | "Super"
-          : T extends "Grenadier"
-            ? "Grenade" | "Super" | "Health"
-            : T extends "Paragon"
-              ? "Super" | "Melee" | "Class"
-              : T extends "Bulwark"
-                ? "Health" | "Class" | "Grenade"
-                : never
+      ? "Weapons" | "Grenade" | "Melee"
+      : T extends "Specialist"
+      ? "Class" | "Weapons" | "Super"
+      : T extends "Grenadier"
+      ? "Grenade" | "Super" | "Health"
+      : T extends "Paragon"
+      ? "Super" | "Melee" | "Class"
+      : T extends "Bulwark"
+      ? "Health" | "Class" | "Grenade"
+      : never
   >;
 }
 
@@ -144,18 +144,18 @@ export const ARCHETYPE_TERTIARY_STAT_MAP: {
 } as const;
 
 export const MOD_STAT_MAP = {
-  "Grenade Mod": ["Grenade", STAT_COUNT.MAJOR_MOD],
-  "Minor Grenade Mod": ["Grenade", STAT_COUNT.MINOR_MOD],
-  "Super Mod": ["Super", STAT_COUNT.MAJOR_MOD],
-  "Minor Super Mod": ["Super", STAT_COUNT.MINOR_MOD],
-  "Weapons Mod": ["Weapons", STAT_COUNT.MAJOR_MOD],
-  "Minor Weapons Mod": ["Weapons", STAT_COUNT.MINOR_MOD],
-  "Class Mod": ["Class", STAT_COUNT.MAJOR_MOD],
-  "Minor Class Mod": ["Class", STAT_COUNT.MINOR_MOD],
-  "Health Mod": ["Health", STAT_COUNT.MAJOR_MOD],
-  "Minor Health Mod": ["Health", STAT_COUNT.MINOR_MOD],
-  "Melee Mod": ["Melee", STAT_COUNT.MAJOR_MOD],
-  "Minor Melee Mod": ["Melee", STAT_COUNT.MINOR_MOD],
+  "Grenade Mod": ["Grenade", "Grenade", STAT_COUNT.MAJOR_MOD],
+  "Minor Grenade Mod": ["Minor Grenade", "Grenade", STAT_COUNT.MINOR_MOD],
+  "Super Mod": ["Super", "Super", STAT_COUNT.MAJOR_MOD],
+  "Minor Super Mod": ["Minor Super", "Super", STAT_COUNT.MINOR_MOD],
+  "Weapons Mod": ["Weapons", "Weapons", STAT_COUNT.MAJOR_MOD],
+  "Minor Weapons Mod": ["Minor Weapons", "Weapons", STAT_COUNT.MINOR_MOD],
+  "Class Mod": ["Class", "Class", STAT_COUNT.MAJOR_MOD],
+  "Minor Class Mod": ["Minor Class", "Class", STAT_COUNT.MINOR_MOD],
+  "Health Mod": ["Health", "Health", STAT_COUNT.MAJOR_MOD],
+  "Minor Health Mod": ["Minor Health", "Health", STAT_COUNT.MINOR_MOD],
+  "Melee Mod": ["Melee", "Melee", STAT_COUNT.MAJOR_MOD],
+  "Minor Melee Mod": ["Minor Melee", "Melee", STAT_COUNT.MINOR_MOD],
 } as const;
 
 export type ModType = keyof typeof MOD_STAT_MAP;
@@ -277,7 +277,7 @@ export const STAT_DESCRIPTION_MAP = {
 
 export const getStats = (
   archetypes: Record<ArmorKind, ArmorState | null>,
-  masterwork: boolean,
+  masterwork: boolean
 ) => {
   const stats: Record<StatType, number> = {
     Health: 0,
@@ -389,7 +389,7 @@ const ARMOR_PARAMS = {
 
 // Reverse lookup maps for decoding
 const PARAM_CODES_REVERSE = Object.fromEntries(
-  Object.entries(PARAM_CODES).map(([key, value]) => [value, key]),
+  Object.entries(PARAM_CODES).map(([key, value]) => [value, key])
 ) as Record<number, keyof typeof PARAM_CODES>;
 
 // const ARMOR_PARAMS_REVERSE = Object.fromEntries(
@@ -491,7 +491,7 @@ class SearchParamEncoder {
         const decodedParams = this.decodeParamList(encodedParams);
         const mappedParams = decodedParams.reduce(
           (params, param) => ({ ...params, [SLOT_MAP[param]]: param }),
-          {},
+          {}
         );
         if (decodedParams.length > 0) {
           result[armorSlot as ArmorParam] = mappedParams as Record<
@@ -512,7 +512,7 @@ export const useSearchParamEncoder = () => {
   };
 
   const decodeFromUrl = (
-    url: string = window.location.href,
+    url: string = window.location.href
   ): ArmorSlotParams => {
     return SearchParamEncoder.parseSearchUrl(url);
   };
