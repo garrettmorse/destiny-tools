@@ -285,7 +285,7 @@ const StatTooltipCard: React.FC<TooltipStatCardProps> = ({
     <div className="bg-gradient-to-br from-purple-900 via-gray-900 to-purple-800 p-6 rounded-lg shadow-2xl max-sm:max-w-sm sm:max-w-md mx-auto border border-purple-700/30">
       {/* Header Section */}
       <div className="max-sm:mb-1 sm:mb-4">
-        <h2 className="text-left text-white font-bold max-sm:text-lg sm:text-2xl tracking-wider mb-1">
+        <h2 className="text-left text-white font-bold max-sm:text-lg sm:text-2xl mb-1">
           {statName}
         </h2>
         <p className="text-left text-gray-400 max-sm:text-sm sm:text-md font-medium">

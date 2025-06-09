@@ -177,7 +177,7 @@ export const STAT_DESCRIPTION_MAP = {
   }
 } as const;
 
-export const getStats = (archetypes: Record<ArmorKind, ArmorState | null>) => {
+export const getStats = (archetypes: Record<ArmorKind, ArmorState | null>, masterwork: boolean) => {
   const stats: Record<StatType, number> = {
     Health: 0,
     Melee: 0,
@@ -204,7 +204,7 @@ export const getStats = (archetypes: Record<ArmorKind, ArmorState | null>) => {
     if (tertiaryStat) {
       stats[tertiaryStat] += STAT_COUNT.TERTIARY;
     }
-    if (archetypes[armor].masterwork && tertiaryStat) {
+    if (masterwork && tertiaryStat) {
       // get the 3 stats that arent primary, secondary, tertiary
       const masterworkStats = structuredClone(STATS);
       masterworkStats.splice(masterworkStats.indexOf(primaryStat), 1);

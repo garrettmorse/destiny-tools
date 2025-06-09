@@ -19,6 +19,8 @@ const Stats: React.FC = () => {
   const [currentArchetypeHover, setCurrentArchetypeHover] = useState<ArmorKind | null>(null);
   const [currentTertiaryHover, setCurrentTertiaryHover] = useState<ArmorKind | null>(null);
   const [currentModHover, setCurrentModHover] = useState<ArmorKind | null>(null);
+  const [masterwork, toggleMasterwork] = useState<boolean>(false);
+
   const STATE_MAP = {
     Helmet: {
       get: helmetArchetype,
@@ -101,7 +103,7 @@ const Stats: React.FC = () => {
   };
 
   // @ts-expect-error cba
-  const PLAYER_STATS = getStats(Object.keys(STATE_MAP).reduce((acc, armor) => ({ ...acc, [armor]: STATE_MAP[armor].get}), {}));
+  const PLAYER_STATS = getStats(Object.keys(STATE_MAP).reduce((acc, armor) => ({ ...acc, [armor]: STATE_MAP[armor].get}), {}), masterwork);
 
   let archetypeTimeout: NodeJS.Timeout;
   const handleArchetypeEnter = (armor: ArmorKind) => {
@@ -222,6 +224,7 @@ const Stats: React.FC = () => {
           <StatChart 
             {...PLAYER_STATS}
           />
+          <button className={`${masterwork ? 'bg-yellow-500 hover:bg-gradient-to-r active:bg-gradient-to-r from-yellow-500 to-blue-500' : 'bg-blue-500 hover:bg-gradient-to-r active:bg-gradient-to-r from-blue-500 to-yellow-500' } bg-size-200 bg-pos-0 hover:bg-pos-100 via-yellow transition-all duration-1000 p-1 rounded`} onClick={() => toggleMasterwork(!masterwork)}>Masterwork</button>
       </div>
   );
 }
