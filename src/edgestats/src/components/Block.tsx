@@ -214,7 +214,6 @@ const StatTooltipCard: React.FC<TooltipStatCardProps> = ({
 
   const baseValue = value > 100 ? 100 : value;
   const overflowBaseValue = value - 100;
-  const denom = shouldLerpMid ? 50 : isOverflow ? shouldLerpOverflowMid ? 50 : 100 : 100;
 
   return (
     <div className="bg-gradient-to-br from-purple-900 via-gray-900 to-purple-800 p-6 rounded-lg shadow-2xl max-w-md mx-auto border border-purple-700/30">
