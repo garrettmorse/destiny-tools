@@ -199,6 +199,8 @@ interface TooltipStatCardProps {
   value: number;
 }
 
+const lerp = (end: number, start: number, t: number) => end*t + (start*(1-t)); 
+
 const StatTooltipCard: React.FC<TooltipStatCardProps> = ({
   statName="Class",
   value=99
@@ -206,11 +208,13 @@ const StatTooltipCard: React.FC<TooltipStatCardProps> = ({
   const { description, statBonus, statBonusDescription, overflow } = STAT_DESCRIPTION_MAP[statName];
   const currentTier = Math.floor(value / 10);
 
-  const shouldLerpMid = value > 50;
+  const shouldLerpMid = value <= 50;
   const isOverflow = value > 100;
-  const shouldLerpOverflowMid = value > 150;
+  const shouldLerpOverflowMid = value <= 150;
 
   const baseValue = value > 100 ? 100 : value;
+  const overflowBaseValue = value - 100;
+  const denom = shouldLerpMid ? 50 : isOverflow ? shouldLerpOverflowMid ? 50 : 100 : 100;
 
   return (
     <div className="bg-gradient-to-br from-purple-900 via-gray-900 to-purple-800 p-6 rounded-lg shadow-2xl max-w-md mx-auto border border-purple-700/30">
@@ -242,16 +246,21 @@ const StatTooltipCard: React.FC<TooltipStatCardProps> = ({
           </span>
         </div>
         
-        {statBonusDescription.map((bonusDescription, idx) => (
-          <div key={bonusDescription} className="flex justify-between items-center mb-2">
-          <span className="text-gray-300 text-md">
-            {bonusDescription}
-          </span>
-          <span className="text-white font-bold text-lg">
-            {`${statBonus[idx].type === 'int' ? '+' : ''}${((baseValue / 100) * (statBonus[idx][shouldLerpMid ? "midValue" : "maxValue"])).toFixed(3)}${statBonus[idx].type === "pct" ? '%' : ''}`}
-          </span>
-        </div>
-        ))}
+        {statBonusDescription.map((bonusDescription, idx) => {
+          const lerpStart = shouldLerpMid ? 0 : statBonus[idx].midValue;
+          const lerpEnd = shouldLerpMid ? statBonus[idx].midValue : statBonus[idx].maxValue;
+          const lerpInterpolation = (shouldLerpMid ? baseValue : baseValue - 50) / 50;
+          return (
+            <div key={bonusDescription} className="flex justify-between items-center mb-2">
+              <span className="text-gray-300 text-md">
+                {bonusDescription}
+              </span>
+              <span className="text-white font-bold text-lg">
+                {`${statBonus[idx].type === 'int' ? '+' : ''}${lerp(lerpEnd, lerpStart, lerpInterpolation).toFixed(3)}${statBonus[idx].type === "pct" ? '%' : ''}`}
+              </span>
+            </div>
+          )
+        })}
               {/* Next Tier Preview */}
         {isOverflow ? (
           <div className="border-t border-gray-700 pt-2">
@@ -263,16 +272,22 @@ const StatTooltipCard: React.FC<TooltipStatCardProps> = ({
                 {overflow.description}
               </span>
             </div>
-            {overflow.statBonusDescription.map((overflowBonusDescription, idx) => (
-              <div key={overflowBonusDescription} className="flex justify-between items-center mb-2">
-                <span className="text-left text-gray-300 text-md">
-                  {overflowBonusDescription}
-                </span>
-                <span className="text-white font-bold text-lg">
-                  {`${overflow.statBonus[idx].type === 'int' ? '+' : ''}${((value / 200) * (overflow.statBonus[idx][shouldLerpOverflowMid ? "midValue" : "maxValue"])).toFixed(3)}${overflow.statBonus[idx].type === "pct" ? '%' : ''}`}
-          </span>
-        </div>
-            ))}
+            {overflow.statBonusDescription.map((overflowBonusDescription, idx) => {
+              const overflowLerpStart = shouldLerpOverflowMid ? 0 : overflow.statBonus[idx].midValue;
+              const overflowLerpEnd = shouldLerpOverflowMid ? overflow.statBonus[idx].midValue : overflow.statBonus[idx].maxValue;
+              const overflowInterpolation = (shouldLerpOverflowMid ? overflowBaseValue : overflowBaseValue - 50) / 50;
+              console.log({ overflowBonusDescription, overflowLerpStart, overflowLerpEnd, overflowInterpolation });
+              return (
+                <div key={overflowBonusDescription} className="flex justify-between items-center mb-2">
+                  <span className="text-left text-gray-300 text-md">
+                    {overflowBonusDescription}
+                  </span>
+                  <span className="text-white font-bold text-lg">
+                    {`${overflow.statBonus[idx].type === 'int' ? '+' : ''}${lerp(overflowLerpEnd, overflowLerpStart, overflowInterpolation).toFixed(3)}${overflow.statBonus[idx].type === "pct" ? '%' : ''}`}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         ) : (
         <div className="border-t border-gray-700 pt-2">
