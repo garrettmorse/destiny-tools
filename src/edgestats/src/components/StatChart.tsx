@@ -12,19 +12,19 @@ interface ChartProps {
 
 const StatChart: React.FC<ChartProps> = (props) => {
   return (
-  <div className="flex flex-col min-w-100">
+  <div className="grid grid-cols-5">
     {Object.entries(props).map(([stat, value]) => (
-      <div className="flex items-center" key={stat}>
-        <div className="text-right w-30 font-bold max-sm:text-lg sm:text-xl md:text-2xl">
+      <div className="col-span-5 grid grid-cols-subgrid items-center" key={stat}>
+        <div className="col-span-1 text-right font-bold max-sm:text-lg sm:text-xl md:text-2xl">
           {stat}
         </div>
-          <div className="flex-1 flex m-2 justify-center">
+          <div className="col-span-3 m-2 justify-center">
             <Blocks 
               stat={stat as StatType}
               input={value}
             />
           </div>
-        <div className="text-left w-30 font-bold max-sm:text-lg sm:text-xl md:text-2xl">
+        <div className="col-span-1 text-left font-bold max-sm:text-lg sm:text-xl md:text-2xl">
           {value}
           </div>
       </div>

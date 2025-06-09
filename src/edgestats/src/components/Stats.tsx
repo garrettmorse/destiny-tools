@@ -146,14 +146,14 @@ const Stats: React.FC = () => {
   }
 
   return (
-      <div className="my-5">
-        <div className="grid grid-cols-3 items-center">
+      <div className="my-4 place-items-center">
+        <div className="grid grid-cols-3 max-w-md">
           <div className="max-sm:text-lg sm:text-2xl font-bold text-center">Archetype</div>
           <div className="max-sm:text-lg sm:text-2xl font-bold text-center">Tertiary</div>
           <div className="max-sm:text-lg sm:text-2xl font-bold text-center">Mod</div>
           {ARMOR.map((armor, idx) =>
             (<div key={armor} className='place-items-center col-span-3 grid grid-cols-subgrid'>
-              <div className=" col-span-1">
+              <div className="col-span-1">
                 <div className="flex flex-col items-center" onMouseEnter={() => handleArchetypeEnter(armor)} onMouseLeave={() => handleArchetypeLeave(armor)}>
                   <div className="text-center place-items-center">
                     <p className='max-sm:text-xs sm:text-sm'>{STATE_MAP[armor].get?.archetype ?? "Select Type"}</p>

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { STAT_DESCRIPTION_MAP, type StatType } from "../util";
 import { useMediaQuery } from "react-responsive";
 
@@ -88,6 +89,8 @@ interface BlockRowProps {
 }
 
 const BlockRow: React.FC<BlockRowProps> = ({ stat, input, totalBlocks = 10 }) => {
+  const isDesktop = useMediaQuery({ query: '(min-width: 640px)' });
+  const [showTooltip, setShowTooltip] = useState(false);
   const parseInput = (input: string) => {
     if (!input) return { fullValue: 0, tensDigit: 0, onesDigit: 0 };
     
@@ -118,11 +121,12 @@ const BlockRow: React.FC<BlockRowProps> = ({ stat, input, totalBlocks = 10 }) =>
   const fractionalBlockIndex = fullBlockCount;
   const fractionValue = onesDigit / 10;
 
-
   return (
-    <div className="group relative">
-      <StatTooltip stat={stat} value={fullValue} />
-      <div className="flex">
+    <div onMouseLeave={() => setShowTooltip(false)} className="group relative">
+        <div onClick={() => setShowTooltip(false)}>
+          {showTooltip && <StatTooltip stat={stat} large={isDesktop} value={fullValue} />}
+          </div>
+      <div onMouseEnter={() => setShowTooltip(true)} onClick={() => setShowTooltip(true)} className="flex">
         {Array.from({ length: totalBlocks }, (_, index) => {
           const isFullBlock = fullBlockIndices.includes(index);
           const isFractionalBlock = hasFractionalBlock && index === fractionalBlockIndex;
@@ -166,8 +170,9 @@ const BlockRow: React.FC<BlockRowProps> = ({ stat, input, totalBlocks = 10 }) =>
 };
 
 interface TooltipProps {
+  large?: boolean;
   stat: StatType;
-  value: number
+  value: number;
 }
 
 const getTooltipOffset = (stat: StatType, value: number, large: boolean) => {
@@ -241,15 +246,14 @@ const getTooltipOffset = (stat: StatType, value: number, large: boolean) => {
   }
 }
 
-const StatTooltip: React.FC<TooltipProps> = ({ stat, value }) => {
-  const isSm = useMediaQuery({ query: '(min-width: 640px)'});
-  const baseOffset = getTooltipOffset(stat, value, isSm);
-  const className = `pointer-events-none max-md:min-w-screen
+const StatTooltip: React.FC<TooltipProps> = ({ stat, value, large = false }) => {
+  const baseOffset = getTooltipOffset(stat, value, large);
+  const className = `max-md:min-w-screen
     translate-x-[-50%] absolute left-[50%] ${baseOffset}
-    group-hover:opacity-100 transition-opacity opacity-0
     text-lg text-gray-100 text-center
     rounded-md z-100 container`
-  return (<span className={className}>
+  return (
+    <span className={className}>
       <StatTooltipCard statName={stat} value={value}/>
     </span>
   );
