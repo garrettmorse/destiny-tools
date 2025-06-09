@@ -290,7 +290,7 @@ export const getStats = (
 
   for (const armor of Object.keys(archetypes) as ArmorKind[]) {
     if (archetypes[armor]?.mod) {
-      const [stat, amount] = MOD_STAT_MAP[archetypes[armor].mod as ModType];
+      const [, stat, amount] = MOD_STAT_MAP[archetypes[armor].mod as ModType];
       stats[stat] += amount;
     }
     if (!archetypes[armor]?.archetype) {
