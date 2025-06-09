@@ -321,7 +321,7 @@ const StatTooltipCard: React.FC<TooltipStatCardProps> = ({
   const overflowBaseValue = value - 100;
 
   return (
-    <div className="bg-gradient-to-br from-purple-900 via-gray-900 to-purple-800 p-6 rounded-lg shadow-2xl max-sm:max-w-sm sm:max-w-md mx-auto border border-purple-700/30">
+    <div className="bg-purple-900 p-6 rounded-lg shadow-2xl max-sm:max-w-sm sm:max-w-md mx-auto border border-purple-700">
       {/* Header Section */}
       <div className="max-sm:mb-1 sm:mb-4">
         <h2 className="text-left text-white font-bold max-sm:text-lg sm:text-2xl mb-1">
