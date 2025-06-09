@@ -1,4 +1,4 @@
-const Loading: React.FC<{ message: string}> = ({ message }) => {
+const Loading: React.FC<{ message: string }> = ({ message }) => {
   return (
     <div className="w-full flex items-center justify-center py-12">
       <div className="flex flex-col items-center">

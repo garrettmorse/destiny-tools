@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import { Search } from 'lucide-react';
-import { fetchUser } from '../services/user';
-import type { UserResult } from '../services/services';
+import { useState, useEffect } from "react";
+import { Search } from "lucide-react";
+import { fetchUser } from "../services/user";
+import type { UserResult } from "../services/services";
 interface SearchBarProps {
   useBase?: boolean;
   onSearch: (query: string) => void;
@@ -16,22 +16,22 @@ const baseMembershipTypeLogoMap = {
   "3": `..${global.BASE_PATH}/steam.png`,
   /* @ts-expect-error cant figure out typing globalThis specifically for local dev with vite */
   "4": `..${global.BASE_PATH}/epic.webp`,
-}
+};
 
 const membershipTypeLogoMap = {
   "1": `../xbox.webp`,
   "2": `../psn.webp`,
   "3": `../steam.png`,
   "4": `../epic.webp`,
-}
+};
 
 const SearchBar: React.FC<SearchBarProps> = ({
   useBase,
-  onSearch, 
-  placeholder = "Search for your Guardian..." 
+  onSearch,
+  placeholder = "Search for your Guardian...",
 }) => {
-  const [query, setQuery] = useState('');
-  const [userInput, setUserInput] = useState('');
+  const [query, setQuery] = useState("");
+  const [userInput, setUserInput] = useState("");
   const [results, setResults] = useState<UserResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
@@ -71,29 +71,31 @@ const SearchBar: React.FC<SearchBarProps> = ({
   };
 
   const handleSearchInput = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const [name] = event.target.value.split('#');
+    const [name] = event.target.value.split("#");
     setUserInput(event.target.value);
     setQuery(name);
-  }
+  };
 
   const handleSearchEnter = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.code !== 'Enter') {
+    if (event.code !== "Enter") {
       return;
     }
     event.preventDefault();
-    const user = results.find(result => `${result.bungieGlobalDisplayName}#${result.bungieGlobalDisplayNameCode}` === userInput);
+    const user = results.find(
+      (result) =>
+        `${result.bungieGlobalDisplayName}#${result.bungieGlobalDisplayNameCode}` ===
+        userInput,
+    );
     if (!user) {
       return;
     }
     onSearch(user.destinyMemberships[0].membershipId);
     setShowResults(false);
-  }
+  };
 
   return (
     <div className="w-full z-100 max-w-md bg-white dark:bg-gray-800 mx-auto relative">
-      <form
-        className="relative"
-      >
+      <form className="relative">
         <div className="relative ">
           <input
             type="text"
@@ -110,8 +112,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
           <button
             type="submit"
             className="absolute inset-y-0 right-0 pr-3 flex items-center text-primary hover:text-primary/80"
-          >
-          </button>
+          ></button>
         </div>
       </form>
 
@@ -124,18 +125,35 @@ const SearchBar: React.FC<SearchBarProps> = ({
             </div>
           ) : results.length > 0 ? (
             <ul className="bg-white dark:bg-gray-800 pointer-events-auto">
-              {results.map((result) => { 
+              {results.map((result) => {
                 const destinyMembership = result.destinyMemberships[0];
                 return (
-                <li 
-                  key={destinyMembership.membershipId}
-                  className="px-4 py-2 dark:hover:text-black hover:bg-gray-200 hover:text-blue-600 cursor-pointer text-md"
-                  onClick={() => handleResultClick(destinyMembership.membershipId)}
-                >
-                  <img style={{ float: 'left', }}src={useBase ? baseMembershipTypeLogoMap[destinyMembership.membershipType] : membershipTypeLogoMap[destinyMembership.membershipType]} width={25} height={25} />
-                  &nbsp;{result.bungieGlobalDisplayName}#{result.bungieGlobalDisplayNameCode}
-                </li>
-              ) })}
+                  <li
+                    key={destinyMembership.membershipId}
+                    className="px-4 py-2 dark:hover:text-black hover:bg-gray-200 hover:text-blue-600 cursor-pointer text-md"
+                    onClick={() =>
+                      handleResultClick(destinyMembership.membershipId)
+                    }
+                  >
+                    <img
+                      style={{ float: "left" }}
+                      src={
+                        useBase
+                          ? baseMembershipTypeLogoMap[
+                              destinyMembership.membershipType
+                            ]
+                          : membershipTypeLogoMap[
+                              destinyMembership.membershipType
+                            ]
+                      }
+                      width={25}
+                      height={25}
+                    />
+                    &nbsp;{result.bungieGlobalDisplayName}#
+                    {result.bungieGlobalDisplayNameCode}
+                  </li>
+                );
+              })}
             </ul>
           ) : query.length >= 2 ? (
             <div className="bg-white dark:bg-gray-800 p-3 text-center text-sm">

@@ -8,8 +8,8 @@ import {
   Tooltip,
   Legend,
   Filler,
-} from 'chart.js';
-import { Line } from 'react-chartjs-2';
+} from "chart.js";
+import { Line } from "react-chartjs-2";
 
 ChartJS.register(
   CategoryScale,
@@ -19,72 +19,78 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  Filler
+  Filler,
 );
 
-interface LineGraphProps { 
-  tableName: string; 
-  labels: string[]; 
-  datasets: { 
-    label: string; 
-    data: number[] | string[]; 
-    yTitle: string; 
-    yAxisID: string; 
-    fill?: { target: string; } | boolean; 
-    backgroundColor: string; 
-    borderColor: string; 
+interface LineGraphProps {
+  tableName: string;
+  labels: string[];
+  datasets: {
+    label: string;
+    data: number[] | string[];
+    yTitle: string;
+    yAxisID: string;
+    fill?: { target: string } | boolean;
+    backgroundColor: string;
+    borderColor: string;
     pointBackgroundColor: string;
-    axisRange?: [number, number],
-  }[];  
+    axisRange?: [number, number];
+  }[];
 }
 
 const Graph: React.FC<LineGraphProps> = ({ tableName, labels, datasets }) => {
   const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-  ChartJS.defaults.color = isDark ? "white": "black";
-  const defaultOptions: React.ComponentProps<typeof Line>['options'] = {
+  ChartJS.defaults.color = isDark ? "white" : "black";
+  const defaultOptions: React.ComponentProps<typeof Line>["options"] = {
     responsive: true,
     interaction: {
-      mode: 'index' as const,
+      mode: "index" as const,
       intersect: false,
     },
     plugins: {
       title: {
-          align: "start",
-          fullSize: true,
-          display: true,
-          text: '  ' + tableName,
-          font: {
-            size: 16
-          }
+        align: "start",
+        fullSize: true,
+        display: true,
+        text: "  " + tableName,
+        font: {
+          size: 16,
         },
+      },
     },
     scales: {
       y: {
         title: {
           text: datasets[0].yTitle,
-          align: 'center',
+          align: "center",
           display: true,
         },
-        type: 'linear' as const,
+        type: "linear" as const,
         display: true,
-        position: 'left' as const,
+        position: "left" as const,
       },
       y1: {
         title: {
           text: datasets[1].yTitle,
-          align: 'center',
+          align: "center",
           display: true,
         },
-        type: 'linear' as const,
+        type: "linear" as const,
         display: true,
-        position: 'right' as const,
+        position: "right" as const,
         grid: {
           drawOnChartArea: false,
         },
       },
     },
   };
-  return <Line className="bg-white dark:bg-gray-800 shadow-lg" options={defaultOptions} data={{ labels, datasets }} />
+  return (
+    <Line
+      className="bg-white dark:bg-gray-800 shadow-lg"
+      options={defaultOptions}
+      data={{ labels, datasets }}
+    />
+  );
 };
 
 export default Graph;

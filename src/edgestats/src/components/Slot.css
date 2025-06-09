@@ -1,7 +1,13 @@
-@keyframes slot-gradient { 
-    0%{background-position:10% 0%}
-    50%{background-position:91% 100%}
-    100%{background-position:10% 0%}
+@keyframes slot-gradient {
+  0% {
+    background-position: 10% 0%;
+  }
+  50% {
+    background-position: 91% 100%;
+  }
+  100% {
+    background-position: 10% 0%;
+  }
 }
 
 .slot {
@@ -9,7 +15,8 @@
 }
 
 .slot-inner {
-  filter: invert(73%) sepia(0%) saturate(1471%) hue-rotate(143deg) brightness(92%) contrast(107%);
+  filter: invert(73%) sepia(0%) saturate(1471%) hue-rotate(143deg)
+    brightness(92%) contrast(107%);
 }
 
 .slot-outer {
@@ -17,7 +24,7 @@
 }
 
 .slot-click {
-  background: linear-gradient(transparent, #FFF);
+  background: linear-gradient(transparent, #fff);
   background-size: 200px 200px;
 }
 

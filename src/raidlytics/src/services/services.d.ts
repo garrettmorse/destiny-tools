@@ -9,16 +9,18 @@ export interface UserStats {
   totalDeaths: number;
   killDeathRatio: number;
   weaponKills: Record<string, number>;
-  weaponKillsByAmmoType: Record<"Primary" | "Special" | "Heavy", UserStats['weaponKills']>;
+  weaponKillsByAmmoType: Record<
+    "Primary" | "Special" | "Heavy",
+    UserStats["weaponKills"]
+  >;
   emblemIconUrl: string;
   emblemFullUrl: string;
 }
 
-
 export interface Stats {
   user: UserStats;
   fireteam: Record<string, UserStats> & {
-    periodRange: string
+    periodRange: string;
   };
 }
 
@@ -26,7 +28,7 @@ export interface Raids {
   [raidName: string]: {
     ids: string[];
     imgUrl: string;
-  }
+  };
 }
 
 interface DestinyPlayer {
@@ -37,7 +39,7 @@ interface DestinyPlayer {
   iconPath: string;
   isPublic: boolean;
   membershipId: string;
-  membershipType:  1 | 2 | 3 | 4;
+  membershipType: 1 | 2 | 3 | 4;
 }
 
 export interface UserResult {
