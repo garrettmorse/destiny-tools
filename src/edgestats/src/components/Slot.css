@@ -8,12 +8,7 @@
   transition: all 0.3s;
 }
 
-.slot-mod {
-  margin: 10px;
-}
-
 .slot-inner {
-  margin: 10px;
   filter: invert(73%) sepia(0%) saturate(1471%) hue-rotate(143deg) brightness(92%) contrast(107%);
 }
 
