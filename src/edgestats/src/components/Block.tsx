@@ -276,7 +276,6 @@ const StatTooltipCard: React.FC<TooltipStatCardProps> = ({
               const overflowLerpStart = shouldLerpOverflowMid ? 0 : overflow.statBonus[idx].midValue;
               const overflowLerpEnd = shouldLerpOverflowMid ? overflow.statBonus[idx].midValue : overflow.statBonus[idx].maxValue;
               const overflowInterpolation = (shouldLerpOverflowMid ? overflowBaseValue : overflowBaseValue - 50) / 50;
-              console.log({ overflowBonusDescription, overflowLerpStart, overflowLerpEnd, overflowInterpolation });
               return (
                 <div key={overflowBonusDescription} className="flex justify-between items-center mb-2">
                   <span className="text-left text-gray-300 text-md">
