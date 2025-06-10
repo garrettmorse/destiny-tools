@@ -114,17 +114,17 @@ interface ArmorArchetypeConfig<T extends ArmorArchetype> {
   TERTIARY: Exclude<
     StatType,
     T extends "Brawler"
-      ? "Melee" | "Health" | "Weapons"
+      ? "Melee" | "Health"
       : T extends "Gunner"
-      ? "Weapons" | "Grenade" | "Melee"
+      ? "Weapons" | "Grenade"
       : T extends "Specialist"
-      ? "Class" | "Weapons" | "Super"
+      ? "Class" | "Weapons"
       : T extends "Grenadier"
-      ? "Grenade" | "Super" | "Health"
+      ? "Grenade" | "Super"
       : T extends "Paragon"
-      ? "Super" | "Melee" | "Class"
+      ? "Super" | "Melee"
       : T extends "Bulwark"
-      ? "Health" | "Class" | "Grenade"
+      ? "Health" | "Class"
       : never
   >;
 }
@@ -135,12 +135,12 @@ type TertiaryArmorStat<T extends ArmorArchetype> =
 export const ARCHETYPE_TERTIARY_STAT_MAP: {
   [K in ArmorArchetype]: TertiaryArmorStat<K>[];
 } = {
-  Brawler: ["Grenade", "Super", "Class"],
-  Bulwark: ["Melee", "Super", "Weapons"],
-  Grenadier: ["Class", "Melee", "Weapons"],
-  Gunner: ["Super", "Class", "Health"],
-  Specialist: ["Grenade", "Health", "Melee"],
-  Paragon: ["Grenade", "Health", "Weapons"],
+  Brawler: ["Grenade", "Super", "Class", "Weapons"],
+  Bulwark: ["Melee", "Super", "Weapons", "Grenade"],
+  Grenadier: ["Class", "Melee", "Weapons", "Health"],
+  Gunner: ["Super", "Class", "Health", "Melee"],
+  Specialist: ["Grenade", "Health", "Melee", "Super"],
+  Paragon: ["Grenade", "Health", "Weapons", "Class"],
 } as const;
 
 export const MOD_STAT_MAP = {
