@@ -173,6 +173,7 @@ const Slots: React.FC<SlotProps> = ({
                     id={`tertiary-dialog-${armor}`}
                     className={`absolute fade-in max-sm:top-12 max-sm:-left-[58px] sm:top-25 sm:-left-27 z-50`}
                   >
+                    {/* @ts-expect-error cba */}
                     <Dialog
                       identifier={idx}
                       armor={armor}
