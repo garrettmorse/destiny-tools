@@ -519,3 +519,31 @@ export const useSearchParamEncoder = () => {
 
   return { encodeToUrl, decodeFromUrl };
 };
+
+export const TYPE_PARAM_MAP = {
+  archetype: 0,
+  tertiary: 1,
+  mod: 2,
+};
+
+interface BaseDialogClick {
+  armorKind: ArmorKind;
+}
+
+interface ArchetypeDialogClick {
+  selection: ArmorArchetype | null;
+  updateType: "archetype";
+}
+
+interface ModDialogClick {
+  selection: ModType | null;
+  updateType: "mod";
+}
+
+interface TertiaryDialogClick {
+  selection: StatType | null;
+  updateType: "tertiary";
+}
+
+export type DialogClick = BaseDialogClick &
+  (ArchetypeDialogClick | ModDialogClick | TertiaryDialogClick);
