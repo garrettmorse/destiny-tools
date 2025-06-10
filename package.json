@@ -7,7 +7,7 @@
     "dev": "node --watch src/index.js",
     "build:all": "npm run build:raid && npm run build:edge",
     "build:raid": "cd src/raidlytics && npm run build && cd ../.. && rm -rf dist/raidlytics && mv src/raidlytics/dist dist",
-    "build:edge": "cd src/edgestats && npm run build && cd ../.. && rm -rf dist/edgestats && mv src/edgestats/dist dist"
+    "build:edge": "cd src/edgestats && npm run build && cd ../.. && rm -rf dist/edgestats && mv src/edgestats/dist/edgestats dist"
   },
   "repository": {
     "type": "git",
