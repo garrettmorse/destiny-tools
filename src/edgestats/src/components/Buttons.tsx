@@ -17,9 +17,11 @@ const Buttons: React.FC<ButtonProps> = ({
       className="w-25 bg-green-500 hover:bg-gradient-to-b after:bg-yellow-400 active:hover:ring-1 active:scale-99 from-green-400 to-green-800 items-center transition-all duration-500 p-1 rounded"
       onClick={copyLink}
     >
-      <span id="default-message">Create Link</span>
+      <span id="default-message" className="text-center">
+        Create Link
+      </span>
       <span id="success-message" className="hidden">
-        <div className="inline-flex items-center">Link Copied!</div>
+        <div className="inline-flex text-center">Link Copied!</div>
       </span>
     </button>
     <button

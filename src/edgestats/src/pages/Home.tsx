@@ -1,40 +1,72 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Slots from "../components/Slots";
 import StatChart from "../components/StatChart";
 import Buttons from "../components/Buttons";
 import {
   ARCHETYPE_TERTIARY_STAT_MAP,
+  FRAGMENTS,
   getStats,
-  useSearchParamEncoder,
+  INITIAL_FRAGMENT_STATE,
+  useArmorParamEncoder,
+  useFragmentParamEncoder,
 } from "../util";
-import type { ArmorKind, ArmorState, DialogClick } from "../util";
+import type {
+  ArmorKind,
+  ArmorState,
+  DialogClick,
+  FragmentType,
+  StatType,
+  Fragments,
+} from "../util";
 import { useSearchParams } from "react-router";
 import "./Home.css";
+import FragmentsCard from "../components/Fragments";
+
+const initialFragmentState = structuredClone(INITIAL_FRAGMENT_STATE);
 
 const HomePage: React.FC = () => {
-  const { decodeFromUrl, encodeToUrl } = useSearchParamEncoder();
-  const params = decodeFromUrl(window.location.href);
+  const { decodeFromUrl: decodeArmor, encodeToUrl: encodeArmor } =
+    useArmorParamEncoder();
+  const { decodeFromUrl: decodeFragments, encodeToUrl: encodeFragments } =
+    useFragmentParamEncoder();
+  const armorParams = decodeArmor(window.location.href);
+  const fragmentParams = decodeFragments(window.location.href);
   const [, setSearchParams] = useSearchParams();
   const [helmetArchetype, setHelmetArchetype] = useState<ArmorState | null>(
-    params.Helmet as unknown as ArmorState
+    armorParams.Helmet as unknown as ArmorState
   );
   const [glovesArchetype, setGlovesArchetype] = useState<ArmorState | null>(
-    params.Gloves as unknown as ArmorState
+    armorParams.Gloves as unknown as ArmorState
   );
   const [chestArchetype, setChestArchetype] = useState<ArmorState | null>(
-    params.Chest as unknown as ArmorState
+    armorParams.Chest as unknown as ArmorState
   );
   const [bootsArchetype, setBootsArchetype] = useState<ArmorState | null>(
-    params.Boots as unknown as ArmorState
+    armorParams.Boots as unknown as ArmorState
   );
   const [classItemArchetype, setClassItemArchetype] =
-    useState<ArmorState | null>(params.Class as unknown as ArmorState);
+    useState<ArmorState | null>(armorParams.Class as unknown as ArmorState);
   const [currentSlotHover, setCurrentSlotHover] = useState<{
     armorKind: ArmorKind;
     type: "archetype" | "mod" | "tertiary";
   } | null>(null);
   const [masterwork, toggleMasterwork] = useState<boolean>(false);
+  const [selectedFragmentTab, setSelectedFragmentTab] = useState<FragmentType>(
+    (fragmentParams?.f?.at(0) as FragmentType) ?? "Arc"
+  );
 
+  useEffect(() => {
+    Object.entries(fragmentParams?.f?.at(1) ?? {}).forEach(
+      ([fragmentType, fragmentCollection]) => {
+        for (const enabledFragment of Object.keys(fragmentCollection)) {
+          // @ts-expect-error cba
+          initialFragmentState[fragmentType][enabledFragment] = true;
+        }
+      }
+    );
+  }, []);
+  const [fragments, setFragments] = useState(initialFragmentState);
+  // const [selectedFragments];
   const STATE_MAP = {
     Helmet: {
       get: helmetArchetype,
@@ -58,9 +90,23 @@ const HomePage: React.FC = () => {
     },
   };
 
+  const [playerStats, setPlayerStats] = useState<Record<StatType, number>>(
+    getStats(
+      // @ts-expect-error cba
+      Object.keys(STATE_MAP).reduce(
+        (acc, armor) => ({
+          ...acc,
+          [armor]: STATE_MAP[armor as ArmorKind].get,
+        }),
+        {}
+      ),
+      masterwork
+    )
+  );
+
   let copyTimeout: NodeJS.Timeout | null;
   const generateLink = () => {
-    const encodedParams = encodeToUrl(
+    const encodedArmorParams = encodeArmor(
       Object.keys(STATE_MAP).reduce((acc, armor) => {
         const key = armor as keyof typeof STATE_MAP;
         // @ts-expect-error cba
@@ -72,6 +118,20 @@ const HomePage: React.FC = () => {
         return acc;
       }, {})
     );
+    console.log(encodedArmorParams);
+    const allFragments = Object.keys(fragments)
+      .map((fragmentType) =>
+        // @ts-expect-error cba
+        Object.keys(fragments[fragmentType]).filter(
+          // @ts-expect-error cba
+          (fragmentName) => fragments[fragmentType][fragmentName]
+        )
+      )
+      .flat() as Fragments[];
+    const encodedFragmentParams = encodeFragments({
+      fragments: allFragments,
+      active: selectedFragmentTab,
+    });
     if (!copyTimeout) {
       const defaultButtonMsg = document.getElementById("default-message");
       const successButtonMsg = document.getElementById("success-message");
@@ -88,7 +148,21 @@ const HomePage: React.FC = () => {
         copyTimeout = null;
       }, 2000);
     }
-    navigator.clipboard.writeText(`${window.location.href}?${encodedParams}`);
+    if (encodedArmorParams && encodedFragmentParams) {
+      navigator.clipboard.writeText(
+        `${window.location.href}?${encodedArmorParams}&${encodedFragmentParams}&t=${selectedFragmentTab}`
+      );
+    } else if (encodedArmorParams) {
+      navigator.clipboard.writeText(
+        `${window.location.href}?${encodedArmorParams}`
+      );
+    } else if (encodedFragmentParams) {
+      navigator.clipboard.writeText(
+        `${window.location.href}?${encodedFragmentParams}&t=${selectedFragmentTab}`
+      );
+    } else {
+      navigator.clipboard.writeText(`${window.location.href}`);
+    }
   };
 
   useEffect(() => {
@@ -99,6 +173,67 @@ const HomePage: React.FC = () => {
     for (const state of Object.values(STATE_MAP)) {
       state.set(null);
     }
+    // TODO clear fragment selections
+    setFragments(INITIAL_FRAGMENT_STATE);
+  };
+
+  const calculateTotalStats = useCallback(() => {
+    const armorStates = Object.keys(STATE_MAP).reduce(
+      (acc, armor) => ({
+        ...acc,
+        [armor]: STATE_MAP[armor as ArmorKind].get,
+      }),
+      {}
+    );
+    // @ts-expect-error cba
+    const baseStats = getStats(armorStates, masterwork);
+    const fragmentStats = Object.keys(fragments[selectedFragmentTab])
+      .filter(
+        // @ts-expect-error cba
+        (fragmentName) => fragments[selectedFragmentTab][fragmentName]
+      )
+      .reduce(
+        (stats, fragment) => {
+          // @ts-expect-error cba
+          const fragmentStats = FRAGMENTS[selectedFragmentTab][fragment];
+          Object.keys(fragmentStats).forEach(
+            (statName) =>
+              (stats[statName as StatType] += fragmentStats[statName])
+          );
+          return stats;
+        },
+        { Super: 0, Class: 0, Weapons: 0, Health: 0, Grenade: 0, Melee: 0 }
+      );
+    const totalStats = { ...baseStats };
+    Object.entries(fragmentStats).forEach(([stat, value]) => {
+      totalStats[stat as StatType] += value || 0;
+    });
+
+    return totalStats;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    fragments,
+    masterwork,
+    selectedFragmentTab,
+    glovesArchetype,
+    chestArchetype,
+    helmetArchetype,
+    classItemArchetype,
+    bootsArchetype,
+  ]);
+
+  useEffect(() => {
+    setPlayerStats(calculateTotalStats());
+  }, [calculateTotalStats]);
+  const handleFragmentToggle = (fragment: Fragments) => {
+    setFragments({
+      ...fragments,
+      [selectedFragmentTab]: {
+        ...fragments[selectedFragmentTab],
+        // @ts-expect-error cba
+        [fragment]: !fragments[selectedFragmentTab][fragment],
+      },
+    });
   };
 
   const handleDialogClick: (options: DialogClick) => void = ({
@@ -159,15 +294,6 @@ const HomePage: React.FC = () => {
     slotTimeout = setTimeout(() => setCurrentSlotHover(null), 100);
   };
 
-  const PLAYER_STATS = getStats(
-    // @ts-expect-error cba
-    Object.keys(STATE_MAP).reduce(
-      (acc, armor) => ({ ...acc, [armor]: STATE_MAP[armor as ArmorKind].get }),
-      {}
-    ),
-    masterwork
-  );
-
   return (
     <div className="min-h-screen place-items-center justify-top py-4">
       <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-2 text-center">
@@ -195,7 +321,19 @@ const HomePage: React.FC = () => {
           />
         </div>
         <div id="chart" className="flex flex-col items-center mb-4">
-          <StatChart {...PLAYER_STATS} />
+          <StatChart {...playerStats} />
+        </div>
+        <div id="fragments" className="flex flex-col items-center">
+          <FragmentsCard
+            // @ts-expect-error cba
+            fragments={{
+              [selectedFragmentTab]: fragments[selectedFragmentTab],
+            }}
+            handleFragmentTabClick={(fragmentType) =>
+              setSelectedFragmentTab(fragmentType)
+            }
+            handleFragmentToggle={handleFragmentToggle}
+          />
         </div>
       </div>
     </div>

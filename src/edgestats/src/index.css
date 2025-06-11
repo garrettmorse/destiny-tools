@@ -1,1 +1,25 @@
 @import "tailwindcss";
+
+.bg-arc {
+  background-color: #476979;
+}
+
+.bg-solar {
+  background-color: #742e12;
+}
+
+.bg-void {
+  background-color: #4a3756;
+}
+
+.bg-stasis {
+  background-color: #293f90;
+}
+
+.bg-strand {
+  background-color: #1a5b30;
+}
+
+.bg-prismatic {
+  background-color: #8d385b;
+}
