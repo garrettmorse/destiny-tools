@@ -34,7 +34,7 @@ const FragmentsCard: React.FC<FragmentProps> = ({
           <button
             className={`${
               FRAGMENT_BG_MAP[fragmentName as FragmentType]
-            } p-2 rounded-xs active:scale-90 transition-transform duration-100 ${
+            } p-2 cursor-pointer rounded-xs active:scale-90 transition-transform duration-100 ${
               activeFragmentName === fragmentName ? "border-b-2" : ""
             }`}
             key={fragmentName}
