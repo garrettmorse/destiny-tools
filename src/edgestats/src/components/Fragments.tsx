@@ -81,7 +81,6 @@ const FragmentList: React.FC<FragmentListProps<FragmentType>> = ({
   for (let i = 0; i < fragmentNames.length; i++) {
     fragmentStatMatrix[i] = Array(6).fill(0); // 6 stats
   }
-  // console.log(fragmentStatMatrix);
   return (
     <div className="flex flex-col border border-gray-800 shadow-xl mb-50">
       <div className="flex max-sm:gap-2 sm:gap-4">

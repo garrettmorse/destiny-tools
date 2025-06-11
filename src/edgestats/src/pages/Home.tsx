@@ -118,7 +118,6 @@ const HomePage: React.FC = () => {
         return acc;
       }, {})
     );
-    console.log(encodedArmorParams);
     const allFragments = Object.keys(fragments)
       .map((fragmentType) =>
         // @ts-expect-error cba
@@ -150,7 +149,7 @@ const HomePage: React.FC = () => {
     }
     if (encodedArmorParams && encodedFragmentParams) {
       navigator.clipboard.writeText(
-        `${window.location.href}?${encodedArmorParams}&${encodedFragmentParams}&t=${selectedFragmentTab}`
+        `${window.location.href}?${encodedArmorParams}&${encodedFragmentParams}`
       );
     } else if (encodedArmorParams) {
       navigator.clipboard.writeText(
@@ -158,7 +157,7 @@ const HomePage: React.FC = () => {
       );
     } else if (encodedFragmentParams) {
       navigator.clipboard.writeText(
-        `${window.location.href}?${encodedFragmentParams}&t=${selectedFragmentTab}`
+        `${window.location.href}?${encodedFragmentParams}`
       );
     } else {
       navigator.clipboard.writeText(`${window.location.href}`);

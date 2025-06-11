@@ -782,7 +782,6 @@ class SearchParamEncoder {
       }
     });
     if (params?.fragmentParams) {
-      console.log(params.fragmentParams.fragments);
       const encodedParams = this.encodeParamList(
         params.fragmentParams.fragments,
         "fragment"
