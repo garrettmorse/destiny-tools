@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import Slots from "../components/Slots";
 import StatChart from "../components/StatChart";
 import Buttons from "../components/Buttons";
+import Tiers from "../components/Tiers";
 import {
   ARCHETYPE_TERTIARY_STAT_MAP,
   FRAGMENTS,
@@ -17,6 +18,7 @@ import type {
   FragmentType,
   StatType,
   Fragments,
+  Tier,
 } from "../util";
 import { useSearchParams } from "react-router";
 import "./Home.css";
@@ -52,6 +54,9 @@ const HomePage: React.FC = () => {
   } | null>(null);
   const [masterwork, toggleMasterwork] = useState<boolean>(
     !!searchParams.get("mw")
+  );
+  const [tier, setTier] = useState<Tier>(
+    Number(searchParams.get("e") ?? "5") as Tier
   );
   const [selectedFragmentTab, setSelectedFragmentTab] = useState<FragmentType>(
     (fragmentParams?.f?.at(0) as FragmentType) ?? "Arc"
@@ -102,7 +107,8 @@ const HomePage: React.FC = () => {
         }),
         {}
       ),
-      masterwork
+      masterwork,
+      tier
     )
   );
 
@@ -134,6 +140,7 @@ const HomePage: React.FC = () => {
       active: selectedFragmentTab,
     });
     const masterworkParams = masterwork ? "mw=1" : null;
+    const tierParams = `e=${tier}`;
     if (!copyTimeout) {
       const defaultButtonMsg = document.getElementById("default-message");
       const successButtonMsg = document.getElementById("success-message");
@@ -150,50 +157,23 @@ const HomePage: React.FC = () => {
         copyTimeout = null;
       }, 2000);
     }
+    const paramArr: string[] = [];
+    if (encodedArmorParams) {
+      paramArr.push(encodedArmorParams);
+    }
+    if (encodedFragmentParams) {
+      paramArr.push(encodedFragmentParams);
+    }
+    if (masterworkParams) {
+      paramArr.push(masterworkParams);
+    }
+    if (tierParams) {
+      paramArr.push(tierParams);
+    }
 
-    // 111
-    if (encodedArmorParams && encodedFragmentParams && masterwork) {
-      navigator.clipboard.writeText(
-        `${window.location.href}?${encodedArmorParams}&${encodedFragmentParams}&${masterworkParams}`
-      );
-      // 110
-    } else if (encodedArmorParams && encodedFragmentParams && !masterwork) {
-      navigator.clipboard.writeText(
-        `${window.location.href}?${encodedArmorParams}&${encodedFragmentParams}`
-      );
-      //101
-    } else if (encodedArmorParams && !encodedFragmentParams && masterwork) {
-      navigator.clipboard.writeText(
-        `${window.location.href}?${encodedArmorParams}&${masterworkParams}`
-      );
-      // 100
-    } else if (encodedArmorParams && !encodedFragmentParams && !masterwork) {
-      navigator.clipboard.writeText(
-        `${window.location.href}?${encodedArmorParams}`
-      );
-    }
-    // 011
-    else if (!encodedArmorParams && encodedFragmentParams && masterwork) {
-      navigator.clipboard.writeText(
-        `${window.location.href}?${encodedFragmentParams}&${masterworkParams}`
-      );
-    }
-    // 010
-    else if (!encodedArmorParams && encodedFragmentParams && !masterwork) {
-      navigator.clipboard.writeText(
-        `${window.location.href}?${encodedFragmentParams}`
-      );
-    }
-    // 001
-    else if (!encodedArmorParams && !encodedFragmentParams && masterwork) {
-      navigator.clipboard.writeText(
-        `${window.location.href}?${masterworkParams}`
-      );
-    }
-    // 000
-    else {
-      navigator.clipboard.writeText(`${window.location.href}`);
-    }
+    navigator.clipboard.writeText(
+      `${window.location.href}?${paramArr.join("&")}`
+    );
   };
 
   useEffect(() => {
@@ -217,7 +197,7 @@ const HomePage: React.FC = () => {
       {}
     );
     // @ts-expect-error cba
-    const baseStats = getStats(armorStates, masterwork);
+    const baseStats = getStats(armorStates, masterwork, tier);
     const fragmentStats = Object.keys(fragments[selectedFragmentTab])
       .filter(
         // @ts-expect-error cba
@@ -251,6 +231,7 @@ const HomePage: React.FC = () => {
     helmetArchetype,
     classItemArchetype,
     bootsArchetype,
+    tier,
   ]);
 
   useEffect(() => {
@@ -325,6 +306,10 @@ const HomePage: React.FC = () => {
     slotTimeout = setTimeout(() => setCurrentSlotHover(null), 100);
   };
 
+  const handleTierSelect = (selectedTier: Tier) => {
+    setTier(selectedTier);
+  };
+
   return (
     <div className="min-h-screen place-items-center justify-top py-4">
       <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-2 text-center">
@@ -342,13 +327,22 @@ const HomePage: React.FC = () => {
             toggleMasterwork={toggleMasterwork}
           />
         </div>
-        <div id="slots" className="flex flex-col">
+        <div id="slots" className="flex flex-col mb-2">
           <Slots
             currentSlotHover={currentSlotHover}
             handleSlotEnter={handleSlotEnter}
             handleSlotLeave={handleSlotLeave}
             handleDialogClick={handleDialogClick}
             slotData={STATE_MAP}
+          />
+        </div>
+        <div
+          id="tiers"
+          className="flex gap-2 align-middle border- items-center justify-center  mb-2"
+        >
+          <Tiers
+            handleTierSelect={handleTierSelect}
+            selectedTier={tier as Tier}
           />
         </div>
         <div id="chart" className="flex flex-col items-center mb-4">

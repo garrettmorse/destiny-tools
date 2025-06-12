@@ -72,10 +72,36 @@ export const ARMOR: ArmorKind[] = [
   "Class",
 ] as const;
 
+export type Tier = 1 | 2 | 3 | 4 | 5;
+
 export const STAT_COUNT = {
-  PRIMARY: 30,
-  SECONDARY: 25,
-  TERTIARY: 20,
+  tier: {
+    5: {
+      PRIMARY: 30,
+      SECONDARY: 25,
+      TERTIARY: 20,
+    },
+    4: {
+      PRIMARY: 30,
+      SECONDARY: 25,
+      TERTIARY: 15,
+    },
+    3: {
+      PRIMARY: 30,
+      SECONDARY: 20,
+      TERTIARY: 10,
+    },
+    2: {
+      PRIMARY: 30,
+      SECONDARY: 15,
+      TERTIARY: 10,
+    },
+    1: {
+      PRIMARY: 25,
+      SECONDARY: 15,
+      TERTIARY: 10,
+    },
+  },
   MAJOR_MOD: 10,
   MINOR_MOD: 5,
   MASTERWORK: 5,
@@ -277,7 +303,8 @@ export const STAT_DESCRIPTION_MAP = {
 
 export const getStats = (
   archetypes: Record<ArmorKind, ArmorState | null>,
-  masterwork: boolean
+  masterwork: boolean,
+  tier: Tier
 ) => {
   const stats: Record<StatType, number> = {
     Health: 0,
@@ -300,10 +327,10 @@ export const getStats = (
     const primaryStat = ARCHETYPE_PRIMARY_STAT_MAP[archetype];
     const secondaryStat = ARCHETYPE_SECONDARY_STAT_MAP[archetype];
     const tertiaryStat = archetypes[armor]?.tertiary as StatType;
-    stats[primaryStat] += STAT_COUNT.PRIMARY;
-    stats[secondaryStat] += STAT_COUNT.SECONDARY;
+    stats[primaryStat] += STAT_COUNT.tier[tier].PRIMARY;
+    stats[secondaryStat] += STAT_COUNT.tier[tier].SECONDARY;
     if (tertiaryStat) {
-      stats[tertiaryStat] += STAT_COUNT.TERTIARY;
+      stats[tertiaryStat] += STAT_COUNT.tier[tier].TERTIARY;
     }
     if (masterwork && tertiaryStat) {
       // get the 3 stats that arent primary, secondary, tertiary
