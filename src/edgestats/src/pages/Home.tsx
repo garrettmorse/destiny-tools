@@ -31,7 +31,7 @@ const HomePage: React.FC = () => {
     useFragmentParamEncoder();
   const armorParams = decodeArmor(window.location.href);
   const fragmentParams = decodeFragments(window.location.href);
-  const [, setSearchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [helmetArchetype, setHelmetArchetype] = useState<ArmorState | null>(
     armorParams.Helmet as unknown as ArmorState
   );
@@ -50,7 +50,9 @@ const HomePage: React.FC = () => {
     armorKind: ArmorKind;
     type: "archetype" | "mod" | "tertiary";
   } | null>(null);
-  const [masterwork, toggleMasterwork] = useState<boolean>(false);
+  const [masterwork, toggleMasterwork] = useState<boolean>(
+    !!searchParams.get("mw")
+  );
   const [selectedFragmentTab, setSelectedFragmentTab] = useState<FragmentType>(
     (fragmentParams?.f?.at(0) as FragmentType) ?? "Arc"
   );
@@ -131,6 +133,7 @@ const HomePage: React.FC = () => {
       fragments: allFragments,
       active: selectedFragmentTab,
     });
+    const masterworkParams = masterwork ? "mw=1" : null;
     if (!copyTimeout) {
       const defaultButtonMsg = document.getElementById("default-message");
       const successButtonMsg = document.getElementById("success-message");
@@ -147,19 +150,48 @@ const HomePage: React.FC = () => {
         copyTimeout = null;
       }, 2000);
     }
-    if (encodedArmorParams && encodedFragmentParams) {
+
+    // 111
+    if (encodedArmorParams && encodedFragmentParams && masterwork) {
+      navigator.clipboard.writeText(
+        `${window.location.href}?${encodedArmorParams}&${encodedFragmentParams}&${masterworkParams}`
+      );
+      // 110
+    } else if (encodedArmorParams && encodedFragmentParams && !masterwork) {
       navigator.clipboard.writeText(
         `${window.location.href}?${encodedArmorParams}&${encodedFragmentParams}`
       );
-    } else if (encodedArmorParams) {
+      //101
+    } else if (encodedArmorParams && !encodedFragmentParams && masterwork) {
+      navigator.clipboard.writeText(
+        `${window.location.href}?${encodedArmorParams}&${masterworkParams}`
+      );
+      // 100
+    } else if (encodedArmorParams && !encodedFragmentParams && !masterwork) {
       navigator.clipboard.writeText(
         `${window.location.href}?${encodedArmorParams}`
       );
-    } else if (encodedFragmentParams) {
+    }
+    // 011
+    else if (!encodedArmorParams && encodedFragmentParams && masterwork) {
+      navigator.clipboard.writeText(
+        `${window.location.href}?${encodedFragmentParams}&${masterworkParams}`
+      );
+    }
+    // 010
+    else if (!encodedArmorParams && encodedFragmentParams && !masterwork) {
       navigator.clipboard.writeText(
         `${window.location.href}?${encodedFragmentParams}`
       );
-    } else {
+    }
+    // 001
+    else if (!encodedArmorParams && !encodedFragmentParams && masterwork) {
+      navigator.clipboard.writeText(
+        `${window.location.href}?${masterworkParams}`
+      );
+    }
+    // 000
+    else {
       navigator.clipboard.writeText(`${window.location.href}`);
     }
   };
