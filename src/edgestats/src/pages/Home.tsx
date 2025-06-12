@@ -333,6 +333,7 @@ const HomePage: React.FC = () => {
             handleSlotEnter={handleSlotEnter}
             handleSlotLeave={handleSlotLeave}
             handleDialogClick={handleDialogClick}
+            tier={tier}
             slotData={STATE_MAP}
           />
         </div>

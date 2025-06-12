@@ -1,5 +1,11 @@
 import Slot from "./Slot";
-import type { ArmorArchetype, ArmorKind, StatType, ModType } from "../util";
+import type {
+  ArmorArchetype,
+  ArmorKind,
+  StatType,
+  ModType,
+  Tier,
+} from "../util";
 import {
   ARCHETYPES,
   MODS,
@@ -8,6 +14,7 @@ import {
   ARCHETYPE_TERTIARY_STAT_MAP,
   PRIMARY_STAT_ARCHETYPE_MAP,
   MOD_STAT_MAP,
+  STAT_COUNT,
 } from "../util";
 import "./Dialog.css";
 
@@ -19,6 +26,7 @@ interface BaseProps {
 interface ArchetypeProps {
   archetype: true;
   mod?: never;
+  tier: Tier;
   tertiary?: never;
   withArchetype?: never;
   handleClick: (s: ArmorArchetype | null) => void;
@@ -27,6 +35,7 @@ interface ArchetypeProps {
 interface ModProps {
   archetype?: never;
   mod: true;
+  tier?: never;
   tertiary?: never;
   withArchetype?: never;
   handleClick: (s: ModType | null) => void;
@@ -35,6 +44,7 @@ interface ModProps {
 interface TertiaryProps {
   archetype?: never;
   mod?: never;
+  tier: Tier;
   tertiary: true;
   withArchetype: ArmorArchetype;
   handleClick: (s: StatType | null) => void;
@@ -44,6 +54,7 @@ interface TooltipProps {
   archetype?: ArmorArchetype;
   tertiary?: StatType;
   mod?: ModType;
+  tier?: Tier;
 }
 
 const Tooltip: React.FC<TooltipProps> = (props) => {
@@ -57,9 +68,11 @@ const Tooltip: React.FC<TooltipProps> = (props) => {
             {props.archetype}
           </div>
           <div className="text-left text-nowrap">
-            {ARCHETYPE_PRIMARY_STAT_MAP[props.archetype]} +30
+            {ARCHETYPE_PRIMARY_STAT_MAP[props.archetype]} +
+            {STAT_COUNT.tier[props.tier as Tier].PRIMARY}
             <br />
-            {ARCHETYPE_SECONDARY_STAT_MAP[props.archetype]} +25
+            {ARCHETYPE_SECONDARY_STAT_MAP[props.archetype]} +
+            {STAT_COUNT.tier[props.tier as Tier].SECONDARY}
           </div>
         </div>
       )}
@@ -76,7 +89,7 @@ const Tooltip: React.FC<TooltipProps> = (props) => {
       {props.tertiary && (
         <div>
           <div className="mb-1 max-sm:text-xs sm:text-lg text-nowrap text-left">
-            {props.tertiary} +20
+            {props.tertiary} +{STAT_COUNT.tier[props.tier as Tier].TERTIARY}
           </div>
         </div>
       )}
@@ -116,7 +129,7 @@ const Dialog: React.FC<DialogProps> = (props) => {
             px-1 max-sm:text-xs sm:text-lg text-gray-100 
             rounded-md opacity-0 text-center z-100"
             >
-              <Tooltip archetype={archetype} />
+              <Tooltip tier={props.tier} archetype={archetype} />
             </span>
             <Slot
               identifier={identifier + "-" + idx}
@@ -142,7 +155,7 @@ const Dialog: React.FC<DialogProps> = (props) => {
             px-1 max-sm:text-xs sm:text-lg text-gray-100 
             rounded-md opacity-0 text-center z-100"
             >
-              <Tooltip tertiary={stat} />
+              <Tooltip tier={props.tier} tertiary={stat} />
             </span>
             <Slot
               identifier={identifier + "-" + idx}

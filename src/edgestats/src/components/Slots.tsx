@@ -5,12 +5,14 @@ import type {
   DialogClick,
   StatType,
   ModType,
+  Tier,
 } from "../util";
 import { ARMOR, PRIMARY_STAT_ARCHETYPE_MAP } from "../util";
 import Dialog from "./Dialog";
 import Slot from "./Slot";
 
 interface SlotProps {
+  tier: Tier;
   currentSlotHover: {
     armorKind: ArmorKind;
     type: "archetype" | "mod" | "tertiary";
@@ -45,6 +47,7 @@ const Slots: React.FC<SlotProps> = ({
   handleDialogClick,
   handleSlotEnter,
   handleSlotLeave,
+  tier,
   slotData,
 }) => (
   <>
@@ -107,6 +110,7 @@ const Slots: React.FC<SlotProps> = ({
                       identifier={idx}
                       armor={armor}
                       archetype
+                      tier={tier}
                       handleClick={(archetype: ArmorArchetype | null) =>
                         handleDialogClick({
                           armorKind: armor,
@@ -178,6 +182,7 @@ const Slots: React.FC<SlotProps> = ({
                       identifier={idx}
                       armor={armor}
                       tertiary
+                      tier={tier}
                       withArchetype={slotData[armor].get?.archetype}
                       handleClick={(tertiary: StatType | null) =>
                         handleDialogClick({
