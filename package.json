@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "node --watch src/index.js",
-    "build:all": "npm run build:raid && npm run build:edge && npm run build:ticket",
-    "build:raid": "cd src/raidlytics && npm run build && cd ../.. && rm -rf dist/raidlytics && mv src/raidlytics/dist dist",
+    "build:all": "rm -rf dist && mkdir dist && npm run build:raid && npm run build:edge && npm run build:ticket",
+    "build:raid": "cd src/raidlytics && npm run build && cd ../..",
     "build:edge": "cd src/edgestats && npm run build && cd ../.. && rm -rf dist/edgestats && mv src/edgestats/dist/edgestats dist",
     "build:ticket": "rm -rf dist/ticket && mkdir dist/ticket && cp -r src/ticket/* dist/ticket"
   },
