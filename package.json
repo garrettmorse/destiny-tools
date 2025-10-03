@@ -8,7 +8,7 @@
     "build:all": "npm run build:raid && npm run build:edge && npm run build:ticket",
     "build:raid": "cd src/raidlytics && npm run build && cd ../.. && rm -rf dist/raidlytics && mv src/raidlytics/dist dist",
     "build:edge": "cd src/edgestats && npm run build && cd ../.. && rm -rf dist/edgestats && mv src/edgestats/dist/edgestats dist",
-    "build:ticket": "cp src/ticket/* dist/ticket"
+    "build:ticket": "mkdir dist/ticket && cp -r src/ticket/* dist/ticket"
   },
   "repository": {
     "type": "git",
