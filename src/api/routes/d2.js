@@ -4,6 +4,7 @@ import {
   fetchAllRaidActivities,
   fetchPGCR,
   gatherFireteamRaidStats,
+  getAllD2Content,
   getD2Content,
 } from "../util.js";
 import CONSTANTS from "../constants.js";
@@ -15,7 +16,7 @@ const d2 = Router();
 // - DestinyCollectibleDefinition
 // - DestinyInventoryItemDefinition
 //  - items with ammotypes only
-const content = await getD2Content();
+const content = await getAllD2Content();
 
 // UI will debounce and call this every 0.5 sec
 d2.get("/searchUser", async (req, res) => {
@@ -32,7 +33,7 @@ d2.get("/searchUser", async (req, res) => {
     return res.status(500).json(CONSTANTS.ERRORS[500]);
   }
   const searchResults = data.Response.searchResults.filter(
-    (result) => result?.destinyMemberships?.length > 0,
+    (result) => result?.destinyMemberships?.length > 0
   );
   return res.json(searchResults);
 });
@@ -44,8 +45,8 @@ d2.get("/mods", async (_, res) => {
         ...acc,
         [mod.displayProperties.name]: mod.displayProperties.icon,
       }),
-      {},
-    ),
+      {}
+    )
   );
 });
 
@@ -74,7 +75,7 @@ d2.get("/raids", async (_, res) => {
         ([_, data]) =>
           data.activityTypeHash !== 0 &&
           content.DestinyActivityTypeDefinition[data.activityTypeHash]
-            .displayProperties.name === "Raid",
+            .displayProperties.name === "Raid"
       ) // n
       .map(([hash, data]) => [
         data.originalDisplayProperties.name,
@@ -85,7 +86,7 @@ d2.get("/raids", async (_, res) => {
       .sort(
         ([raidA], [raidB]) =>
           (RAID_SORT_MAP[raidA] ?? RAID_SORT_MAP.default++) -
-          (RAID_SORT_MAP[raidB] ?? RAID_SORT_MAP.default++),
+          (RAID_SORT_MAP[raidB] ?? RAID_SORT_MAP.default++)
       )
       .reverse()
       .reduce((raidMap, [raid, hash, image]) => {
@@ -94,7 +95,7 @@ d2.get("/raids", async (_, res) => {
         }
         raidMap[raid].ids.push(hash);
         return raidMap;
-      }, {}),
+      }, {})
   );
 });
 
@@ -116,14 +117,18 @@ d2.get("/aggregateRaids", async (req, res) => {
       .every(
         (id) =>
           content.DestinyActivityDefinition[id]?.originalDisplayProperties
-            .name === firstRaidColloquialName,
+            .name === firstRaidColloquialName
       )
   ) {
-    return res
-      .status(400)
-      .json({
-        error: `Not all raidIds map to the same raid: ${raidIdArr.map((id) => `(${id}, ${content.DestinyActivityDefinition[id]?.originalDisplayProperties?.name ?? "N/A"})`)}`,
-      });
+    return res.status(400).json({
+      error: `Not all raidIds map to the same raid: ${raidIdArr.map(
+        (id) =>
+          `(${id}, ${
+            content.DestinyActivityDefinition[id]?.originalDisplayProperties
+              ?.name ?? "N/A"
+          })`
+      )}`,
+    });
   }
   if (!userId) {
     return res.status(400).json({ error: 'Missing "userId" query parameter' });
@@ -140,7 +145,7 @@ d2.get("/aggregateRaids", async (req, res) => {
 
   // Destiny2.GetLinkedProfiles
   const [linkedErr, linkedData] = await apiGet(
-    `/Destiny2/-1/Profile/${userId}/LinkedProfiles/`,
+    `/Destiny2/-1/Profile/${userId}/LinkedProfiles/`
   );
   if (linkedErr) {
     console.error("Kaboom while retrieving Linked D2 Profiles");
@@ -150,7 +155,7 @@ d2.get("/aggregateRaids", async (req, res) => {
   const { profiles } = /** @type {{ profiles: any[]}} */ (linkedData.Response);
   const sortedProfiles = profiles.sort(
     ({ dateLastPlayedA }, { dateLastPlayedB }) =>
-      new Date(dateLastPlayedB) - new Date(dateLastPlayedA),
+      new Date(dateLastPlayedB) - new Date(dateLastPlayedA)
   );
   const mostRecentlyPlayedProfile = sortedProfiles[0];
   const {
@@ -160,7 +165,7 @@ d2.get("/aggregateRaids", async (req, res) => {
   } = mostRecentlyPlayedProfile;
   // Destiny2.GetProfile
   const [profileErr, profileData] = await apiGet(
-    `/Destiny2/${membershipType}/Profile/${membershipId}/?components=200`,
+    `/Destiny2/${membershipType}/Profile/${membershipId}/?components=200`
   );
   if (profileErr) {
     console.error("Kaboom while retrieving D2 Profile");
@@ -174,7 +179,7 @@ d2.get("/aggregateRaids", async (req, res) => {
     const [raidActivityErr, raidActivityData] = await fetchAllRaidActivities(
       membershipType,
       membershipId,
-      characterId,
+      characterId
     );
     if (raidActivityErr) {
       console.error("Kaboom while retrieving D2 Raid activities");
@@ -188,24 +193,22 @@ d2.get("/aggregateRaids", async (req, res) => {
   const allRequestedRaidActivities = [];
   for (const raidId of raidIdArr) {
     const requestedRaidActivities = allRaidActivities.filter(
-      (activity) => String(activity.activityDetails.referenceId) === raidId,
+      (activity) => String(activity.activityDetails.referenceId) === raidId
     );
     allRequestedRaidActivities.push(...requestedRaidActivities);
   }
   allRequestedRaidActivities.sort(
     (activityA, activityB) =>
-      new Date(activityB.period) - new Date(activityA.period),
+      new Date(activityB.period) - new Date(activityA.period)
   );
   // find most recent completion
   const mostRecentCompletion = allRequestedRaidActivities.find(
-    (activity) => activity.values.completed.basic.value === 1,
+    (activity) => activity.values.completed.basic.value === 1
   );
   if (!mostRecentCompletion) {
-    return res
-      .status(409)
-      .json({
-        error: `No completions on record for "${firstRaidColloquialName}".`,
-      });
+    return res.status(409).json({
+      error: `No completions on record for "${firstRaidColloquialName}".`,
+    });
   }
 
   // the list of raid activities that eventually led to mostRecentCompletion
@@ -222,7 +225,7 @@ d2.get("/aggregateRaids", async (req, res) => {
   // TODO: now that we have all requested raid activities, we need to use the instance IDs to retrieve PGCRs and begin analysis
   // instance IDs map to PGCRs
   const relevantInstanceIds = relevantRaids.map(
-    (activity) => activity.activityDetails.instanceId,
+    (activity) => activity.activityDetails.instanceId
   );
   /** @type {import('../util').PGCR[]} */
   const allActivityReports = [];
@@ -238,7 +241,7 @@ d2.get("/aggregateRaids", async (req, res) => {
 
   const fireteam = gatherFireteamRaidStats(
     allActivityReports,
-    content.DestinyInventoryItemDefinition,
+    content.DestinyInventoryItemDefinition
   );
   const userStats = fireteam[membershipId];
   delete fireteam[membershipId];

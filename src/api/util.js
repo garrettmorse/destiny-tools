@@ -135,7 +135,7 @@ async function fetchContent() {
 async function getD2Content() {
   if (await fileExists(MANIFEST_LOCATION)) {
     return JSON.parse(
-      await fs.readFile(MANIFEST_LOCATION, { encoding: "utf8" }),
+      await fs.readFile(MANIFEST_LOCATION, { encoding: "utf8" })
     );
   }
   const content = await fetchContent();
@@ -146,7 +146,7 @@ async function getD2Content() {
 async function getAllD2Content() {
   if (await fileExists(MANIFEST_FULL_LOCATION)) {
     return JSON.parse(
-      await fs.readFile(MANIFEST_FULL_LOCATION, { encoding: "utf8" }),
+      await fs.readFile(MANIFEST_FULL_LOCATION, { encoding: "utf8" })
     );
   }
   const content = await fetchAllContent();
@@ -173,7 +173,7 @@ async function getAllD2Content() {
 async function fetchAllRaidActivities(
   membershipType,
   membershipId,
-  characterId,
+  characterId
 ) {
   let page = 0,
     exhausted = false;
@@ -181,7 +181,7 @@ async function fetchAllRaidActivities(
   while (!exhausted) {
     // Destiny2.GetActivityHistory
     const [activityErr, activityData] = await apiGet(
-      `/Destiny2/${membershipType}/Account/${membershipId}/Character/${characterId}/Stats/Activities/?count=250&mode=4&page=${page}`,
+      `/Destiny2/${membershipType}/Account/${membershipId}/Character/${characterId}/Stats/Activities/?count=250&mode=4&page=${page}`
     );
     if (activityErr) return [activityErr, null];
     if (!activityData.Response.activities) {
@@ -220,7 +220,7 @@ async function fetchAllRaidActivities(
  */
 async function fetchPGCR(activityId) {
   const [pgcrErr, pgcrResponse] = await apiGet(
-    `/Destiny2/Stats/PostGameCarnageReport/${activityId}/`,
+    `/Destiny2/Stats/PostGameCarnageReport/${activityId}/`
   );
   return [pgcrErr, pgcrResponse.Response];
 }
@@ -247,7 +247,7 @@ function gatherUserRaidStats(raidPgcrs, accountId, manifest) {
     const userEntries = pgcr.entries.filter(
       (entry) =>
         entry.player.destinyUserInfo.isPublic &&
-        entry.player.destinyUserInfo.membershipId === accountId,
+        entry.player.destinyUserInfo.membershipId === accountId
     );
     if (userEntries.length === 0) {
       continue;
@@ -297,7 +297,7 @@ function gatherUserRaidStats(raidPgcrs, accountId, manifest) {
               Primary: {},
               Special: {},
               Heavy: {},
-            }),
+            })
           ),
         };
         return stats;
@@ -312,7 +312,7 @@ function gatherUserRaidStats(raidPgcrs, accountId, manifest) {
           Special: {},
           Heavy: {},
         },
-      }),
+      })
     );
     userPgcrStats.attempts = 1;
     allUserPgcrStats.push(userPgcrStats);
@@ -335,7 +335,7 @@ function gatherUserRaidStats(raidPgcrs, accountId, manifest) {
       }
       for (const weaponType of Object.values(DESTINY_AMMO_TYPE)) {
         for (const [weaponName, kills] of Object.entries(
-          pgcr.weaponKillsByAmmoType[weaponType],
+          pgcr.weaponKillsByAmmoType[weaponType]
         )) {
           aggregateUserPgcr.weaponKillsByAmmoType[weaponType][weaponName] =
             kills +
@@ -356,12 +356,12 @@ function gatherUserRaidStats(raidPgcrs, accountId, manifest) {
         Special: {},
         Heavy: {},
       },
-    }),
+    })
   );
 
   // sort weapon kills highest to lowest
   allStats.weaponKills = Object.fromEntries(
-    Object.entries(allStats.weaponKills).sort(([, a], [, b]) => b - a),
+    Object.entries(allStats.weaponKills).sort(([, a], [, b]) => b - a)
   );
   return allStats;
 }
@@ -441,5 +441,6 @@ export {
   gatherFireteamRaidStats,
   gatherUserRaidStats,
   getD2Content,
+  getAllD2Content,
   isValidD2DayFormat,
 };
