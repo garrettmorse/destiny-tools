@@ -16,7 +16,7 @@ const d2 = Router();
 // - DestinyCollectibleDefinition
 // - DestinyInventoryItemDefinition
 //  - items with ammotypes only
-const content = await getAllD2Content();
+const content = await getD2Content();
 
 // UI will debounce and call this every 0.5 sec
 d2.get("/searchUser", async (req, res) => {
