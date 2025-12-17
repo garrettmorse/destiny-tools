@@ -67,7 +67,7 @@ async function updateManifestIfNeeded() {
 }
 
 await updateManifestIfNeeded();
-db = new Database(DB_LOCATION, { readonly: true });
+db = new Database(DB_LOCATION);
 db.pragma("journal_mode = WAL");
 
 // NOTE: destiny hashes are unsigned 32-bit, so we must convert when id > 2^31 - 1
