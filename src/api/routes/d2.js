@@ -239,10 +239,7 @@ d2.get("/aggregateRaids", async (req, res) => {
     allActivityReports.push(pgcrData);
   }
 
-  const fireteam = gatherFireteamRaidStats(
-    allActivityReports,
-    content.DestinyInventoryItemDefinition
-  );
+  const fireteam = await gatherFireteamRaidStats(allActivityReports);
   const userStats = fireteam[membershipId];
   delete fireteam[membershipId];
   return res.json({

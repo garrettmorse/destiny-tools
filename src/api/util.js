@@ -3,6 +3,7 @@ import { writeFileSync } from "node:fs";
 import { apiClient, apiGet } from "./client.js";
 import path, { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { getDefinition } from "./db.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -39,13 +40,17 @@ function isValidD2DayFormat(dateIsh) {
 
 /**
  * @param {boolean} retry
- * @returns {Promise<Record<DestinyManifestKey, string>>}
+ * @returns {Promise<Record<string, string>>}
  */
 async function fetchManifest(retry) {
   const [manifestErr, manifestData] = await apiGet("/Destiny2/Manifest");
   if (manifestErr) {
     console.error("Kaboom while retrieving D2 Manifest");
-    if (retry) return fetchManifest(false);
+    if (retry) {
+      console.log("Trying again...");
+      return fetchManifest(false);
+    }
+    return null;
   }
   return manifestData.Response.jsonWorldComponentContentPaths.en;
 }
@@ -54,7 +59,7 @@ async function fetchAllContent() {
   const [manifestErr, manifestData] = await apiGet("/Destiny2/Manifest");
   if (manifestErr) {
     console.error("Kaboom while retrieving D2 Manifest");
-    if (retry) return fetchManifest(false);
+    return null;
   }
   const fullEndpoint = manifestData.Response.jsonWorldContentPaths.en;
   const response = (await apiClient.get(fullEndpoint)).data;
@@ -238,10 +243,9 @@ async function fetchPGCR(activityId) {
 /**
  * @param {PGCR[]} raidPgcrs
  * @param {string} accountId
- * @param {DestinyInventoryItemDefinition} manifest
- * @returns {Omit<User, 'name'>}
+ * @returns {Promise<Omit<User, 'name'>>}
  */
-function gatherUserRaidStats(raidPgcrs, accountId, manifest) {
+async function gatherUserRaidStats(raidPgcrs, accountId) {
   const allUserPgcrStats = /** @type {Omit<User, 'name'>[]} */ ([]);
   for (const pgcr of raidPgcrs) {
     const userEntries = pgcr.entries.filter(
@@ -252,36 +256,43 @@ function gatherUserRaidStats(raidPgcrs, accountId, manifest) {
     if (userEntries.length === 0) {
       continue;
     }
-    const userPgcrStats = userEntries.reduce(
-      (stats, userEntry) => {
+    const userPgcrStats = await userEntries.reduce(
+      async (stats, userEntry) => {
         stats.totalKills += userEntry.values.kills.basic.value;
         stats.totalDeaths += userEntry.values.deaths.basic.value;
         stats.killDeathRatio =
           stats.totalKills / (stats.totalDeaths === 0 ? 1 : stats.totalDeaths);
         stats.weaponKills = {
           ...stats.weaponKills,
-          ...userEntry.extended.weapons?.reduce((_weaponKills, weapon) => {
-            const weaponName =
-              manifest[weapon.referenceId].displayProperties.name;
-            _weaponKills = {
-              ..._weaponKills,
-              [weaponName]:
-                weapon.values.uniqueWeaponKills.basic.value +
-                (stats.weaponKills[weaponName] ?? 0),
-            };
-            return _weaponKills;
-          }, {}),
+          ...(await userEntry.extended.weapons?.reduce(
+            async (_weaponKills, weapon) => {
+              const weaponDefinition = await getDefinition(
+                "InventoryItem",
+                weapon.referenceId
+              );
+              const weaponName = weaponDefinition.displayProperties.name;
+              _weaponKills = {
+                ..._weaponKills,
+                [weaponName]:
+                  weapon.values.uniqueWeaponKills.basic.value +
+                  (stats.weaponKills[weaponName] ?? 0),
+              };
+              return _weaponKills;
+            },
+            {}
+          )),
         };
         stats.weaponKillsByAmmoType = {
           ...stats.weaponKillsByAmmoType,
-          ...userEntry.extended.weapons?.reduce(
-            (_weaponKillsByAmmoType, weapon) => {
-              const weaponName =
-                manifest[weapon.referenceId].displayProperties.name;
+          ...(await userEntry.extended.weapons?.reduce(
+            async (_weaponKillsByAmmoType, weapon) => {
+              const weaponDefinition = await getDefinition(
+                "InventoryItem",
+                weapon.referenceId
+              );
+              const weaponName = weaponDefinition.displayProperties.name;
               const weaponType =
-                DESTINY_AMMO_TYPE[
-                  manifest[weapon.referenceId].equippingBlock.ammoType
-                ];
+                DESTINY_AMMO_TYPE[weaponDefinition.equippingBlock.ammoType];
               _weaponKillsByAmmoType = {
                 ..._weaponKillsByAmmoType,
                 [weaponType]: {
@@ -298,7 +309,7 @@ function gatherUserRaidStats(raidPgcrs, accountId, manifest) {
               Special: {},
               Heavy: {},
             })
-          ),
+          )),
         };
         return stats;
       },
@@ -367,13 +378,10 @@ function gatherUserRaidStats(raidPgcrs, accountId, manifest) {
 }
 
 /**
- *
  * @param {PGCR[]} raidPgcrs
- * @param {string} userId
- * @param {DestinyInventoryItemDefinition} manifest
- * @returns {Record<string, User>}
+ * @returns {Promise<Record<string, User>>}
  */
-function gatherFireteamRaidStats(raidPgcrs, manifest) {
+async function gatherFireteamRaidStats(raidPgcrs) {
   const fireteam = /** @type {Record<string, User>} */ ({});
   const idToNameMap = {};
   const activityPeriods = [];
@@ -412,9 +420,13 @@ function gatherFireteamRaidStats(raidPgcrs, manifest) {
   for (const fireteamId of allFireteamMembers) {
     const [name, emblemHash, lightLevel, timePlayed, killsByPeriod, className] =
       idToNameMap[fireteamId];
-    const { displayProperties, secondaryIcon } = manifest[emblemHash];
+    const { displayProperties, secondaryIcon } = await getDefinition(
+      "InventoryItem",
+      emblemHash
+    );
+    const userStats = await gatherUserRaidStats(raidPgcrs, fireteamId);
     fireteam[fireteamId] = {
-      ...gatherUserRaidStats(raidPgcrs, fireteamId, manifest),
+      ...userStats,
       name,
       lightLevel,
       timePlayed,

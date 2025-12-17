@@ -3,3 +3,5 @@ node_modules
 dist
 content_full.json
 content_small.json
+world.*
+.db_version
