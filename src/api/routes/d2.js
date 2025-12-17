@@ -1,22 +1,13 @@
 import { Router } from "express";
 import { apiGet, apiPost } from "../client.js";
+import { db, getDefinition, signed, unsigned } from "../db.js";
 import {
   fetchAllRaidActivities,
   fetchPGCR,
   gatherFireteamRaidStats,
-  getAllD2Content,
-  getD2Content,
 } from "../util.js";
 import CONSTANTS from "../constants.js";
 const d2 = Router();
-
-// we only retrieve
-// - DestinyActivityDefinition
-// - DestinyActivityTypeDefinition
-// - DestinyCollectibleDefinition
-// - DestinyInventoryItemDefinition
-//  - items with ammotypes only
-const content = await getD2Content();
 
 // UI will debounce and call this every 0.5 sec
 d2.get("/searchUser", async (req, res) => {
@@ -39,11 +30,16 @@ d2.get("/searchUser", async (req, res) => {
 });
 
 d2.get("/mods", async (_, res) => {
+  const mods = db
+    .prepare(
+      "SELECT json_extract(json, '$.displayProperties.name') AS name, json_extract(json, '$.displayProperties.icon') AS icon FROM DestinyCollectibleDefinition WHERE json_extract(json, '$.scope') = 0 AND json_extract(json, '$.presentationNodeType') = 1 AND json_extract(json, '$.parentNodeHashes[0]') = 1929360037"
+    )
+    .all();
   return res.json(
-    Object.values(content.DestinyCollectibleDefinition).reduce(
+    mods.reduce(
       (acc, mod) => ({
         ...acc,
-        [mod.displayProperties.name]: mod.displayProperties.icon,
+        [mod.name]: mod.icon,
       }),
       {}
     )
@@ -61,39 +57,47 @@ d2.get("/raids", async (_, res) => {
     "Garden of Salvation": 6,
     "Deep Stone Crypt": 7,
     "Vault of Glass": 8,
-    "Vault of Glass: Challenge Mode": 9,
-    "Vow of the Disciple": 10,
-    "King's Fall": 11,
-    "Root of Nightmares": 12,
-    "Crota's End": 13,
-    "Salvation's Edge": 14,
+    "Vault of Glass: Challenge Mode": 8,
+    "Vow of the Disciple": 9,
+    "King's Fall": 10,
+    "Root of Nightmares": 11,
+    "Crota's End": 12,
+    "Salvation's Edge": 13,
+    "The Desert Perpetual": 14,
+    "The Desert Perpetual: (Epic)": 15,
   };
   RAID_SORT_MAP.default = Object.keys(RAID_SORT_MAP).length + 1;
+  const raidActivityTypeHash = db
+    .prepare(
+      "SELECT id FROM DestinyActivityTypeDefinition WHERE json_extract(json, '$.displayProperties.name') = 'Raid'"
+    )
+    .get().id;
+  const raids = db
+    .prepare(
+      "SELECT id, json_extract(json, '$.originalDisplayProperties.name') AS name, json_extract(json, '$.pgcrImage') AS image FROM DestinyActivityDefinition WHERE json_extract(json, '$.activityTypeHash') = ? AND json_extract(json, '$.originalDisplayProperties.name') NOT LIKE '%Pantheon%'"
+    )
+    .all(raidActivityTypeHash);
+
   return res.json(
-    Object.entries(content.DestinyActivityDefinition)
-      .filter(
-        ([_, data]) =>
-          data.activityTypeHash !== 0 &&
-          content.DestinyActivityTypeDefinition[data.activityTypeHash]
-            .displayProperties.name === "Raid"
-      ) // n
-      .map(([hash, data]) => [
-        data.originalDisplayProperties.name,
-        hash,
-        data.pgcrImage,
-      ])
-      .filter(([name]) => !name.includes("Pantheon")) // m
+    raids
       .sort(
-        ([raidA], [raidB]) =>
-          (RAID_SORT_MAP[raidA] ?? RAID_SORT_MAP.default++) -
-          (RAID_SORT_MAP[raidB] ?? RAID_SORT_MAP.default++)
+        (raidA, raidB) =>
+          (RAID_SORT_MAP[raidA.name] ?? RAID_SORT_MAP.default++) -
+          (RAID_SORT_MAP[raidB.name] ?? RAID_SORT_MAP.default++)
       )
       .reverse()
-      .reduce((raidMap, [raid, hash, image]) => {
-        if (!raidMap[raid]) {
-          raidMap[raid] = { ids: [], imgUrl: image };
+      .reduce((raidMap, { id, name, image }) => {
+        // for some reason this is the only contest-exclusive version of a raid that appears.
+        // not digging into it at the moment.
+        if (name === "Vault of Glass: Challenge Mode") {
+          return raidMap;
         }
-        raidMap[raid].ids.push(hash);
+
+        if (!raidMap[name]) {
+          raidMap[name] = { ids: [], imgUrl: image };
+        }
+
+        raidMap[name].ids.push(unsigned(id));
         return raidMap;
       }, {})
   );
@@ -105,27 +109,31 @@ d2.get("/aggregateRaids", async (req, res) => {
     return res.status(400).json({ error: 'Missing "raidIds" query parameter' });
   }
   const raidIdArr = raidIds.split(",");
-  const firstRaidColloquialName =
-    content.DestinyActivityDefinition[raidIdArr[0]]?.originalDisplayProperties
-      .name;
+
+  const validateRaidStmt =
+    "SELECT json_extract(json, '$.originalDisplayProperties.name') AS name FROM DestinyActivityDefinition WHERE id = ?";
+  const firstRaidColloquialName = db
+    .prepare(validateRaidStmt)
+    .get(signed(raidIdArr[0]))?.name;
   if (!firstRaidColloquialName) {
     return res.status(400).json({ error: `Invalid raidId "${raidIdArr[0]}"` });
   }
-  if (
-    !raidIdArr
-      .slice(1)
-      .every(
-        (id) =>
-          content.DestinyActivityDefinition[id]?.originalDisplayProperties
-            .name === firstRaidColloquialName
-      )
-  ) {
+
+  const remainingRaidIds = raidIdArr.slice(1);
+  const allRaidsStmt = `SELECT json_extract(json, '$.originalDisplayProperties.name') AS name FROM DestinyActivityDefinition WHERE id IN (${remainingRaidIds
+    .map(() => "?")
+    .join(",")})`;
+  const allRaidNames = db
+    .prepare(allRaidsStmt)
+    .all(remainingRaidIds.map((id) => signed(id)))
+    ?.map((raid) => raid.name);
+  if (!allRaidNames.every((name) => name === firstRaidColloquialName)) {
     return res.status(400).json({
       error: `Not all raidIds map to the same raid: ${raidIdArr.map(
         (id) =>
           `(${id}, ${
-            content.DestinyActivityDefinition[id]?.originalDisplayProperties
-              ?.name ?? "N/A"
+            getDefinition("Activity", id)?.originalDisplayProperties?.name ??
+            "N/A"
           })`
       )}`,
     });
@@ -239,7 +247,7 @@ d2.get("/aggregateRaids", async (req, res) => {
     allActivityReports.push(pgcrData);
   }
 
-  const fireteam = await gatherFireteamRaidStats(allActivityReports);
+  const fireteam = gatherFireteamRaidStats(allActivityReports);
   const userStats = fireteam[membershipId];
   delete fireteam[membershipId];
   return res.json({

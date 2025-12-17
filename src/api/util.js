@@ -1,5 +1,4 @@
 import fs from "node:fs/promises";
-import { writeFileSync } from "node:fs";
 import { apiClient, apiGet } from "./client.js";
 import path, { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -245,7 +244,7 @@ async function fetchPGCR(activityId) {
  * @param {string} accountId
  * @returns {Promise<Omit<User, 'name'>>}
  */
-async function gatherUserRaidStats(raidPgcrs, accountId) {
+function gatherUserRaidStats(raidPgcrs, accountId) {
   const allUserPgcrStats = /** @type {Omit<User, 'name'>[]} */ ([]);
   for (const pgcr of raidPgcrs) {
     const userEntries = pgcr.entries.filter(
@@ -256,37 +255,34 @@ async function gatherUserRaidStats(raidPgcrs, accountId) {
     if (userEntries.length === 0) {
       continue;
     }
-    const userPgcrStats = await userEntries.reduce(
-      async (stats, userEntry) => {
+    const userPgcrStats = userEntries.reduce(
+      (stats, userEntry) => {
         stats.totalKills += userEntry.values.kills.basic.value;
         stats.totalDeaths += userEntry.values.deaths.basic.value;
         stats.killDeathRatio =
           stats.totalKills / (stats.totalDeaths === 0 ? 1 : stats.totalDeaths);
         stats.weaponKills = {
           ...stats.weaponKills,
-          ...(await userEntry.extended.weapons?.reduce(
-            async (_weaponKills, weapon) => {
-              const weaponDefinition = await getDefinition(
-                "InventoryItem",
-                weapon.referenceId
-              );
-              const weaponName = weaponDefinition.displayProperties.name;
-              _weaponKills = {
-                ..._weaponKills,
-                [weaponName]:
-                  weapon.values.uniqueWeaponKills.basic.value +
-                  (stats.weaponKills[weaponName] ?? 0),
-              };
-              return _weaponKills;
-            },
-            {}
-          )),
+          ...userEntry.extended.weapons?.reduce((_weaponKills, weapon) => {
+            const weaponDefinition = getDefinition(
+              "InventoryItem",
+              weapon.referenceId
+            );
+            const weaponName = weaponDefinition.displayProperties.name;
+            _weaponKills = {
+              ..._weaponKills,
+              [weaponName]:
+                weapon.values.uniqueWeaponKills.basic.value +
+                (stats?.weaponKills[weaponName] ?? 0),
+            };
+            return _weaponKills;
+          }, {}),
         };
         stats.weaponKillsByAmmoType = {
           ...stats.weaponKillsByAmmoType,
-          ...(await userEntry.extended.weapons?.reduce(
-            async (_weaponKillsByAmmoType, weapon) => {
-              const weaponDefinition = await getDefinition(
+          ...userEntry.extended.weapons?.reduce(
+            (_weaponKillsByAmmoType, weapon) => {
+              const weaponDefinition = getDefinition(
                 "InventoryItem",
                 weapon.referenceId
               );
@@ -309,7 +305,7 @@ async function gatherUserRaidStats(raidPgcrs, accountId) {
               Special: {},
               Heavy: {},
             })
-          )),
+          ),
         };
         return stats;
       },
@@ -381,7 +377,7 @@ async function gatherUserRaidStats(raidPgcrs, accountId) {
  * @param {PGCR[]} raidPgcrs
  * @returns {Promise<Record<string, User>>}
  */
-async function gatherFireteamRaidStats(raidPgcrs) {
+function gatherFireteamRaidStats(raidPgcrs) {
   const fireteam = /** @type {Record<string, User>} */ ({});
   const idToNameMap = {};
   const activityPeriods = [];
@@ -420,11 +416,11 @@ async function gatherFireteamRaidStats(raidPgcrs) {
   for (const fireteamId of allFireteamMembers) {
     const [name, emblemHash, lightLevel, timePlayed, killsByPeriod, className] =
       idToNameMap[fireteamId];
-    const { displayProperties, secondaryIcon } = await getDefinition(
+    const { displayProperties, secondaryIcon } = getDefinition(
       "InventoryItem",
       emblemHash
     );
-    const userStats = await gatherUserRaidStats(raidPgcrs, fireteamId);
+    const userStats = gatherUserRaidStats(raidPgcrs, fireteamId);
     fireteam[fireteamId] = {
       ...userStats,
       name,

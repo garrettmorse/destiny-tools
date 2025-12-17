@@ -73,8 +73,12 @@ db.pragma("journal_mode = WAL");
 // NOTE: destiny hashes are unsigned 32-bit, so we must convert when id > 2^31 - 1
 const INT_MAX = 2147483647;
 const uINT_MAX = 4294967296;
-function sign(hash) {
+function signed(hash) {
   return hash > INT_MAX ? hash - uINT_MAX : hash;
+}
+
+function unsigned(hash) {
+  return hash < 0 ? hash + uINT_MAX : hash;
 }
 
 /**
@@ -82,12 +86,12 @@ function sign(hash) {
  * @param {"ArtDyeChannel" | "ArtDyeReference" | "Place" | "Activity" | "ActivityType" | "Class" | "Gender" | "InventoryBucket" | "Race" | "Unlock" | "StatGroup" | "ProgressionMapping" | "Faction" | "VendorGroup" | "RewardSource" | "UnlockValue" | "RewardMapping" | "ItemCategory" | "DamageType" | "ActivityMode" | "MedalTier" | "Achievement" | "ActivityDifficultyTierCollection" | "ActivityFamily" | "ActivityGraph" | "ActivityInteractable" | "ActivityLoadoutRestriction" | "ActivitySelectableSkullCollection" | "ActivitySelectableSkullExclusionGroup" | "ActivitySkullCategory" | "ActivitySkullCollection" | "ActivitySkullSubcategory" | "Bond" | "CharacterCustomizationCategory" | "CharacterCustomizationOption" | "Collectible" | "Destination" | "EntitlementOffer" | "EquipableItemSet" | "EquipmentSlot" | "EventCard" | "FireteamFinderActivityGraph" | "FireteamFinderActivitySet" | "FireteamFinderLabel" | "FireteamFinderLabelGroup" | "FireteamFinderOption" | "FireteamFinderOptionGroup" | "Icon" | "Stat" | "InventoryItem" | "InventoryItemLite" | "ItemFilter" | "ItemTierType" | "LoadoutColor" | "LoadoutIcon" | "LoadoutName" | "Location" | "Lore" | "MaterialRequirementSet" | "Metric" | "Objective" | "SandboxPerk" | "PlatformBucketMapping" | "PlugSet" | "PowerCap" | "PresentationNode" | "Progression" | "ProgressionLevelRequirement" | "Record" | "RewardAdjusterPointer" | "RewardAdjusterProgressionMap" | "RewardItemList" | "SackRewardItemList" | "SandboxPattern" | "Season" | "SeasonPass" | "SocialCommendation" | "SocketCategory" | "SocketType" | "Trait" | "UnlockCountMapping" | "UnlockEvent" | "UnlockExpressionMapping" | "Vendor" | "Milestone" | "ActivityModifier" | "ReportReasonCategory" | "Artifact" | "BreakerType" | "Checklist" | "EnergyType" | "SocialCommendationNode" | "GuardianRank" | "GuardianRankConstants" | "LoadoutConstants" | "FireteamFinderConstants" | "GlobalConstants" | "InventoryItemConstants"} category
  * @param {number} hash
  */
-async function getDefinition(category, hash) {
-  const id = sign(hash);
+function getDefinition(category, hash) {
+  const id = signed(hash);
   const row = db
     .prepare(`SELECT json FROM Destiny${category}Definition WHERE id = ?`)
     .get(id);
   return row ? JSON.parse(row.json) : null;
 }
 
-export { getDefinition };
+export { db, getDefinition, signed, unsigned };
