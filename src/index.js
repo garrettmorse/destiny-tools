@@ -4,7 +4,7 @@ import { d2 } from "./api/routes/d2.js";
 import path from "node:path";
 import cors from "cors";
 
-const ports = [8080];
+const ports = [80, 443, 8080];
 
 ports.forEach((port) => {
   const app = express();
@@ -31,8 +31,6 @@ ports.forEach((port) => {
     express.static("dist/edgestats", { extensions: ["html"] })
   );
 
-  app.use("/ticket", express.static("dist/ticket", { extensions: ["html"] }));
-
   app.listen(port, () => console.log(`server listening on ${port}`));
 
   app.get("/", (_, res) => res.send("hey"));
@@ -43,9 +41,5 @@ ports.forEach((port) => {
 
   app.get("/edgestats*none", (_, res) => {
     res.sendFile(path.join(__dirname, "..", "dist/edgestats", "index.html"));
-  });
-
-  app.get("/ticket*none", (_, res) => {
-    res.sendFile(path.join(__dirname, "..", "dist/ticket", "index.html"));
   });
 });
