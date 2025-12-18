@@ -8,7 +8,7 @@
     "build:all": "rm -rf dist && mkdir dist && npm run build:raid && npm run build:edge && npm run build:loot",
     "build:raid": "cd src/raidlytics && npm run build && cd ../..",
     "build:edge": "cd src/edgestats && npm run build && cd ../.. && rm -rf dist/edgestats && mv src/edgestats/dist/edgestats dist",
-    "build:loot": "rm -rf dist/loot && mkdir dist/loot && cp -r src/loot/* dist/loot"
+    "build:loot": "cd src/loot && npm run build && cd ../.. && rm -rf dist/loot && mv src/loot/dist/loot dist"
   },
   "repository": {
     "type": "git",

@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build && mv dist ../../",
-    "build:win": "tsc -b && vite build && move /y dist ..\\..\\",
+    "build": "tsc -b && vite build",
+    "build:win": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
