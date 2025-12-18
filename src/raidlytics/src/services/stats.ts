@@ -1,14 +1,14 @@
 import type { APIResponse, Stats } from "./services";
 export const fetchStats = async (
   userId: string,
-  raidIds: string[]
+  raidIds: string[],
 ): Promise<APIResponse<Stats>> => {
   try {
     const response = await fetch(
       // @ts-expect-error cant figure out typing globalThis specifically for local dev with vite
       `${global.SERVICE_URL}/api/d2/aggregateRaids?userId=${encodeURIComponent(
-        userId
-      )}&raidIds=${encodeURIComponent(raidIds.join(","))}`
+        userId,
+      )}&raidIds=${encodeURIComponent(raidIds.join(","))}`,
     );
     if (!response.ok) {
       throw new Error("Failed to fetch stats");

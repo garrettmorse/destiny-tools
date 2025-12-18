@@ -8,7 +8,7 @@ const PlayerBreakdownCard: React.FC<{
   fireteam: Record<string, UserStats>;
 }> = ({ fireteam }) => {
   const [selectedMember, setSelectedMember] = useState(
-    Object.keys(fireteam)[0]
+    Object.keys(fireteam)[0],
   );
   const navigate = useNavigate();
   const [searchParams, _] = useSearchParams();
@@ -18,10 +18,10 @@ const PlayerBreakdownCard: React.FC<{
     memberSelectOptions.push(
       <option key={hash} value={hash}>
         {stats.name}
-      </option>
+      </option>,
     );
     memberTopWeapons[hash] = Object.fromEntries(
-      Object.entries(stats.weaponKills).slice(0, 5)
+      Object.entries(stats.weaponKills).slice(0, 5),
     );
   }
 
@@ -31,7 +31,7 @@ const PlayerBreakdownCard: React.FC<{
       /* @ts-expect-error cant figure out typing globalThis specifically for local dev with vite */
       `${global.BASE_PATH}/player/${selectedMember}${
         result ? `?raid=${result}` : ""
-      }`
+      }`,
     );
   };
 

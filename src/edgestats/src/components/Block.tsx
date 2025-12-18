@@ -131,11 +131,11 @@ const BlockRow: React.FC<BlockRowProps> = ({
   const fullBlockCount = isOverflow
     ? totalBlocks
     : isMultipleOf10
-    ? tensDigit
-    : Math.floor(fullValue / 10);
+      ? tensDigit
+      : Math.floor(fullValue / 10);
   const fullBlockIndices = Array.from(
     { length: Math.min(fullBlockCount, totalBlocks) },
-    (_, i) => i
+    (_, i) => i,
   );
 
   // Fractional block (if ones digit > 0 and we haven't filled all blocks)
@@ -369,7 +369,7 @@ const StatTooltipCard: React.FC<TooltipStatCardProps> = ({
                 {`${statBonus[idx].type === "int" ? "+" : ""}${lerp(
                   lerpEnd,
                   lerpStart,
-                  lerpInterpolation
+                  lerpInterpolation,
                 ).toFixed(3)}${statBonus[idx].type === "pct" ? "%" : ""}`}
               </span>
             </div>
@@ -412,14 +412,14 @@ const StatTooltipCard: React.FC<TooltipStatCardProps> = ({
                       }${lerp(
                         overflowLerpEnd,
                         overflowLerpStart,
-                        overflowInterpolation
+                        overflowInterpolation,
                       ).toFixed(3)}${
                         overflow.statBonus[idx].type === "pct" ? "%" : ""
                       }`}
                     </span>
                   </div>
                 );
-              }
+              },
             )}
           </div>
         ) : (

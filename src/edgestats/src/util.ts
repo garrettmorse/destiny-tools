@@ -142,16 +142,16 @@ interface ArmorArchetypeConfig<T extends ArmorArchetype> {
     T extends "Brawler"
       ? "Melee" | "Health"
       : T extends "Gunner"
-      ? "Weapons" | "Grenade"
-      : T extends "Specialist"
-      ? "Class" | "Weapons"
-      : T extends "Grenadier"
-      ? "Grenade" | "Super"
-      : T extends "Paragon"
-      ? "Super" | "Melee"
-      : T extends "Bulwark"
-      ? "Health" | "Class"
-      : never
+        ? "Weapons" | "Grenade"
+        : T extends "Specialist"
+          ? "Class" | "Weapons"
+          : T extends "Grenadier"
+            ? "Grenade" | "Super"
+            : T extends "Paragon"
+              ? "Super" | "Melee"
+              : T extends "Bulwark"
+                ? "Health" | "Class"
+                : never
   >;
 }
 
@@ -304,7 +304,7 @@ export const STAT_DESCRIPTION_MAP = {
 export const getStats = (
   archetypes: Record<ArmorKind, ArmorState | null>,
   masterwork: boolean,
-  tier: Tier
+  tier: Tier,
 ) => {
   const stats: Record<StatType, number> = {
     Health: 0,
@@ -559,11 +559,11 @@ const ARMOR_PARAMS = {
 
 // Reverse lookup maps for decoding
 const ARMOR_PARAM_CODES_REVERSE = Object.fromEntries(
-  Object.entries(ARMOR_PARAM_CODES).map(([key, value]) => [value, key])
+  Object.entries(ARMOR_PARAM_CODES).map(([key, value]) => [value, key]),
 ) as Record<number, keyof typeof ARMOR_PARAM_CODES>;
 
 const FRAGMENT_PARAM_CODES_REVERSE = Object.fromEntries(
-  Object.entries(FRAGMENT_PARAM_CODES).map(([k, v]) => [v, k])
+  Object.entries(FRAGMENT_PARAM_CODES).map(([k, v]) => [v, k]),
 ) as Record<number, keyof typeof FRAGMENT_PARAM_CODES>;
 // const ARMOR_PARAMS_REVERSE = Object.fromEntries(
 //   Object.entries(ARMOR_PARAMS).map(([key, value]) => [value, key])
@@ -723,7 +723,7 @@ class SearchParamEncoder {
    */
   static encodeParamList<T extends "armor" | "fragment">(
     params: T extends "armor" ? ArmorParamCode[] : FragmentParamCode[],
-    mode: T
+    mode: T,
   ): string {
     if (params.length === 0) return "";
     const codes = params
@@ -731,7 +731,7 @@ class SearchParamEncoder {
       .map((param) =>
         mode === "armor"
           ? ARMOR_PARAM_CODES[param as ArmorParamCode]
-          : FRAGMENT_PARAM_CODES[param as FragmentParamCode]
+          : FRAGMENT_PARAM_CODES[param as FragmentParamCode],
       )
       .sort((a, b) => a - b); // Sort for consistent encoding
 
@@ -747,7 +747,7 @@ class SearchParamEncoder {
    */
   static decodeParamList<T extends "armor" | "fragment">(
     encoded: string,
-    mode: T
+    mode: T,
   ): T extends "armor" ? ArmorParamCode[] : FragmentParamCode[] {
     if (!encoded) return [];
     const REVERSE_CODES =
@@ -811,7 +811,7 @@ class SearchParamEncoder {
     if (params?.fragmentParams) {
       const encodedParams = this.encodeParamList(
         params.fragmentParams.fragments,
-        "fragment"
+        "fragment",
       );
       if (encodedParams) {
         searchParams.set("f", encodedParams);
@@ -828,7 +828,7 @@ class SearchParamEncoder {
    * @returns Decoded parameters organized by armor slot
    */
   static parseSearchUrl(
-    url: string
+    url: string,
   ): Record<string, [string, Record<string, string>] | Record<string, string>> {
     const urlObj = new URL(url);
     const searchParams = urlObj.searchParams;
@@ -843,11 +843,11 @@ class SearchParamEncoder {
       if (encodedArmorParams) {
         const decodedArmorParams = this.decodeParamList(
           encodedArmorParams,
-          "armor"
+          "armor",
         );
         const mappedArmorParams = decodedArmorParams.reduce(
           (params, param) => ({ ...params, [SLOT_MAP[param]]: param }),
-          {}
+          {},
         );
         if (decodedArmorParams.length > 0) {
           result[armorSlot as ArmorParam] = mappedArmorParams as Record<
@@ -863,7 +863,7 @@ class SearchParamEncoder {
     if (encodedFragmentParams) {
       const decodedFragmentParams = this.decodeParamList(
         encodedFragmentParams,
-        "fragment"
+        "fragment",
       );
       const mappedFragmentParams = decodedFragmentParams.reduce(
         (params, param) => {
@@ -881,7 +881,7 @@ class SearchParamEncoder {
           };
           return params;
         },
-        {}
+        {},
       );
       if (decodedFragmentParams.length > 0) {
         result.f = [enabledFragmentCollection, mappedFragmentParams];
@@ -897,7 +897,7 @@ export const useArmorParamEncoder = () => {
   };
 
   const decodeFromUrl = (
-    url: string = window.location.href
+    url: string = window.location.href,
   ): ArmorSlotParams => {
     return SearchParamEncoder.parseSearchUrl(url);
   };
@@ -913,7 +913,7 @@ export const useFragmentParamEncoder = () => {
     return SearchParamEncoder.createSearchUrl({ fragmentParams });
   };
   const decodeFromUrl = (
-    url: string = window.location.href
+    url: string = window.location.href,
   ): { f: [FragmentType, FragmentParams] } => {
     // @ts-expect-error cba
     return SearchParamEncoder.parseSearchUrl(url);
@@ -1040,16 +1040,16 @@ export type Fragments =
 export type Fragment<T> = T extends "Arc"
   ? ArcFragment
   : T extends "Solar"
-  ? SolarFragment
-  : T extends "Void"
-  ? VoidFragment
-  : T extends "Stasis"
-  ? StasisFragment
-  : T extends "Strand"
-  ? StrandFragment
-  : T extends "Prismatic"
-  ? PrismaticFragment
-  : never;
+    ? SolarFragment
+    : T extends "Void"
+      ? VoidFragment
+      : T extends "Stasis"
+        ? StasisFragment
+        : T extends "Strand"
+          ? StrandFragment
+          : T extends "Prismatic"
+            ? PrismaticFragment
+            : never;
 
 type FragmentMap = {
   [K in FragmentType]: Record<Fragment<K>, Partial<Record<StatType, number>>>;

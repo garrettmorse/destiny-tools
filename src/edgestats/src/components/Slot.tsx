@@ -45,9 +45,9 @@ const Slot: React.FC<SlotProps> = ({ identifier, kind, light, animate }) => {
     ARMOR.indexOf(kind) > -1
       ? "armor"
       : /* @ts-expect-error cant be asked */
-      MODS.indexOf(kind) > -1
-      ? "mod"
-      : "stat";
+        MODS.indexOf(kind) > -1
+        ? "mod"
+        : "stat";
   const fileType = slotKind === "mod" ? "png" : "svg";
   const fileName = (
     slotKind === "mod"

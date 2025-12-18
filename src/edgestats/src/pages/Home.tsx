@@ -35,16 +35,16 @@ const HomePage: React.FC = () => {
   const fragmentParams = decodeFragments(window.location.href);
   const [searchParams, setSearchParams] = useSearchParams();
   const [helmetArchetype, setHelmetArchetype] = useState<ArmorState | null>(
-    armorParams.Helmet as unknown as ArmorState
+    armorParams.Helmet as unknown as ArmorState,
   );
   const [glovesArchetype, setGlovesArchetype] = useState<ArmorState | null>(
-    armorParams.Gloves as unknown as ArmorState
+    armorParams.Gloves as unknown as ArmorState,
   );
   const [chestArchetype, setChestArchetype] = useState<ArmorState | null>(
-    armorParams.Chest as unknown as ArmorState
+    armorParams.Chest as unknown as ArmorState,
   );
   const [bootsArchetype, setBootsArchetype] = useState<ArmorState | null>(
-    armorParams.Boots as unknown as ArmorState
+    armorParams.Boots as unknown as ArmorState,
   );
   const [classItemArchetype, setClassItemArchetype] =
     useState<ArmorState | null>(armorParams.Class as unknown as ArmorState);
@@ -53,13 +53,13 @@ const HomePage: React.FC = () => {
     type: "archetype" | "mod" | "tertiary";
   } | null>(null);
   const [masterwork, toggleMasterwork] = useState<boolean>(
-    !!searchParams.get("mw")
+    !!searchParams.get("mw"),
   );
   const [tier, setTier] = useState<Tier>(
-    Number(searchParams.get("e") ?? "5") as Tier
+    Number(searchParams.get("e") ?? "5") as Tier,
   );
   const [selectedFragmentTab, setSelectedFragmentTab] = useState<FragmentType>(
-    (fragmentParams?.f?.at(0) as FragmentType) ?? "Arc"
+    (fragmentParams?.f?.at(0) as FragmentType) ?? "Arc",
   );
 
   useEffect(() => {
@@ -69,7 +69,7 @@ const HomePage: React.FC = () => {
           // @ts-expect-error cba
           initialFragmentState[fragmentType][enabledFragment] = true;
         }
-      }
+      },
     );
   }, []);
   const [fragments, setFragments] = useState(initialFragmentState);
@@ -105,11 +105,11 @@ const HomePage: React.FC = () => {
           ...acc,
           [armor]: STATE_MAP[armor as ArmorKind].get,
         }),
-        {}
+        {},
       ),
       masterwork,
-      tier
-    )
+      tier,
+    ),
   );
 
   let copyTimeout: NodeJS.Timeout | null;
@@ -124,15 +124,15 @@ const HomePage: React.FC = () => {
           STATE_MAP[key].get?.mod,
         ];
         return acc;
-      }, {})
+      }, {}),
     );
     const allFragments = Object.keys(fragments)
       .map((fragmentType) =>
         // @ts-expect-error cba
         Object.keys(fragments[fragmentType]).filter(
           // @ts-expect-error cba
-          (fragmentName) => fragments[fragmentType][fragmentName]
-        )
+          (fragmentName) => fragments[fragmentType][fragmentName],
+        ),
       )
       .flat() as Fragments[];
     const encodedFragmentParams = encodeFragments({
@@ -172,7 +172,7 @@ const HomePage: React.FC = () => {
     }
 
     navigator.clipboard.writeText(
-      `${window.location.href}?${paramArr.join("&")}`
+      `${window.location.href}?${paramArr.join("&")}`,
     );
   };
 
@@ -194,14 +194,14 @@ const HomePage: React.FC = () => {
         ...acc,
         [armor]: STATE_MAP[armor as ArmorKind].get,
       }),
-      {}
+      {},
     );
     // @ts-expect-error cba
     const baseStats = getStats(armorStates, masterwork, tier);
     const fragmentStats = Object.keys(fragments[selectedFragmentTab])
       .filter(
         // @ts-expect-error cba
-        (fragmentName) => fragments[selectedFragmentTab][fragmentName]
+        (fragmentName) => fragments[selectedFragmentTab][fragmentName],
       )
       .reduce(
         (stats, fragment) => {
@@ -209,11 +209,11 @@ const HomePage: React.FC = () => {
           const fragmentStats = FRAGMENTS[selectedFragmentTab][fragment];
           Object.keys(fragmentStats).forEach(
             (statName) =>
-              (stats[statName as StatType] += fragmentStats[statName])
+              (stats[statName as StatType] += fragmentStats[statName]),
           );
           return stats;
         },
-        { Super: 0, Class: 0, Weapons: 0, Health: 0, Grenade: 0, Melee: 0 }
+        { Super: 0, Class: 0, Weapons: 0, Health: 0, Grenade: 0, Melee: 0 },
       );
     const totalStats = { ...baseStats };
     Object.entries(fragmentStats).forEach(([stat, value]) => {

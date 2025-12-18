@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --background: 225 6% 13%;
+    --foreground: 210 40% 98%;
+
+    --card: 228 9% 10%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 228 9% 10%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 235 51% 63%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 228 6% 16%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 228 6% 16%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 228 6% 16%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 228 12% 18%;
+    --input: 228 12% 18%;
+    --ring: 212 100% 47%;
+
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-solid;
+  }
+
+  body {
+    @apply bg-center;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
+    font-family: "Roboto", sans-serif;
+  }
+}
+
+.stat-badge {
+  @apply inline-flex items-center justify-center px-2 py-0.5 rounded text-xs font-medium;
+}

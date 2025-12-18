@@ -33,14 +33,14 @@ const Emblem: React.FC<{
     name.length < 12
       ? "sm:text-2xl"
       : name.length < 20
-      ? "sm:text-xl"
-      : "sm:text-lg";
+        ? "sm:text-xl"
+        : "sm:text-lg";
   const mobileTextSize =
     name.length < 12
       ? "max-sm:text-xl"
       : name.length < 20
-      ? "max-sm:text-lg"
-      : "max-sm:text-md";
+        ? "max-sm:text-lg"
+        : "max-sm:text-md";
   return (
     <div className="shadow-md" style={emblemStyles.thumbnail}>
       <img

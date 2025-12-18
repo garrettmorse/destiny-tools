@@ -1,11 +1,12 @@
 import { Router } from "express";
-import { apiGet, apiPost } from "../client.js";
-import { db, getDefinition, signed, unsigned } from "../db.js";
+import { apiClient, apiGet, apiPost } from "../client.js";
+import { appDb, destinyDb, getDefinition, signed, unsigned } from "../db.js";
 import {
   fetchAllRaidActivities,
   fetchPGCR,
   gatherFireteamRaidStats,
 } from "../util.js";
+import { authorize } from "../auth.js";
 import CONSTANTS from "../constants.js";
 const d2 = Router();
 
@@ -30,7 +31,7 @@ d2.get("/searchUser", async (req, res) => {
 });
 
 d2.get("/mods", async (_, res) => {
-  const mods = db
+  const mods = destinyDb
     .prepare(
       "SELECT json_extract(json, '$.displayProperties.name') AS name, json_extract(json, '$.displayProperties.icon') AS icon FROM DestinyCollectibleDefinition WHERE json_extract(json, '$.scope') = 0 AND json_extract(json, '$.presentationNodeType') = 1 AND json_extract(json, '$.parentNodeHashes[0]') = 1929360037"
     )
@@ -67,12 +68,12 @@ d2.get("/raids", async (_, res) => {
     "The Desert Perpetual: (Epic)": 15,
   };
   RAID_SORT_MAP.default = Object.keys(RAID_SORT_MAP).length + 1;
-  const raidActivityTypeHash = db
+  const raidActivityTypeHash = destinyDb
     .prepare(
       "SELECT id FROM DestinyActivityTypeDefinition WHERE json_extract(json, '$.displayProperties.name') = 'Raid'"
     )
     .get().id;
-  const raids = db
+  const raids = destinyDb
     .prepare(
       "SELECT id, json_extract(json, '$.originalDisplayProperties.name') AS name, json_extract(json, '$.pgcrImage') AS image FROM DestinyActivityDefinition WHERE json_extract(json, '$.activityTypeHash') = ? AND json_extract(json, '$.originalDisplayProperties.name') NOT LIKE '%Pantheon%'"
     )
@@ -112,7 +113,7 @@ d2.get("/aggregateRaids", async (req, res) => {
 
   const validateRaidStmt =
     "SELECT json_extract(json, '$.originalDisplayProperties.name') AS name FROM DestinyActivityDefinition WHERE id = ?";
-  const firstRaidColloquialName = db
+  const firstRaidColloquialName = destinyDb
     .prepare(validateRaidStmt)
     .get(signed(raidIdArr[0]))?.name;
   if (!firstRaidColloquialName) {
@@ -123,7 +124,7 @@ d2.get("/aggregateRaids", async (req, res) => {
   const allRaidsStmt = `SELECT json_extract(json, '$.originalDisplayProperties.name') AS name FROM DestinyActivityDefinition WHERE id IN (${remainingRaidIds
     .map(() => "?")
     .join(",")})`;
-  const allRaidNames = db
+  const allRaidNames = destinyDb
     .prepare(allRaidsStmt)
     .all(remainingRaidIds.map((id) => signed(id)))
     ?.map((raid) => raid.name);
@@ -257,6 +258,523 @@ d2.get("/aggregateRaids", async (req, res) => {
     },
     fireteam,
   });
+});
+
+const INVENTORY_COMPONENTS = "102,200,201,205,300,302,304,305";
+// 102: Vault
+// 200: Characters (needed for character IDs in inventories)
+// 201: CharacterInventories (non-equipped on chars)
+// 205: CharacterEquipment (equipped)
+// 300: ItemInstances (instance data like gearTier, damage type, etc.)
+// 302: ProfileCurrencies
+// 304: ItemStats (stat values for items)
+// 305: ItemSockets (socket and plug data for items)
+
+/**
+ * @typedef ProfileResponse
+ * @type {{ Response: ProfileData; ErrorCode: number; ThrottleSeconds: number; ErrorStatus: string; Message: string; MessageData: {} }}
+ *
+ * @typedef ProfileData
+ * @type {{ profileInventory: ProfileInventory; profilePlugSets: ProfilePlugSets; characters: Characters; characterInventories: CharacterInventories; characterEquipment: CharacterEquipment; characterPlugSets: CharacterPlugSets; itemComponents: ItemComponents; }}
+ *
+ * @typedef ProfileInventory
+ * @type {{ data: { items: InventoryItem[] }; privacy: number; }}
+ *
+ * @typedef ProfilePlugSets
+ * @type {{ data: { plugs: { [plugHash: string]: PlugSet[] } }; privacy: number; }}
+ *
+ * @typedef PlugSet
+ * @type {{ plugItemHash: number; canInsert: boolean; enabled: boolean }}
+ *
+ * @typedef Characters
+ * @type {{ data: { [characterHash: string]: CharacterData }; privacy: number; }}
+ *
+ * @typedef CharacterData
+ * @type {{ membershipId: string; membershipType: number; characterId: string; dateLastPlayed: string; minutesPlayedThisSession: string; minutesPlayedTotal: string; light: number; stats: { [statHash: string]: number }; raceHash: number; genderHash: number; classHash: number; raceType: number; classType: number; genderType: number; emblemPath: string; emblemBackgroundPath: string; emblemHash: number; emblemColor: { red: number; green: number; blue: number; alpha: number; }; levelProgression: LevelProgression; baseCharacterLevel: number; percentToNextLevel: number; titleRecordHash: number; }}
+ *
+ * @typedef LevelProgression
+ * @type {{ progressionHash: number; dailyProgress: number; dailyLimit: number; weeklyProgress: number; weeklyLimit: number; currentProgress: number; level: number; levelCap: number; stepIndex: number; progressToNextLevel: number; nextLevelAt: number; }}
+ *
+ * @typedef CharacterInventories
+ * @type {{ data: { [characterHash: string]: CharacterInventory }; privacy: number; }}
+ *
+ * @typedef CharacterInventory
+ * @type {{ items: InventoryItem[] }}
+ *
+ * @typedef CharacterEquipment
+ * @type {{ data: { [characterHash: string]: CharacterInventory }; privacy: number; }}
+ *
+ * @typedef CharacterPlugSets
+ * @type {{ data: { [characterHash: string]: { plugs: { [plugHash: string]: PlugSet[] }}}; privacy: number; }}
+ *
+ * @typedef ItemComponents
+ * @type {{ instances: { data: { [itemInstanceId: string]: ItemComponentInstance; }; privacy: number; }; stats: { data: { [itemInstanceId: string]: ItemStatInstance; }; privacy: number; }; sockets: { data: { [itemInstanceId: string]: ItemSocketInstance; }; privacy: number; }; perks: { data: { [itemInstanceId: string]: ItemPerkInstance }; privacy: number; }}}
+ *
+ * @typedef ItemComponentInstance
+ * @type {{ damageType: number; damageTypeHash: number; primaryStat: { statHash: number; value: number }; itemLevel: number; quality: number; isEquipped: boolean; canEquip: boolean; equipRequiredLevel: number; unlockHashesRequiredToEquip: number[]; cannotEquipReason: number; gearTier: number; }}
+ *
+ * @typedef ItemStatInstance
+ * @type {{ stats: { [statHash: string]: { statHash: number; value: number }}}}
+ *
+ * @typedef ItemSocketInstance
+ * @type {{ sockets: Socket[] }}
+ *
+ * @typedef Socket
+ * @type {{ plugHash: number; isEnabled: boolean; isVisible: boolean }}
+ *
+ * @typedef ItemPerkInstance
+ * @type {{ perks: Perk[] }}
+ *
+ * @typedef Perk
+ * @type {{ perkHash: number; iconPath: string; isActive: boolean; visible: boolean; }}
+ *
+ * @typedef InventoryItem
+ * @type {{ itemHash: number; itemInstanceId?: string; quantity: number; bindStatus: number; location: number; bucketHash: number; transferStatus: number; lockable: boolean; state: number; dismantlePermission: number; isWrapper: boolean; tooltipNotificationIndexes: number[]; versionNumber?: number; }}
+ *
+ * @typedef Armor
+ * @type {{ instance_id: string; item_hash: number; name: string; archetype: string; tertiary: string; ghost_mod?: string }}
+ */
+
+/**
+ * @param {string} membershipType
+ * @param {string} membershipId
+ * @param {string} accessToken
+ * @returns {Promise<ProfileResponse>}
+ */
+async function fetchFullInventory(membershipType, membershipId, accessToken) {
+  const res = await apiClient.get(
+    `/Platform/Destiny2/${membershipType}/Profile/${membershipId}/?components=${INVENTORY_COMPONENTS}`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+  return res.data;
+}
+
+/**
+ * @param {ProfileData} data
+ * @returns {number[]}
+ */
+function extractInstanceIds(data) {
+  const instanceIds = new Set();
+
+  /**
+   * @param {InventoryItem[]} items
+   */
+  const addItems = (items) => {
+    if (!items) return;
+    for (const item of items) {
+      if (item.itemInstanceId) {
+        instanceIds.add(item.itemInstanceId.toString()); // use string for safety
+      }
+    }
+  };
+
+  // Character inventories (non-equipped)
+  if (data.characterInventories?.data) {
+    Object.values(data.characterInventories.data).forEach((char) =>
+      addItems(char.items)
+    );
+  }
+
+  // Character equipment (equipped)
+  if (data.characterEquipment?.data) {
+    Object.values(data.characterEquipment.data).forEach((char) =>
+      addItems(char.items)
+    );
+  }
+
+  // Profile inventory (vault, postmaster, etc.)
+  if (data.profileInventory?.data?.items) {
+    addItems(data.profileInventory.data.items);
+  }
+
+  return Array.from(instanceIds);
+}
+
+/**
+ * @param {ProfileData} data
+ * @param {boolean} [isPolling=false] - Whether to extract ghost armorer mod (only during polling)
+ * @returns {Armor[]}
+ */
+function extractArmor(data, isPolling = false) {
+  const ARMOR_CATEGORY_HASH = 20;
+  const armor = [];
+  let ghostArmorerMod = null;
+
+  // First, if polling, find the equipped ghost and extract its armorer mod
+  if (isPolling && data.characterEquipment?.data) {
+    for (const char of Object.values(data.characterEquipment.data)) {
+      for (const item of char.items || []) {
+        if (item?.bucketHash === ghostBucketHash) {
+          // Found the equipped ghost
+          const instanceId = item.itemInstanceId;
+          if (instanceId) {
+            const sockets =
+              data.itemComponents?.sockets?.data?.[instanceId]?.sockets;
+            if (sockets) {
+              // Look for the armorer mod using cached hash map
+              for (const socket of sockets) {
+                if (
+                  socket.plugHash &&
+                  ghostEconomicModHashes[socket.plugHash]
+                ) {
+                  ghostArmorerMod = ghostEconomicModHashes[socket.plugHash];
+                  break;
+                }
+              }
+            }
+          }
+          break;
+        }
+      }
+      if (ghostArmorerMod !== null) break;
+    }
+  }
+
+  /**
+   * Process a single armor item
+   * @param {any} item - The item from inventory
+   */
+  const processArmorItem = (item) => {
+    // Check if it's armor (not ghost, just regular armor)
+    // use DestinyInventoryBucketDefinition cache for armor buckets
+    if (!armorBucketHashes[item?.bucketHash]) return;
+
+    const instanceId = item.itemInstanceId;
+    if (!instanceId) return;
+
+    // Only process Legendary armor (tierType 5 = Legendary)
+    // Note: gearTier is about stat distribution quality (tier 1/2), not rarity
+    const isLegendary =
+      data.itemComponents.instances.data[instanceId]?.gearTier === 5;
+    if (!isLegendary) return;
+
+    // Get socket data from itemComponents
+    const sockets = data.itemComponents?.sockets?.data?.[instanceId]?.sockets;
+    if (!sockets) return;
+
+    const itemDef = getDefinition("InventoryItem", item.itemHash);
+    if (!itemDef) return;
+    const name = itemDef.displayProperties?.name || "Unknown";
+
+    // Extract archetype and tertiary stat from sockets
+    let archetype = null;
+    let tertiary = null;
+    let archetypePrimaryStat = null;
+    let archetypeSecondaryStat = null;
+
+    for (const socket of sockets) {
+      if (socket.plugHash && armorArchetypeHashes[socket.plugHash]) {
+        // Found archetype socket using cached hash map
+        archetype = armorArchetypeHashes[socket.plugHash];
+
+        // Get primary/secondary stats from static mapping
+        const archetypeStats = archetypeStatMapping[archetype];
+        if (archetypeStats) {
+          archetypePrimaryStat = archetypeStats.primary;
+          archetypeSecondaryStat = archetypeStats.secondary;
+        }
+        break; // Found archetype, no need to continue
+      }
+    }
+
+    // Now extract the tertiary stat from the item's actual stats (component 304)
+    // The tertiary is the highest value among the 4 stats NOT in the archetype
+
+    if (archetypePrimaryStat && archetypeSecondaryStat) {
+      const itemStats = data.itemComponents?.stats?.data?.[instanceId]?.stats;
+
+      if (itemStats) {
+        // Find the tertiary stat (highest value among non-archetype stats)
+        let maxValue = 0;
+        let tertiaryStatName = null;
+        for (const [statHash, statName] of Object.entries(armorStatHashes)) {
+          // Skip archetype primary and secondary stats
+          if (
+            statName === archetypePrimaryStat ||
+            statName === archetypeSecondaryStat
+          ) {
+            continue;
+          }
+
+          const statValue = itemStats[statHash]?.value || 0;
+          if (statValue > maxValue) {
+            maxValue = statValue;
+            tertiaryStatName = statName;
+          }
+        }
+
+        tertiary = tertiaryStatName;
+      }
+    }
+
+    armor.push({
+      instance_id: instanceId.toString(),
+      item_hash: item.itemHash,
+      name,
+      archetype: archetype || "Unknown",
+      tertiary: tertiary || "Unknown",
+      ghost_mod: ghostArmorerMod, // Will be null if not polling, or the mod name if polling
+    });
+  };
+
+  // Process character inventories (non-equipped)
+  if (data.characterInventories?.data) {
+    Object.values(data.characterInventories.data).forEach((char) => {
+      char.items?.forEach(processArmorItem);
+    });
+  }
+
+  // Process character equipment (equipped armor)
+  if (data.characterEquipment?.data) {
+    Object.values(data.characterEquipment.data).forEach((char) => {
+      char.items?.forEach(processArmorItem);
+    });
+  }
+
+  // Process profile inventory (vault, postmaster, etc.)
+  if (data.profileInventory?.data?.items) {
+    data.profileInventory.data.items.forEach(processArmorItem);
+  }
+
+  return armor;
+}
+
+/** @type {{ [hash:string]: string}} */
+const armorArchetypeHashes = destinyDb
+  .prepare(
+    "SELECT id, json_extract(json, '$.displayProperties.name') as archetype FROM DestinyInventoryItemDefinition WHERE json_extract(json, '$.plug.plugCategoryIdentifier') = 'armor_archetypes'"
+  )
+  .all()
+  .reduce(
+    (archetypes, { id, archetype }) => ({
+      ...archetypes,
+      [unsigned(id)]: archetype,
+    }),
+    {}
+  );
+
+// Archetype name to primary/secondary stat mapping
+const archetypeStatMapping = {
+  Specialist: { primary: "Class", secondary: "Weapons" },
+  Gunner: { primary: "Weapons", secondary: "Grenade" },
+  Bulwark: { primary: "Health", secondary: "Class" },
+  Grenadier: { primary: "Grenade", secondary: "Super" },
+  Paragon: { primary: "Super", secondary: "Melee" },
+  Brawler: { primary: "Melee", secondary: "Health" },
+};
+
+/** @type {{ [hash: string]: string }} */
+const armorBucketHashes = destinyDb
+  .prepare(
+    "SELECT id, json_extract(json, '$.displayProperties.name') as bucket FROM DestinyInventoryBucketDefinition WHERE json_extract(json, '$.index') > 2 AND json_extract(json, '$.index') < 8;"
+  )
+  .all()
+  .reduce(
+    (buckets, { id, bucket }) => ({ ...buckets, [unsigned(id)]: bucket }),
+    {}
+  );
+
+/** @type {{ [hash: string]: string }} */
+const weaponBucketHashes = destinyDb
+  .prepare(
+    "SELECT id, json_extract(json, '$.displayProperties.name') as bucket FROM DestinyInventoryBucketDefinition WHERE json_extract(json, '$.index') > -1 AND json_extract(json, '$.index') < 3;"
+  )
+  .all()
+  .reduce(
+    (buckets, { id, bucket }) => ({ ...buckets, [unsigned(id)]: bucket }),
+    {}
+  );
+
+/** @type {string} */
+const ghostBucketHash = unsigned(
+  destinyDb
+    .prepare(
+      "SELECT id FROM DestinyInventoryBucketDefinition WHERE json_extract(json, '$.displayProperties.name') = 'Ghost'"
+    )
+    .get().id
+);
+
+const armorStatHashes = destinyDb
+  .prepare(
+    "SELECT id, json_extract(json, '$.displayProperties.name') AS stat FROM DestinyStatDefinition WHERE json_extract(json, '$.statCategory') = 2;"
+  )
+  .all()
+  .reduce((stats, { id, stat }) => ({ ...stats, [unsigned(id)]: stat }), {});
+
+/** @type {{ [hash:string]: string}} */
+const ghostEconomicModHashes = destinyDb
+  .prepare(
+    "SELECT id, json_extract(json, '$.displayProperties.name') as name FROM DestinyInventoryItemDefinition WHERE json_extract(json, '$.displayProperties.name') LIKE '%Armorer%' AND json_extract(json, '$.plug.plugCategoryIdentifier') = 'enhancements.ghosts_economic'"
+  )
+  .all()
+  .reduce(
+    (mods, { id, name }) => ({
+      ...mods,
+      [unsigned(id)]: name,
+    }),
+    {}
+  );
+
+async function storeUserInventoryData(
+  d2Id,
+  accountType,
+  accessToken,
+  isPolling
+) {
+  // Take initial snapshot immediately
+  const profileData = await fetchFullInventory(accountType, d2Id, accessToken);
+  // cache debugging: this timestamp shows when Bungie API produced the response
+  // console.log({ responseMinted: profileData.Response.responseMintedTimestamp });
+  // now that we have full inventory, we need to map instanced items to armor traits/weapon traits
+  const allInstanceIds = extractInstanceIds(profileData.Response);
+
+  // Filter out instance IDs that already exist in the database
+  let newInstanceIds = allInstanceIds;
+  console.log("total items:", allInstanceIds.length);
+  if (allInstanceIds.length > 0) {
+    const existingInstanceIds = appDb
+      .prepare(
+        `SELECT instance_id FROM user_loot WHERE instance_id IN (${allInstanceIds
+          .map(() => "?")
+          .join(",")})`
+      )
+      .all(...allInstanceIds)
+      .map((row) => row.instance_id);
+
+    const existingSet = new Set(existingInstanceIds);
+    newInstanceIds = allInstanceIds.filter((id) => !existingSet.has(id));
+  }
+
+  // Only insert NEW instance IDs
+  if (newInstanceIds.length > 0) {
+    const createUserLootStmt = appDb.prepare(
+      `INSERT INTO user_loot (mem_id, instance_id) VALUES ${newInstanceIds
+        .map(() => `(?, ?)`)
+        .join(",")};`
+    );
+    const params = newInstanceIds.flatMap((id) => [d2Id, id]);
+    createUserLootStmt.run(...params);
+  }
+
+  // Extract armor and filter to only NEW pieces
+  const allArmor = extractArmor(profileData.Response, isPolling);
+  const newArmor = allArmor.filter((armor) =>
+    newInstanceIds.includes(armor.instance_id)
+  );
+
+  // Only insert NEW armor
+  if (newArmor.length > 0) {
+    const createArmorStmt = appDb.prepare(
+      `INSERT INTO armor (instance_id, item_hash, name, archetype, tertiary, ghost_mod)
+       VALUES (?, ?, ?, ?, ?, ?)`
+    );
+
+    const insertMany = appDb.transaction((armorPieces) => {
+      for (const armor of armorPieces) {
+        createArmorStmt.run(
+          armor.instance_id,
+          armor.item_hash,
+          armor.name,
+          armor.archetype,
+          armor.tertiary,
+          armor.ghost_mod
+        );
+      }
+    });
+    console.log(newArmor);
+    console.log(`inserting ${newArmor.length} armor pieces...`);
+    insertMany(newArmor);
+  }
+
+  // store weapons
+  // TODO: implement weapon extraction and storage
+
+  // Return new instance IDs for polling endpoint
+  return newArmor;
+}
+
+d2.get("/authorize", authorize, async (req, res) => {
+  if (res?.locals?.token) {
+    const { token } = res.locals;
+    try {
+      const { data } = await apiClient.get(
+        `/Platform/User/GetMembershipsById/${token.membership_id}/254/`
+      );
+
+      const { Response } = data;
+      const { destinyMemberships } = Response;
+      const primaryDestiny =
+        destinyMemberships.find((m) => m.crossSaveOverride !== 0) ||
+        destinyMemberships[0];
+      if (!primaryDestiny) {
+        throw new Error("No linked Destiny 2 profiles found.");
+      }
+
+      const { membershipId: d2Id, membershipType: d2Type } = primaryDestiny;
+      const username =
+        primaryDestiny.bungieGlobalDisplayName || primaryDestiny.displayName;
+
+      (token.d2Id = d2Id), (token.d2Type = d2Type);
+
+      // store user
+      const createUserStmt = appDb.prepare(
+        "INSERT OR IGNORE INTO users (mem_id, mem_type, name) VALUES (?,?,?);"
+      );
+      createUserStmt.run(d2Id, d2Type, username);
+      await storeUserInventoryData(d2Id, d2Type, token.access_token, false);
+      return res
+        .cookie("BNET_AUTH", token, {
+          httpOnly: true,
+          secure: true,
+          sameSite: "none",
+          maxAge: token.expires_in * 1000,
+        })
+        .status(202)
+        .json({
+          msg: "success",
+          membershipId: d2Id,
+          membershipType: d2Type,
+          bungieName: username,
+        });
+    } catch (err) {
+      console.error("Membership fetch error:", err);
+      return res.status(500).json({ msg: "Failed to fetch Destiny profile." });
+    }
+  }
+
+  return res.status(202).json({
+    msg: "still authorized",
+  });
+});
+
+d2.get("/pollLoot", authorize, async (req, res) => {
+  try {
+    const token = req.cookies.BNET_AUTH;
+    if (!token) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+
+    const { d2Id, d2Type } = token;
+    if (!d2Id) {
+      return res.status(400).json({ error: "No Destiny Membership ID found" });
+    }
+
+    const newArmor = await storeUserInventoryData(
+      d2Id,
+      d2Type,
+      token.access_token,
+      true
+    );
+
+    res.json({ new: newArmor });
+  } catch (err) {
+    console.error("Poll loot error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
 });
 
 export { d2 };

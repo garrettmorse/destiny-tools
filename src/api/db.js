@@ -3,10 +3,11 @@ import { rm, rename, writeFile, stat, readFile } from "node:fs/promises";
 import { createWriteStream } from "node:fs";
 import { apiClient, apiGet } from "./client.js";
 import AdmZip from "adm-zip";
-const DB_LOCATION = process.cwd() + "/world.content";
+const DESTINY_DB_LOCATION = process.cwd() + "/world.content";
+const APP_DB_LOCATION = process.cwd() + "/app.content";
 const TMP_ZIP_LOCATION = process.cwd() + "/world.zip";
 const VERSION_LOCATION = process.cwd() + "/.db_version";
-let db;
+let destinyDb;
 
 async function updateManifestIfNeeded() {
   try {
@@ -23,9 +24,12 @@ async function updateManifestIfNeeded() {
       // no local version yet
     }
 
-    if (localVersion === latestManifestVersion && (await stat(DB_LOCATION))) {
+    if (
+      localVersion === latestManifestVersion &&
+      (await stat(DESTINY_DB_LOCATION))
+    ) {
       console.log("Manifest up-to-date!");
-      return DB_LOCATION;
+      return DESTINY_DB_LOCATION;
     }
 
     console.log("Updating Manifest...");
@@ -34,7 +38,7 @@ async function updateManifestIfNeeded() {
       manifest.Response.mobileWorldContentPaths.en,
       {
         responseType: "stream",
-      }
+      },
     );
     if (response.status !== 200) {
       throw new Error("Failed to retrieve Destiny 2 DB: ", response);
@@ -53,22 +57,44 @@ async function updateManifestIfNeeded() {
     }
     const dbEntry = entries[0];
     zip.extractEntryTo(dbEntry, process.cwd(), false, true);
-    await rename(`${process.cwd()}/${dbEntry.entryName}`, DB_LOCATION);
+    await rename(`${process.cwd()}/${dbEntry.entryName}`, DESTINY_DB_LOCATION);
     await rm(TMP_ZIP_LOCATION);
-    db = Database(DB_LOCATION);
     await writeFile(VERSION_LOCATION, latestManifestVersion);
   } catch (error) {
     console.error("Manifest update failed:", error.message);
-    if (await stat(DB_LOCATION)) {
-      return DB_LOCATION;
+    if (await stat(DESTINY_DB_LOCATION)) {
+      return;
     }
     throw error;
   }
 }
 
 await updateManifestIfNeeded();
-db = new Database(DB_LOCATION);
-db.pragma("journal_mode = WAL");
+destinyDb = new Database(DESTINY_DB_LOCATION);
+const appDb = new Database(APP_DB_LOCATION);
+destinyDb.pragma("journal_mode = WAL");
+appDb.pragma("journal_mode = WAL");
+appDb.pragma("foreign_keys = ON");
+appDb
+  .prepare(
+    "CREATE TABLE IF NOT EXISTS users (mem_id VARCHAR(32) PRIMARY KEY, mem_type INT NOT NULL, name VARCHAR(64) NOT NULL);",
+  )
+  .run();
+appDb
+  .prepare(
+    "CREATE TABLE IF NOT EXISTS user_loot (instance_id VARCHAR(32) PRIMARY KEY, mem_id VARCHAR(32) NOT NULL, FOREIGN KEY (mem_id) REFERENCES users(mem_id));",
+  )
+  .run();
+appDb
+  .prepare(
+    "CREATE TABLE IF NOT EXISTS armor (instance_id VARCHAR(32) PRIMARY KEY, item_hash INT NOT NULL, name VARCHAR(64) NOT NULL, archetype VARCHAR(16) NOT NULL, tertiary VARCHAR(16) NOT NULL, ghost_mod VARCHAR(16), FOREIGN KEY (instance_id) REFERENCES user_loot(instance_id));",
+  )
+  .run();
+appDb
+  .prepare(
+    "CREATE TABLE IF NOT EXISTS weapons (instance_id VARCHAR(32) PRIMARY KEY, item_hash INT NOT NULL, name VARCHAR(64) NOT NULL, perk1 VARCHAR(32) NOT NULL, perk2 VARCHAR(32) NOT NULL, perk3 VARCHAR(32) NOT NULL, perk4 VARCHAR(32) NOT NULL, perk5 VARCHAR(32) NOT NULL, perk6 VARCHAR(32) NOT NULL, FOREIGN KEY (instance_id) REFERENCES user_loot(instance_id));",
+  )
+  .run();
 
 // NOTE: destiny hashes are unsigned 32-bit, so we must convert when id > 2^31 - 1
 const INT_MAX = 2147483647;
@@ -88,10 +114,10 @@ function unsigned(hash) {
  */
 function getDefinition(category, hash) {
   const id = signed(hash);
-  const row = db
+  const row = destinyDb
     .prepare(`SELECT json FROM Destiny${category}Definition WHERE id = ?`)
     .get(id);
   return row ? JSON.parse(row.json) : null;
 }
 
-export { db, getDefinition, signed, unsigned };
+export { appDb, destinyDb, getDefinition, signed, unsigned };

@@ -2,18 +2,39 @@ import express from "express";
 import "dotenv/config";
 import { d2 } from "./api/routes/d2.js";
 import path from "node:path";
+import fs from "node:fs";
+import https from "https";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 
 const ports = [80, 443, 8080];
 
+// const key = fs.readFileSync("localhost-key.pem", { encoding: "utf8" });
+// const cert = fs.readFileSync("localhost.pem", { encoding: "utf8" });
+// const passphrase = process.env.CERT_PASSPHRASE;
+// const credentials = { key, passphrase, cert };
+
 ports.forEach((port) => {
   const app = express();
+  // const httpsServer = https.createServer(credentials, app);
+
+  // function ensureSecure(req, res, next) {
+  //   if (req.secure) {
+  //     return next();
+  //   }
+
+  //   res.redirect("https://" + req.hostname + req.originalUrl);
+  // }
+
+  // app.use(ensureSecure);
+
+  if (process.env.NODE_ENV === "development") {
+    app.use(cors({ origin: "https://localhost:5173", credentials: true }));
+  }
 
   const __dirname = import.meta.dirname;
 
-  if (process.env.NODE_ENV === "development") {
-    app.use(cors({ origin: "http://localhost:5173" }));
-  }
+  app.use(cookieParser());
 
   app.use("/api/d2", d2);
 
@@ -31,6 +52,8 @@ ports.forEach((port) => {
     express.static("dist/edgestats", { extensions: ["html"] })
   );
 
+  app.use("/loot", express.static("dist/loot", { extensions: ["html"] }));
+
   app.listen(port, () => console.log(`server listening on ${port}`));
 
   app.get("/", (_, res) => res.send("hey"));
@@ -41,5 +64,9 @@ ports.forEach((port) => {
 
   app.get("/edgestats*none", (_, res) => {
     res.sendFile(path.join(__dirname, "..", "dist/edgestats", "index.html"));
+  });
+
+  app.get("/loot*none", (_, res) => {
+    res.sendFile(path.join(__dirname, "..", "dist/loot", "index.html"));
   });
 });

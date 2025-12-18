@@ -1,13 +1,13 @@
 import type { APIResponse, UserResult } from "./services";
 export const fetchUser = async (
-  userName: string
+  userName: string,
 ): Promise<APIResponse<UserResult[]>> => {
   try {
     const response = await fetch(
       // @ts-expect-error cant figure out typing globalThis specifically for local dev with vite
       `${global.SERVICE_URL}/api/d2/searchUser?user=${encodeURIComponent(
-        userName
-      )}`
+        userName,
+      )}`,
     );
     if (!response.ok) {
       throw new Error("Failed to fetch search results");
