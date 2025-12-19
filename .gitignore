@@ -1,5 +1,6 @@
 node_modules
 .env
+.env.dev
 dist
 content_full.json
 content_small.json
@@ -10,3 +11,5 @@ app.content
 app.content-shm
 app.content-wal
 .db_version
+.claude
+.pem

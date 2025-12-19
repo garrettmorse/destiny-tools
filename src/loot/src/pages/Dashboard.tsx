@@ -19,10 +19,14 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedGhostMod, setSelectedGhostMod] = useState<string | null>(null);
+  const [isPolling, setIsPolling] = useState(false);
 
   useEffect(() => {
     if (auth.status !== "authenticated") {
       setLoading(false);
+      setIsPolling(false);
+      /* @ts-expect-error cant figure out typing globalThis specifically for local dev with vite */
+      navigate(global.BASE_PATH || "/");
       return;
     }
 
@@ -51,12 +55,21 @@ export default function Dashboard() {
       }
     };
 
+    // Initial fetch
     fetchStats();
-  }, [auth.status, selectedGhostMod]);
 
-  if (auth.status !== "authenticated") {
-    navigate("/");
-  }
+    // Set up polling every 30 seconds
+    setIsPolling(true);
+    const interval = setInterval(() => {
+      console.log("Polling for updated community stats...");
+      fetchStats();
+    }, 30_000);
+
+    return () => {
+      clearInterval(interval);
+      setIsPolling(false);
+    };
+  }, [auth.status, selectedGhostMod, navigate]);
 
   if (loading) {
     return (
@@ -97,7 +110,12 @@ export default function Dashboard() {
         {/* Main panel - heatmaps */}
         <div className="flex-1 p-8 overflow-y-auto h-screen">
           <div className="flex items-center justify-between mb-8">
-            <h1 className="text-4xl font-bold">Community Armor Statistics</h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-4xl font-bold">Community Armor Statistics</h1>
+              {isPolling && (
+                <span className="text-sm text-green-400">(Live)</span>
+              )}
+            </div>
             <div className="flex flex-col items-center gap-4">
               <label
                 htmlFor="ghost-mod-filter"

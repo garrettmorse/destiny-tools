@@ -25,6 +25,8 @@ export default function ArmorFeed() {
     if (auth.status !== "authenticated") {
       setNewArmor([]);
       setIsPolling(false);
+      /* @ts-expect-error cant figure out typing globalThis specifically for local dev with vite */
+      navigate(global.BASE_PATH || "/");
       return;
     }
 
@@ -108,11 +110,7 @@ export default function ArmorFeed() {
       clearInterval(interval);
       setIsPolling(false);
     };
-  }, [auth.status]);
-
-  if (auth.status !== "authenticated") {
-    navigate("/");
-  }
+  }, [auth.status, navigate]);
 
   return (
     <div className="h-screen overflow-y-auto bg-gray-850">
