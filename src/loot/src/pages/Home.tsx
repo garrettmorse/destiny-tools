@@ -33,7 +33,9 @@ const HomePage: React.FC = () => {
         </div>
       </div>
     ) : (
-      <div>Uh oh. Try reloading the page.</div>
+      <div>
+        Uh oh. If refreshing the page doesn't work, please try again later..
+      </div>
     );
 
   return (

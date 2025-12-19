@@ -81,8 +81,12 @@ export default function Dashboard() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-xl text-red-500">Error: {error}</p>
+      <div className="min-h-screen flex flex-col items-center justify-center">
+        <p className="text-xl text-red-500">Error</p>
+        <p>
+          Something went really wrong. If refreshing the page doesn't work,
+          please try again later.
+        </p>
       </div>
     );
   }
