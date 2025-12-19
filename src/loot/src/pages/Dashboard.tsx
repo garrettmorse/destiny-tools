@@ -21,6 +21,7 @@ export default function Dashboard() {
   const [selectedGhostMod, setSelectedGhostMod] = useState<string | null>(null);
   const [isPolling, setIsPolling] = useState(false);
   const [isFeedOpen, setIsFeedOpen] = useState(false);
+  const [showUserOnly, setShowUserOnly] = useState(false);
 
   useEffect(() => {
     if (auth.status !== "authenticated") {
@@ -35,8 +36,15 @@ export default function Dashboard() {
       try {
         /* @ts-expect-error cant figure out typing globalThis specifically for local dev with vite */
         let url = `${global.SERVICE_URL}/api/d2/armorStats`;
+        const params = new URLSearchParams();
         if (selectedGhostMod) {
-          url += `?ghost_mod=${encodeURIComponent(selectedGhostMod)}`;
+          params.append('ghost_mod', selectedGhostMod);
+        }
+        if (showUserOnly) {
+          params.append('user_only', 'true');
+        }
+        if (params.toString()) {
+          url += `?${params.toString()}`;
         }
 
         const res = await fetch(url, {
@@ -70,7 +78,7 @@ export default function Dashboard() {
       clearInterval(interval);
       setIsPolling(false);
     };
-  }, [auth.status, selectedGhostMod, navigate]);
+  }, [auth.status, selectedGhostMod, showUserOnly, navigate]);
 
   if (loading) {
     return (
@@ -156,6 +164,15 @@ export default function Dashboard() {
               )}
             </div>
             <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+              <label className="flex items-center gap-2 max-sm:text-xs sm:text-sm text-gray-400 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={showUserOnly}
+                  onChange={(e) => setShowUserOnly(e.target.checked)}
+                  className="w-4 h-4 sm:w-5 sm:h-5 bg-gray-800 border border-gray-700 rounded text-blue-600 focus:ring-blue-500 focus:ring-2 cursor-pointer"
+                />
+                <span>My Stats Only</span>
+              </label>
               <label
                 htmlFor="ghost-mod-filter"
                 className="text-sm text-gray-400"

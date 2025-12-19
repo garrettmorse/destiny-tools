@@ -97,7 +97,7 @@ export default function ArmorHeatmap({
                   return (
                     <td
                       key={stat}
-                      className={`p-1 sm:p-2 border border-gray-700 text-center text-xs sm:text-sm ${baseColor}`}
+                      className={`p-1 sm:p-2 border border-gray-700 font-semibold text-center max-sm:text-xs sm:text-sm ${baseColor}`}
                       style={{ opacity }}
                     >
                       {count > 0 ? count : ""}

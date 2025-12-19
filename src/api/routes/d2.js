@@ -861,8 +861,8 @@ d2.get("/armorStats", authorize, async (req, res) => {
       return res.status(400).json({ error: "No Destiny Membership ID found" });
     }
 
-    // Optional ghost_mod filter from query params
-    const { ghost_mod } = req.query;
+    // Optional ghost_mod and user_only filters from query params
+    const { ghost_mod, user_only } = req.query;
 
     // Query armor grouped by slot, archetype, and tertiary
     let query = `SELECT
@@ -870,14 +870,24 @@ d2.get("/armorStats", authorize, async (req, res) => {
       archetype,
       tertiary,
       COUNT(*) as count
-    FROM armor a WHERE ghost_mod IS NOT NULL`;
+    FROM armor a`;
 
     const params = [];
+    const conditions = ["ghost_mod IS NOT NULL"];
+
+    // If user_only is true, join with user_loot to filter by user
+    if (user_only === 'true') {
+      query += ` INNER JOIN user_loot ul ON a.instance_id = ul.instance_id`;
+      conditions.push("ul.mem_id = ?");
+      params.push(d2Id);
+    }
+
     if (ghost_mod) {
-      query += ` AND ghost_mod = ?`;
+      conditions.push("a.ghost_mod = ?");
       params.push(ghost_mod);
     }
 
+    query += ` WHERE ${conditions.join(" AND ")}`;
     query += ` GROUP BY slot, archetype, tertiary
     ORDER BY slot, archetype, tertiary`;
 
