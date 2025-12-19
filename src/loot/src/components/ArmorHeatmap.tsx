@@ -55,26 +55,28 @@ export default function ArmorHeatmap({
   };
 
   return (
-    <div className="bg-gray-800 rounded-lg p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-semibold">{slot}</h2>
+    <div className="bg-gray-800 rounded-lg p-3 sm:p-4 md:p-6">
+      <div className="flex items-center justify-between mb-3 sm:mb-4">
+        <h2 className="max-sm:text-lg sm:text-xl md:text-2xl font-semibold">
+          {slot}
+        </h2>
         {ghostMod && (
-          <span className="text-sm text-green-400 bg-gray-700 px-3 py-1 rounded">
+          <span className="max-sm:text-xs sm:text-sm text-green-400 bg-gray-700 px-2 sm:px-3 py-1 rounded">
             {ghostMod}
           </span>
         )}
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse">
+      <div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0">
+        <table className="w-full border-collapse min-w-max">
           <thead>
             <tr>
-              <th className="p-2 text-left border border-gray-700">
+              <th className="p-1 sm:p-2 text-left border border-gray-700 max-sm:text-xs sm:text-md sticky left-0 bg-gray-800 z-10">
                 Archetype \ Tertiary
               </th>
               {tertiaryStats.map((stat) => (
                 <th
                   key={stat}
-                  className="p-2 text-center border border-gray-700 text-sm"
+                  className="p-1 sm:p-2 text-center border border-gray-700 max-sm:text-xs sm:text-sm whitespace-nowrap"
                 >
                   {stat}
                 </th>
@@ -84,7 +86,7 @@ export default function ArmorHeatmap({
           <tbody>
             {archetypes.map((archetype) => (
               <tr key={archetype}>
-                <td className="p-2 border border-gray-700 font-medium">
+                <td className="p-1 sm:p-2 border border-gray-700 font-medium max-sm:text-xs sm:text-md sticky left-0 bg-gray-800 z-10">
                   {archetype}
                 </td>
                 {tertiaryStats.map((stat) => {
@@ -95,7 +97,7 @@ export default function ArmorHeatmap({
                   return (
                     <td
                       key={stat}
-                      className={`p-2 border border-gray-700 text-center ${baseColor}`}
+                      className={`p-1 sm:p-2 border border-gray-700 text-center text-xs sm:text-sm ${baseColor}`}
                       style={{ opacity }}
                     >
                       {count > 0 ? count : ""}
