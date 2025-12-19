@@ -46,7 +46,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setAuth({ status: "unauthenticated" });
           window.location.href =
             // @ts-expect-error cant figure out typing globalThis specifically for local dev with vite
-            `${global.BNET}/en/OAuth/Authorize?client_id=49718&response_type=code&state=777`;
+            `${global.BNET}/en/OAuth/Authorize?client_id=${global.CLIENT_ID}&response_type=code&state=777`;
           return;
         }
 

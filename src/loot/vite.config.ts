@@ -21,6 +21,7 @@ export default defineConfig(() => {
               BNET: "https://bungie.net",
               SERVICE_URL: "http://localhost:8080",
               BASE_PATH: "",
+              CLIENT_ID: 51225,
             },
           }
         : {
@@ -28,6 +29,7 @@ export default defineConfig(() => {
               BNET: "https://bungie.net",
               SERVICE_URL: "",
               BASE_PATH: "/loot",
+              CLIENT_ID: 49718,
             },
           },
     plugins: [react(), tailwindcss(), basicSsl()],

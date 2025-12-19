@@ -63,7 +63,7 @@ export default function LootTracker() {
             // Refresh failed - refresh token is invalid, redirect to re-authenticate
             console.error("Token refresh failed, redirecting to OAuth...");
             /* @ts-expect-error cant figure out typing globalThis specifically for local dev with vite */
-            window.location.href = `${global.BNET}/en/OAuth/Authorize?client_id=49718&response_type=code&state=777`;
+            window.location.href = `${global.BNET}/en/OAuth/Authorize?client_id=${global.CLIENT_ID}&response_type=code&state=777`;
             return;
           }
         }

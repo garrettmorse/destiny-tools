@@ -38,7 +38,7 @@ async function updateManifestIfNeeded() {
       manifest.Response.mobileWorldContentPaths.en,
       {
         responseType: "stream",
-      },
+      }
     );
     if (response.status !== 200) {
       throw new Error("Failed to retrieve Destiny 2 DB: ", response);
@@ -77,22 +77,22 @@ appDb.pragma("journal_mode = WAL");
 appDb.pragma("foreign_keys = ON");
 appDb
   .prepare(
-    "CREATE TABLE IF NOT EXISTS users (mem_id VARCHAR(32) PRIMARY KEY, mem_type INT NOT NULL, name VARCHAR(64) NOT NULL);",
+    "CREATE TABLE IF NOT EXISTS users (mem_id VARCHAR(32) PRIMARY KEY, mem_type INT NOT NULL, name VARCHAR(64) NOT NULL);"
   )
   .run();
 appDb
   .prepare(
-    "CREATE TABLE IF NOT EXISTS user_loot (instance_id VARCHAR(32) PRIMARY KEY, mem_id VARCHAR(32) NOT NULL, FOREIGN KEY (mem_id) REFERENCES users(mem_id));",
+    "CREATE TABLE IF NOT EXISTS user_loot (instance_id VARCHAR(32) PRIMARY KEY, mem_id VARCHAR(32) NOT NULL, created_at DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (mem_id) REFERENCES users(mem_id));"
   )
   .run();
 appDb
   .prepare(
-    "CREATE TABLE IF NOT EXISTS armor (instance_id VARCHAR(32) PRIMARY KEY, item_hash INT NOT NULL, name VARCHAR(64) NOT NULL, archetype VARCHAR(16) NOT NULL, tertiary VARCHAR(16) NOT NULL, ghost_mod VARCHAR(16), FOREIGN KEY (instance_id) REFERENCES user_loot(instance_id));",
+    "CREATE TABLE IF NOT EXISTS armor (instance_id VARCHAR(32) PRIMARY KEY, item_hash INT NOT NULL, name VARCHAR(64) NOT NULL, slot VARCHAR(16) NOT NULL, archetype VARCHAR(16) NOT NULL, tertiary VARCHAR(16) NOT NULL, ghost_mod VARCHAR(16), FOREIGN KEY (instance_id) REFERENCES user_loot(instance_id));"
   )
   .run();
 appDb
   .prepare(
-    "CREATE TABLE IF NOT EXISTS weapons (instance_id VARCHAR(32) PRIMARY KEY, item_hash INT NOT NULL, name VARCHAR(64) NOT NULL, perk1 VARCHAR(32) NOT NULL, perk2 VARCHAR(32) NOT NULL, perk3 VARCHAR(32) NOT NULL, perk4 VARCHAR(32) NOT NULL, perk5 VARCHAR(32) NOT NULL, perk6 VARCHAR(32) NOT NULL, FOREIGN KEY (instance_id) REFERENCES user_loot(instance_id));",
+    "CREATE TABLE IF NOT EXISTS weapons (instance_id VARCHAR(32) PRIMARY KEY, item_hash INT NOT NULL, name VARCHAR(64) NOT NULL, perk1 VARCHAR(32) NOT NULL, perk2 VARCHAR(32) NOT NULL, perk3 VARCHAR(32) NOT NULL, perk4 VARCHAR(32) NOT NULL, perk5 VARCHAR(32) NOT NULL, perk6 VARCHAR(32) NOT NULL, FOREIGN KEY (instance_id) REFERENCES user_loot(instance_id));"
   )
   .run();
 

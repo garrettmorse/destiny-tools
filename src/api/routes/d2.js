@@ -332,7 +332,7 @@ const INVENTORY_COMPONENTS = "102,200,201,205,300,302,304,305";
  * @type {{ itemHash: number; itemInstanceId?: string; quantity: number; bindStatus: number; location: number; bucketHash: number; transferStatus: number; lockable: boolean; state: number; dismantlePermission: number; isWrapper: boolean; tooltipNotificationIndexes: number[]; versionNumber?: number; }}
  *
  * @typedef Armor
- * @type {{ instance_id: string; item_hash: number; name: string; archetype: string; tertiary: string; ghost_mod?: string }}
+ * @type {{ instance_id: string; item_hash: number; name: string; slot: string; class: string; armor_set?: string; icon: string; archetype: string; tertiary: string; ghost_mod?: string }}
  */
 
 /**
@@ -400,16 +400,30 @@ function extractInstanceIds(data) {
  * @returns {Armor[]}
  */
 function extractArmor(data, isPolling = false) {
-  const ARMOR_CATEGORY_HASH = 20;
   const armor = [];
   let ghostArmorerMod = null;
 
-  // First, if polling, find the equipped ghost and extract its armorer mod
-  if (isPolling && data.characterEquipment?.data) {
-    for (const char of Object.values(data.characterEquipment.data)) {
-      for (const item of char.items || []) {
+  // First, if polling, find the most recently played character's ghost and extract its armorer mod
+  if (isPolling && data.characterEquipment?.data && data.characters?.data) {
+    // Find the most recently played character
+    let mostRecentCharId = null;
+    let mostRecentDate = null;
+
+    for (const [charId, charData] of Object.entries(data.characters.data)) {
+      const dateLastPlayed = new Date(charData.dateLastPlayed);
+      if (!mostRecentDate || dateLastPlayed > mostRecentDate) {
+        mostRecentDate = dateLastPlayed;
+        mostRecentCharId = charId;
+      }
+    }
+
+    // Extract ghost mod from the most recently played character's equipment
+    if (mostRecentCharId && data.characterEquipment.data[mostRecentCharId]) {
+      const activeCharEquipment =
+        data.characterEquipment.data[mostRecentCharId];
+      for (const item of activeCharEquipment.items || []) {
         if (item?.bucketHash === ghostBucketHash) {
-          // Found the equipped ghost
+          // Found the equipped ghost on active character
           const instanceId = item.itemInstanceId;
           if (instanceId) {
             const sockets =
@@ -430,7 +444,6 @@ function extractArmor(data, isPolling = false) {
           break;
         }
       }
-      if (ghostArmorerMod !== null) break;
     }
   }
 
@@ -456,9 +469,17 @@ function extractArmor(data, isPolling = false) {
     const sockets = data.itemComponents?.sockets?.data?.[instanceId]?.sockets;
     if (!sockets) return;
 
+    // Get armor metadata from cache
+    const cachedItem = armorItemCache[item.itemHash];
+    if (!cachedItem) return; // Not a legendary armor piece
+
     const itemDef = getDefinition("InventoryItem", item.itemHash);
     if (!itemDef) return;
     const name = itemDef.displayProperties?.name || "Unknown";
+
+    // Extract slot, class, icon, and armor set from cache
+    const slot = armorBucketHashes[item.bucketHash] || "Unknown";
+    const { icon, class: className, armorSet } = cachedItem;
 
     // Extract archetype and tertiary stat from sockets
     let archetype = null;
@@ -515,6 +536,7 @@ function extractArmor(data, isPolling = false) {
       instance_id: instanceId.toString(),
       item_hash: item.itemHash,
       name,
+      slot,
       archetype: archetype || "Unknown",
       tertiary: tertiary || "Unknown",
       ghost_mod: ghostArmorerMod, // Will be null if not polling, or the mod name if polling
@@ -619,7 +641,41 @@ const ghostEconomicModHashes = destinyDb
     {}
   );
 
+// Cache armor item metadata (icon, class, armor set name) by item hash
+/** @type {{ [hash: number]: { icon: string; class: string; armorSet: string | null }}} */
+const armorItemCache = {};
+
+// Populate armor item cache for all legendary armor
+const legendaryArmorItems = destinyDb
+  .prepare(
+    `SELECT
+      ii.id,
+      json_extract(ii.json, '$.displayProperties.icon') as icon,
+      json_extract(ii.json, '$.classType') as classType,
+      json_extract(eis.json, '$.displayProperties.name') as armorSet
+    FROM DestinyInventoryItemDefinition ii
+    INNER JOIN DestinyEquipableItemSetDefinition eis ON json_extract(eis.json, '$.hash') = json_extract(ii.json, '$.equippingBlock.equipableItemSetHash')
+    WHERE json_extract(ii.json, '$.equippingBlock.equipableItemSetHash') IS NOT NULL`
+  )
+  .all();
+
+for (const item of legendaryArmorItems) {
+  const hash = unsigned(item.id);
+  const classType = item.classType;
+  let className = "Unknown";
+  if (classType === 0) className = "Titan";
+  else if (classType === 1) className = "Hunter";
+  else if (classType === 2) className = "Warlock";
+
+  armorItemCache[hash] = {
+    icon: item.icon || "",
+    class: className,
+    armorSet: item.armorSet || null,
+  };
+}
+
 async function storeUserInventoryData(
+  username,
   d2Id,
   accountType,
   accessToken,
@@ -634,7 +690,8 @@ async function storeUserInventoryData(
 
   // Filter out instance IDs that already exist in the database
   let newInstanceIds = allInstanceIds;
-  console.log("total items:", allInstanceIds.length);
+  // debug: log total items on profile
+  // console.log(`${username} total items: ${allInstanceIds.length}`);
   if (allInstanceIds.length > 0) {
     const existingInstanceIds = appDb
       .prepare(
@@ -669,8 +726,8 @@ async function storeUserInventoryData(
   // Only insert NEW armor
   if (newArmor.length > 0) {
     const createArmorStmt = appDb.prepare(
-      `INSERT INTO armor (instance_id, item_hash, name, archetype, tertiary, ghost_mod)
-       VALUES (?, ?, ?, ?, ?, ?)`
+      `INSERT INTO armor (instance_id, item_hash, name, slot, archetype, tertiary, ghost_mod)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`
     );
 
     const insertMany = appDb.transaction((armorPieces) => {
@@ -679,22 +736,25 @@ async function storeUserInventoryData(
           armor.instance_id,
           armor.item_hash,
           armor.name,
+          armor.slot,
           armor.archetype,
           armor.tertiary,
           armor.ghost_mod
         );
       }
     });
-    console.log(newArmor);
-    console.log(`inserting ${newArmor.length} armor pieces...`);
+    console.log(`${username}: inserting ${newArmor.length} armor pieces...`);
     insertMany(newArmor);
   }
 
   // store weapons
   // TODO: implement weapon extraction and storage
 
-  // Return new instance IDs for polling endpoint
-  return newArmor;
+  // Return new loot for the armor feed
+  return newArmor.map((armor) => ({
+    ...armor,
+    ...armorItemCache[armor.item_hash],
+  }));
 }
 
 d2.get("/authorize", authorize, async (req, res) => {
@@ -725,7 +785,13 @@ d2.get("/authorize", authorize, async (req, res) => {
         "INSERT OR IGNORE INTO users (mem_id, mem_type, name) VALUES (?,?,?);"
       );
       createUserStmt.run(d2Id, d2Type, username);
-      await storeUserInventoryData(d2Id, d2Type, token.access_token, false);
+      await storeUserInventoryData(
+        username,
+        d2Id,
+        d2Type,
+        token.access_token,
+        false
+      );
       return res
         .cookie("BNET_AUTH", token, {
           httpOnly: true,
@@ -763,7 +829,13 @@ d2.get("/pollLoot", authorize, async (req, res) => {
       return res.status(400).json({ error: "No Destiny Membership ID found" });
     }
 
+    const createUserStmt = appDb.prepare(
+      "SELECT name FROM users WHERE mem_id = ?;"
+    );
+    const username = createUserStmt.get(d2Id).name;
+
     const newArmor = await storeUserInventoryData(
+      username,
       d2Id,
       d2Type,
       token.access_token,
@@ -773,6 +845,108 @@ d2.get("/pollLoot", authorize, async (req, res) => {
     res.json({ new: newArmor });
   } catch (err) {
     console.error("Poll loot error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+d2.get("/armorStats", authorize, async (req, res) => {
+  try {
+    const token = req.cookies.BNET_AUTH;
+    if (!token) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+
+    const { d2Id } = token;
+    if (!d2Id) {
+      return res.status(400).json({ error: "No Destiny Membership ID found" });
+    }
+
+    // Optional ghost_mod filter from query params
+    const { ghost_mod } = req.query;
+
+    // Query armor grouped by slot, archetype, and tertiary
+    let query = `SELECT
+      slot,
+      archetype,
+      tertiary,
+      COUNT(*) as count
+    FROM armor a WHERE ghost_mod IS NOT NULL`;
+
+    const params = [];
+    if (ghost_mod) {
+      query += ` AND ghost_mod = ?`;
+      params.push(ghost_mod);
+    }
+
+    query += ` GROUP BY slot, archetype, tertiary
+    ORDER BY slot, archetype, tertiary`;
+
+    const stats = appDb.prepare(query).all(...params);
+
+    // Transform into structured format by slot
+    const statsBySlot = stats.reduce(
+      (acc, { slot, archetype, tertiary, count }) => {
+        if (!acc[slot]) {
+          acc[slot] = {};
+        }
+        if (!acc[slot][archetype]) {
+          acc[slot][archetype] = {};
+        }
+        acc[slot][archetype][tertiary] = count;
+        return acc;
+      },
+      {}
+    );
+
+    res.json(statsBySlot);
+  } catch (err) {
+    console.error("Armor stats error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+d2.get("/recentArmor", authorize, async (req, res) => {
+  try {
+    const token = req.cookies.BNET_AUTH;
+    if (!token) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+
+    const { d2Id } = token;
+    if (!d2Id) {
+      return res.status(400).json({ error: "No Destiny Membership ID found" });
+    }
+
+    // Query the user's 10 most recent armor drops
+    const recentArmor = appDb
+      .prepare(
+        `SELECT
+          a.instance_id,
+          a.item_hash,
+          a.name,
+          a.slot,
+          a.archetype,
+          a.tertiary,
+          a.ghost_mod,
+          ul.created_at
+        FROM armor a
+        INNER JOIN user_loot ul ON a.instance_id = ul.instance_id
+        WHERE ul.mem_id = ?
+        AND a.ghost_mod IS NOT NULL
+        ORDER BY ul.created_at DESC
+        LIMIT 10`
+      )
+      .all(d2Id);
+
+    // Add cached metadata (icon, class, armorSet) to each armor piece
+    const enrichedArmor = recentArmor.map((armor) => ({
+      ...armor,
+      ...armorItemCache[armor.item_hash],
+    }));
+
+    res.json(enrichedArmor);
+  } catch (err) {
+    console.error("Recent armor error:", err);
     res.status(500).json({ error: "Server error" });
   }
 });
