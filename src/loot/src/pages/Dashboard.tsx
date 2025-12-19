@@ -192,14 +192,14 @@ export default function Dashboard() {
         {/* Right rail - armor feed (desktop: always visible, mobile: flyout) */}
         <div
           className={`
-            fixed lg:static top-0 right-0 h-screen max-lg:w-full lg:w-96
+            fixed lg:static top-0 right-0 h-screen max-sm:w-full sm:w-96
             bg-gray-900 lg:bg-transparent
             border-l border-gray-700
             transform lg:transform-none transition-transform duration-300 ease-in-out
             z-40
             ${
               isFeedOpen
-                ? "translate-x-0"
+                ? `max-sm:translate-x-0`
                 : "max-lg:translate-x-full translate-x-0"
             }
           `}
