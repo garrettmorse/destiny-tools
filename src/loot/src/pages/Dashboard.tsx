@@ -185,7 +185,7 @@ export default function Dashboard() {
                 value={selectedGhostMod || ""}
                 onChange={(e) => setSelectedGhostMod(e.target.value || null)}
               >
-                <option value="">All Mods</option>
+                <option value="">All</option>
                 {ghostMods.map((mod) => (
                   <option key={mod} value={mod}>
                     {mod}
