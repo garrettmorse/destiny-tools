@@ -73,7 +73,7 @@ export default function ArmorHeatmap({
           </span>
           {ghostMod && (
             <span className="max-sm:text-xs sm:text-sm text-green-400 bg-gray-700 px-2 sm:px-3 py-1 rounded">
-              {ghostMod}
+              {ghostMod === 'NONE' ? 'No Ghost Mod' : ghostMod}
             </span>
           )}
         </div>

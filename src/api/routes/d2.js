@@ -401,7 +401,7 @@ function extractInstanceIds(data) {
  */
 function extractArmor(data, isPolling = false) {
   const armor = [];
-  let ghostArmorerMod = null;
+  let ghostArmorerMod = isPolling ? "" : null;
 
   // First, if polling, find the most recently played character's ghost and extract its armorer mod
   if (isPolling && data.characterEquipment?.data && data.characters?.data) {
@@ -873,18 +873,27 @@ d2.get("/armorStats", authorize, async (req, res) => {
     FROM armor a`;
 
     const params = [];
-    const conditions = ["ghost_mod IS NOT NULL"];
+    const conditions = [];
 
     // If user_only is true, join with user_loot to filter by user
-    if (user_only === 'true') {
+    if (user_only === "true") {
       query += ` INNER JOIN user_loot ul ON a.instance_id = ul.instance_id`;
       conditions.push("ul.mem_id = ?");
       params.push(d2Id);
     }
 
-    if (ghost_mod) {
+    // Handle ghost_mod filtering
+    if (ghost_mod === "NONE") {
+      // "No Ghost Mod" - show armor without any ghost mod (empty string)
+      conditions.push("a.ghost_mod = ?");
+      params.push("");
+    } else if (ghost_mod) {
+      // Specific ghost mod filter
       conditions.push("a.ghost_mod = ?");
       params.push(ghost_mod);
+    } else {
+      // "All" (default) - show all armor that we polled
+      conditions.push("a.ghost_mod IS NOT NULL");
     }
 
     query += ` WHERE ${conditions.join(" AND ")}`;

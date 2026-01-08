@@ -9,7 +9,7 @@ type ArmorPiece = {
   slot: string;
   archetype: string;
   tertiary: string;
-  ghost_mod?: string;
+  ghost_mod: string;
   icon: string;
   class: string;
   armorSet: string | null;
@@ -127,10 +127,19 @@ export default function ArmorFeed() {
           </p>
         ) : (
           <div className="space-y-3">
-            {newArmor.map((armor) => (
+            {newArmor.map((armor, index) => {
+              // Calculate opacity based on position (most recent = 100%, fades to 60%)
+              const opacity = Math.max(60, 100 - (index * 2));
+              const borderOpacity = Math.max(50, 100 - (index * 3));
+
+              return (
               <div
                 key={armor.instance_id}
-                className="bg-gray-800 rounded-lg p-3 border border-gray-700 hover:border-gray-600 transition-colors"
+                className="bg-gray-800 rounded-lg p-3 border border-gray-700 hover:border-gray-600 transition-all duration-300"
+                style={{
+                  opacity: `${opacity}%`,
+                  borderColor: `rgb(55 65 81 / ${borderOpacity}%)`,
+                }}
               >
                 <div className="flex gap-3">
                   {/* Item icon */}
@@ -184,19 +193,18 @@ export default function ArmorFeed() {
                         <span className="text-blue-400">{armor.tertiary}</span>
                       </div>
 
-                      {armor.ghost_mod && (
-                        <div className="flex gap-2">
-                          <span className="text-gray-500">Ghost Mod:</span>
-                          <span className="text-green-400">
-                            {armor.ghost_mod}
-                          </span>
-                        </div>
-                      )}
+                      <div className="flex gap-2">
+                        <span className="text-gray-500">Ghost Mod:</span>
+                        <span className="text-green-400">
+                          {armor.ghost_mod === "" ? "None" : armor.ghost_mod}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            ))}
+            );
+            })}
           </div>
         )}
       </div>

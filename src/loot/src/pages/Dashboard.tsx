@@ -38,10 +38,10 @@ export default function Dashboard() {
         let url = `${global.SERVICE_URL}/api/d2/armorStats`;
         const params = new URLSearchParams();
         if (selectedGhostMod) {
-          params.append('ghost_mod', selectedGhostMod);
+          params.append("ghost_mod", selectedGhostMod);
         }
         if (showUserOnly) {
-          params.append('user_only', 'true');
+          params.append("user_only", "true");
         }
         if (params.toString()) {
           url += `?${params.toString()}`;
@@ -155,7 +155,7 @@ export default function Dashboard() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 md:mb-8 gap-4">
             <div className="flex items-center gap-3">
               <h1 className="max-sm:text-2xl sm:text-3xl md:text-4xl font-bold">
-                Community Armor Statistics
+                Community Tier 5 Armor Statistics
               </h1>
               {isPolling && (
                 <span className="max-sm:text-xs sm:text-sm text-green-400">
@@ -191,6 +191,7 @@ export default function Dashboard() {
                     {mod}
                   </option>
                 ))}
+                <option value="NONE">No Ghost Mod</option>
               </select>
             </div>
           </div>
