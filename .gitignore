@@ -13,3 +13,4 @@ app.content-wal
 .db_version
 .claude
 .pem
+logs
