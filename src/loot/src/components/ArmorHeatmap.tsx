@@ -49,6 +49,13 @@ export default function ArmorHeatmap({
     1
   );
 
+  // Calculate total count
+  const totalCount = Object.values(data).reduce(
+    (sum, archetypeData) =>
+      sum + Object.values(archetypeData).reduce((a, b) => a + b, 0),
+    0
+  );
+
   const getOpacity = (count: number): number => {
     if (count === 0) return 0.1;
     return 0.2 + (count / maxCount) * 0.8;
@@ -60,11 +67,16 @@ export default function ArmorHeatmap({
         <h2 className="max-sm:text-lg sm:text-xl md:text-2xl font-semibold">
           {slot}
         </h2>
-        {ghostMod && (
-          <span className="max-sm:text-xs sm:text-sm text-green-400 bg-gray-700 px-2 sm:px-3 py-1 rounded">
-            {ghostMod}
+        <div className="flex items-center gap-2 sm:gap-3">
+          <span className="text-gray-400 text-sm sm:text-base">
+            n={totalCount}
           </span>
-        )}
+          {ghostMod && (
+            <span className="max-sm:text-xs sm:text-sm text-green-400 bg-gray-700 px-2 sm:px-3 py-1 rounded">
+              {ghostMod}
+            </span>
+          )}
+        </div>
       </div>
       <div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0">
         <table className="w-full border-collapse min-w-max">
