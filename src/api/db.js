@@ -41,13 +41,18 @@ async function updateManifestIfNeeded() {
       }
     );
     if (response.status !== 200) {
+      writer.destroy();
       throw new Error("Failed to retrieve Destiny 2 DB: ", response);
     }
 
     response.data.pipe(writer);
     await new Promise((resolve, reject) => {
       writer.on("finish", resolve);
-      writer.on("error", reject);
+      writer.on("error", (err) => {
+        writer.destroy();
+        response.data.destroy();
+        reject(err);
+      });
     });
     const zip = AdmZip(TMP_ZIP_LOCATION);
     const entries = zip.getEntries();
@@ -120,4 +125,27 @@ function getDefinition(category, hash) {
   return row ? JSON.parse(row.json) : null;
 }
 
-export { appDb, destinyDb, getDefinition, signed, unsigned };
+function closeConnections() {
+  try {
+    if (destinyDb) {
+      destinyDb.close();
+      console.log("Destiny database connection closed");
+    }
+    if (appDb) {
+      appDb.close();
+      console.log("App database connection closed");
+    }
+  } catch (error) {
+    console.error("Error closing database connections:", error);
+  }
+}
+
+process.on("SIGTERM", () => {
+  closeConnections();
+});
+
+process.on("SIGINT", () => {
+  closeConnections();
+});
+
+export { appDb, destinyDb, getDefinition, signed, unsigned, closeConnections };
