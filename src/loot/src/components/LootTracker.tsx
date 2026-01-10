@@ -26,7 +26,6 @@ export default function LootTracker() {
     const interval = setInterval(async () => {
       console.log("Polling...");
       try {
-        /* @ts-expect-error cant figure out typing globalThis specifically for local dev with vite */
         const res = await fetch(`${global.SERVICE_URL}/api/d2/pollLoot`, {
           credentials: "include",
         });
@@ -35,7 +34,6 @@ export default function LootTracker() {
           // Token may be expired, attempt refresh via authorize endpoint
           console.warn("Poll returned 401, attempting token refresh...");
           const refreshRes = await fetch(
-            /* @ts-expect-error cant figure out typing globalThis specifically for local dev with vite */
             `${global.SERVICE_URL}/api/d2/authorize`,
             {
               credentials: "include",
@@ -46,7 +44,6 @@ export default function LootTracker() {
             // Token refreshed successfully — retry the original poll
             console.log("Token refreshed, retrying poll...");
             const retryRes = await fetch(
-              /* @ts-expect-error cant figure out typing globalThis specifically for local dev with vite */
               `${global.SERVICE_URL}/api/d2/pollLoot`,
               {
                 credentials: "include",
@@ -62,7 +59,6 @@ export default function LootTracker() {
           } else {
             // Refresh failed - refresh token is invalid, redirect to re-authenticate
             console.error("Token refresh failed, redirecting to OAuth...");
-            /* @ts-expect-error cant figure out typing globalThis specifically for local dev with vite */
             window.location.href = `${global.BNET}/en/OAuth/Authorize?client_id=${global.CLIENT_ID}&response_type=code&state=777`;
             return;
           }

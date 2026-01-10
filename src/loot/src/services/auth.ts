@@ -29,7 +29,6 @@ export const useBungieAuth = (): UseAuthorizeResult => {
         const code = searchParams.get("code");
 
         const response = await fetch(
-          // @ts-expect-error cant figure out typing globalThis specifically for local dev with vite
           `${global.SERVICE_URL}/api/d2/authorize${
             searchParams.toString() ? `?${searchParams.toString()}` : ""
           }`,
@@ -37,7 +36,7 @@ export const useBungieAuth = (): UseAuthorizeResult => {
             method: "GET",
             credentials: "include", // important for cookies/sessions
             mode: "cors",
-          },
+          }
         );
 
         if (response.status === 401) {

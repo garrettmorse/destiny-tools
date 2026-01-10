@@ -24,17 +24,15 @@ export default function Dashboard() {
   const [showUserOnly, setShowUserOnly] = useState(false);
 
   useEffect(() => {
-    if (auth.status !== "authenticated") {
+    if (auth.status !== "loading" && auth.status !== "authenticated") {
       setLoading(false);
       setIsPolling(false);
-      /* @ts-expect-error cant figure out typing globalThis specifically for local dev with vite */
       navigate(global.BASE_PATH || "/");
       return;
     }
 
     const fetchStats = async () => {
       try {
-        /* @ts-expect-error cant figure out typing globalThis specifically for local dev with vite */
         let url = `${global.SERVICE_URL}/api/d2/armorStats`;
         const params = new URLSearchParams();
         if (selectedGhostMod) {
@@ -66,7 +64,6 @@ export default function Dashboard() {
 
     // Initial fetch
     fetchStats();
-
     // Set up polling every 30 seconds
     setIsPolling(true);
     const interval = setInterval(() => {
@@ -79,14 +76,6 @@ export default function Dashboard() {
       setIsPolling(false);
     };
   }, [auth.status, selectedGhostMod, showUserOnly, navigate]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-xl">Loading armor statistics...</p>
-      </div>
-    );
-  }
 
   if (error) {
     return (
@@ -118,7 +107,11 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white relative">
+    <div
+      className={`min-h-screen bg-gray-900 text-white relative${
+        loading ? " pointer-events-none" : ""
+      }`}
+    >
       {/* Hamburger menu button - visible on mobile only */}
       <button
         onClick={() => setIsFeedOpen(!isFeedOpen)}
@@ -195,6 +188,7 @@ export default function Dashboard() {
               </select>
             </div>
           </div>
+
           <div className="space-y-6 max-lg:space-y-8">
             {slots.map((slot) => (
               <ArmorHeatmap
@@ -202,11 +196,11 @@ export default function Dashboard() {
                 slot={slot}
                 data={armorStats?.[slot] || {}}
                 ghostMod={selectedGhostMod}
+                isLoading={loading}
               />
             ))}
           </div>
         </div>
-
         {/* Right rail - armor feed (desktop: always visible, mobile: flyout) */}
         <div
           className={`

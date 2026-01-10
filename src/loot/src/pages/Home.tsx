@@ -9,9 +9,7 @@ const HomePage: React.FC = () => {
     auth.status === "unauthenticated" ? (
       <button
         onClick={() =>
-          (window.location.href =
-            // @ts-expect-error cant figure out typing globalThis specifically for local dev with vite
-            `${global.BNET}/en/OAuth/Authorize?client_id=${global.CLIENT_ID}&response_type=code&state=777`)
+          (window.location.href = `${global.BNET}/en/OAuth/Authorize?client_id=${global.CLIENT_ID}&response_type=code&state=777`)
         }
         className="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
       >
@@ -19,11 +17,10 @@ const HomePage: React.FC = () => {
       </button>
     ) : auth.status === "authenticated" ? (
       <Link
-        /* @ts-expect-error cant figure out typing globalThis specifically for local dev with vite */
         to={`${global.BASE_PATH}/dashboard`}
         className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
       >
-        View Dashboard
+        Let's Go →
       </Link>
     ) : auth.status === "loading" ? (
       <div className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold">

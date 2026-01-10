@@ -6,6 +6,7 @@ type ArmorHeatmapProps = {
     };
   };
   ghostMod: string | null;
+  isLoading: boolean;
 };
 
 const archetypes = [
@@ -36,10 +37,23 @@ const archetypeColors: { [key: string]: string } = {
   Brawler: "bg-orange-600",
 };
 
+// Map archetype to primary and secondary stats
+const archetypeStatMapping: {
+  [key: string]: { primary: string; secondary: string };
+} = {
+  Specialist: { primary: "Class", secondary: "Weapons" },
+  Gunner: { primary: "Weapons", secondary: "Grenade" },
+  Bulwark: { primary: "Health", secondary: "Class" },
+  Grenadier: { primary: "Grenade", secondary: "Super" },
+  Paragon: { primary: "Super", secondary: "Melee" },
+  Brawler: { primary: "Melee", secondary: "Health" },
+};
+
 export default function ArmorHeatmap({
   slot,
   data,
   ghostMod,
+  isLoading,
 }: ArmorHeatmapProps) {
   // Find the max count for scaling
   const maxCount = Math.max(
@@ -61,6 +75,37 @@ export default function ArmorHeatmap({
     return 0.2 + (count / maxCount) * 0.8;
   };
 
+  const isImpossibleCombination = (
+    archetype: string,
+    tertiary: string
+  ): boolean => {
+    const mapping = archetypeStatMapping[archetype];
+    if (!mapping) return false;
+    return tertiary === mapping.primary || tertiary === mapping.secondary;
+  };
+
+  /**
+ * <div className="space-y-3">
+              {[...Array(10)].map((_, i) => (
+                <div
+                  key={i}
+                  className="bg-gray-800 rounded-lg p-3 border border-gray-700 animate-pulse"
+                >
+                  <div className="flex gap-3">
+                    <div className="w-16 h-16 bg-gray-700 rounded"></div>
+                    <div className="flex-1 space-y-2">
+                      <div className="h-7 bg-gray-700 rounded w-3/4"></div>
+                      <div className="h-5 bg-gray-700 rounded w-1/2"></div>
+                      <div className="h-6 bg-gray-700 rounded w-2/3"></div>
+                      <div className="h-6 bg-gray-700 rounded w-1/2"></div>
+                      <div className="h-4 bg-gray-700 rounded w-3/5"></div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+ */
+
   return (
     <div className="bg-gray-800 rounded-lg p-3 sm:p-4 md:p-6">
       <div className="flex items-center justify-between mb-3 sm:mb-4">
@@ -68,12 +113,18 @@ export default function ArmorHeatmap({
           {slot}
         </h2>
         <div className="flex items-center gap-2 sm:gap-3">
-          <span className="text-gray-400 text-sm sm:text-base">
-            n={totalCount}
-          </span>
+          {isLoading ? (
+            <div className="bg-gray-800 animate-pulse">
+              <div className="w-5 h-4 rounded bg-gray-700"></div>
+            </div>
+          ) : (
+            <span className="text-gray-400 text-sm sm:text-base">
+              n={totalCount}
+            </span>
+          )}
           {ghostMod && (
             <span className="max-sm:text-xs sm:text-sm text-green-400 bg-gray-700 px-2 sm:px-3 py-1 rounded">
-              {ghostMod === 'NONE' ? 'No Ghost Mod' : ghostMod}
+              {ghostMod === "NONE" ? "No Ghost Mod" : ghostMod}
             </span>
           )}
         </div>
@@ -96,22 +147,50 @@ export default function ArmorHeatmap({
             </tr>
           </thead>
           <tbody>
-            {archetypes.map((archetype) => (
+            {archetypes.map((archetype, i) => (
               <tr key={archetype}>
                 <td className="p-1 sm:p-2 border border-gray-700 font-medium max-sm:text-xs sm:text-md sticky left-0 bg-gray-800 z-10">
                   {archetype}
                 </td>
+
                 {tertiaryStats.map((stat) => {
                   const count = data[archetype]?.[stat] || 0;
-                  const opacity = getOpacity(count);
+                  const opacity = isLoading ? 0.2 : getOpacity(count);
                   const baseColor = archetypeColors[archetype] || "bg-gray-600";
-
+                  const impossible = isImpossibleCombination(archetype, stat);
                   return (
                     <td
                       key={stat}
-                      className={`p-1 sm:p-2 border border-gray-700 font-semibold text-center max-sm:text-xs sm:text-sm ${baseColor}`}
-                      style={{ opacity }}
+                      className={`relative ${
+                        isLoading && !impossible
+                          ? "animate-pulse bg-gray-600"
+                          : `${baseColor} p-1 sm:p-2`
+                      } border border-gray-700 font-semibold items-center text-center max-sm:text-xs sm:text-sm `}
+                      style={{ opacity: impossible ? 0.05 : opacity }}
                     >
+                      {impossible && (
+                        <svg
+                          className="absolute inset-0 w-full h-full pointer-events-none"
+                          preserveAspectRatio="none"
+                        >
+                          <line
+                            x1="0"
+                            y1="0"
+                            x2="100%"
+                            y2="100%"
+                            stroke="rgb(229, 231, 235)"
+                            strokeWidth="2"
+                          />
+                          <line
+                            x1="100%"
+                            y1="0"
+                            x2="0"
+                            y2="100%"
+                            stroke="rgb(229, 231, 235)"
+                            strokeWidth="2"
+                          />
+                        </svg>
+                      )}
                       {count > 0 ? count : ""}
                     </td>
                   );
