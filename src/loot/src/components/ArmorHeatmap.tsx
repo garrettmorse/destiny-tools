@@ -147,7 +147,7 @@ export default function ArmorHeatmap({
             </tr>
           </thead>
           <tbody>
-            {archetypes.map((archetype, i) => (
+            {archetypes.map((archetype) => (
               <tr key={archetype}>
                 <td className="p-1 sm:p-2 border border-gray-700 font-medium max-sm:text-xs sm:text-md sticky left-0 bg-gray-800 z-10">
                   {archetype}
