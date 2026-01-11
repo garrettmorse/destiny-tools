@@ -9,7 +9,11 @@ import {
 import { authorize } from "../auth.js";
 import CONSTANTS from "../constants.js";
 import { storeUserInventoryData } from "../services/inventory.js";
-import { armorItemCache } from "../services/definitions.js";
+import {
+  archetypeIconUrls,
+  armorItemCache,
+  statIconUrls,
+} from "../services/definitions.js";
 import {
   getAllRaids,
   validateRaidIds,
@@ -360,6 +364,7 @@ d2.get("/recentArmor", authorize, async (req, res) => {
           a.slot,
           a.archetype,
           a.tertiary,
+          a.tuning,
           a.ghost_mod,
           ul.created_at
         FROM armor a
@@ -372,9 +377,13 @@ d2.get("/recentArmor", authorize, async (req, res) => {
       .all(d2Id);
 
     // Add cached metadata (icon, class, armorSet) to each armor piece
+    // and archetype with icon URL
     const enrichedArmor = recentArmor.map((armor) => ({
       ...armor,
       ...armorItemCache[armor.item_hash],
+      archetypeUrl: archetypeIconUrls[armor.archetype],
+      tertiaryUrl: statIconUrls[armor.tertiary],
+      tuningUrl: statIconUrls[armor.tuning] ?? null,
     }));
 
     res.json(enrichedArmor);

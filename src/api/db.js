@@ -92,7 +92,7 @@ appDb
   .run();
 appDb
   .prepare(
-    "CREATE TABLE IF NOT EXISTS armor (instance_id VARCHAR(32) PRIMARY KEY, item_hash INT NOT NULL, name VARCHAR(64) NOT NULL, slot VARCHAR(16) NOT NULL, archetype VARCHAR(16) NOT NULL, tertiary VARCHAR(16) NOT NULL, ghost_mod VARCHAR(16), FOREIGN KEY (instance_id) REFERENCES user_loot(instance_id));"
+    "CREATE TABLE IF NOT EXISTS armor (instance_id VARCHAR(32) PRIMARY KEY, item_hash INT NOT NULL, name VARCHAR(64) NOT NULL, slot VARCHAR(16) NOT NULL, archetype VARCHAR(16) NOT NULL, tertiary VARCHAR(16) NOT NULL, tuning VARCHAR(16) NOT NULL, ghost_mod VARCHAR(16), FOREIGN KEY (instance_id) REFERENCES user_loot(instance_id));"
   )
   .run();
 appDb

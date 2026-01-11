@@ -8,6 +8,8 @@ import {
   armorStatHashes,
   ghostEconomicModHashes,
   armorItemCache,
+  tertiaryStatHashes,
+  tuningModHashes,
 } from "./definitions.js";
 
 /**
@@ -21,7 +23,7 @@ import {
  * 304: ItemStats (stat values for items)
  * 305: ItemSockets (socket and plug data for items)
  */
-const INVENTORY_COMPONENTS = "102,200,201,205,300,302,304,305";
+const INVENTORY_COMPONENTS = "102,200,201,205,300,302,304,305,310";
 
 /**
  * @typedef ProfileResponse
@@ -61,7 +63,23 @@ const INVENTORY_COMPONENTS = "102,200,201,205,300,302,304,305";
  * @type {{ data: { [characterHash: string]: { plugs: { [plugHash: string]: PlugSet[] }}}; privacy: number; }}
  *
  * @typedef ItemComponents
- * @type {{ instances: { data: { [itemInstanceId: string]: ItemComponentInstance; }; privacy: number; }; stats: { data: { [itemInstanceId: string]: ItemStatInstance; }; privacy: number; }; sockets: { data: { [itemInstanceId: string]: ItemSocketInstance; }; privacy: number; }; perks: { data: { [itemInstanceId: string]: ItemPerkInstance }; privacy: number; }}}
+ * @type {{
+ * instances: { data: { [itemInstanceId: string]: ItemComponentInstance; }; privacy: number; };
+ * stats: { data: { [itemInstanceId: string]: ItemStatInstance; }; privacy: number; };
+ * sockets: { data: { [itemInstanceId: string]: ItemSocketInstance; }; privacy: number; };
+ * perks: { data: { [itemInstanceId: string]: ItemPerkInstance }; privacy: number; };
+ * reusablePlugs: { data: { [itemInstanceId: string]: ItemReusablePlugInstance; } privacy: number; };
+ * }}
+ *
+ * @typedef ItemReusablePlugInstance
+ * @type {{ plugs: {
+ * '6': [ { plugItemHash: number; canInsert: boolean; enabled: boolean; } ];
+ * '7': [ { plugItemHash: number; canInsert: boolean; enabled: boolean; }, { plugItemHash: number; canInsert: boolean; enabled: boolean; }, { plugItemHash: number; canInsert: boolean; enabled: boolean; }, { plugItemHash: number; canInsert: boolean; enabled: boolean; }, { plugItemHash: number; canInsert: boolean; enabled: boolean; } ];
+ * '8': [ { plugItemHash: number; canInsert: boolean; enabled: boolean; }, { plugItemHash: number; canInsert: boolean; enabled: boolean; } ];
+ * '9': [ { plugItemHash: number; canInsert: boolean; enabled: boolean; }, { plugItemHash: number; canInsert: boolean; enabled: boolean; } ];
+ * '11': [ { plugItemHash: number; canInsert: boolean; enabled: boolean; }, { plugItemHash: number; canInsert: boolean; enabled: boolean; }, { plugItemHash: number; canInsert: boolean; enabled: boolean; }, { plugItemHash: number; canInsert: boolean; enabled: boolean; }, { plugItemHash: number; canInsert: boolean; enabled: boolean; } ];
+ * }
+ * }}
  *
  * @typedef ItemComponentInstance
  * @type {{ damageType: number; damageTypeHash: number; primaryStat: { statHash: number; value: number }; itemLevel: number; quality: number; isEquipped: boolean; canEquip: boolean; equipRequiredLevel: number; unlockHashesRequiredToEquip: number[]; cannotEquipReason: number; gearTier: number; }}
@@ -85,7 +103,7 @@ const INVENTORY_COMPONENTS = "102,200,201,205,300,302,304,305";
  * @type {{ itemHash: number; itemInstanceId?: string; quantity: number; bindStatus: number; location: number; bucketHash: number; transferStatus: number; lockable: boolean; state: number; dismantlePermission: number; isWrapper: boolean; tooltipNotificationIndexes: number[]; versionNumber?: number; }}
  *
  * @typedef Armor
- * @type {{ instance_id: string; item_hash: number; name: string; slot: string; class: string; armor_set?: string; icon: string; archetype: string; tertiary: string; ghost_mod?: string }}
+ * @type {{ instance_id: string; item_hash: number; name: string; slot: string; class: string; armor_set?: string; icon: string; archetype: string; tertiary: string; tuning: string; ghost_mod?: string }}
  */
 
 /**
@@ -220,7 +238,6 @@ export function extractArmor(data, isPolling = false) {
     if (!instanceId) return;
 
     // Only process Legendary armor (tierType 5 = Legendary)
-    // Note: gearTier is about stat distribution quality (tier 1/2), not rarity
     const isLegendary =
       data.itemComponents.instances.data[instanceId]?.gearTier === 5;
     if (!isLegendary) return;
@@ -237,18 +254,45 @@ export function extractArmor(data, isPolling = false) {
     if (!itemDef) return;
     const name = itemDef.displayProperties?.name || "Unknown";
 
-    // Extract slot, class, icon, and armor set from cache
+    // Extract slot from cache
     const slot = armorBucketHashes[item.bucketHash] || "Unknown";
-    const { icon, class: className, armorSet } = cachedItem;
+
+    /**
+     * 6 is archetype
+     *
+     * 7 is primary
+     *
+     * 8 is secondary
+     *
+     * 9 is tertiary
+     *
+     * 11 is tuning
+     *  */
+    const reusablePlugs =
+      data.itemComponents.reusablePlugs.data[instanceId].plugs;
 
     // Extract archetype and tertiary stat from sockets
     let archetype = null;
     let tertiary = null;
+    let tuning = null;
     let archetypePrimaryStat = null;
     let archetypeSecondaryStat = null;
 
+    // TODO: figure out wtf 11 is
+    for (const plug of reusablePlugs["11"]) {
+      const match = tuningModHashes[plug.plugItemHash];
+      if (match) {
+        tuning = match;
+        break;
+      }
+    }
+
     for (const socket of sockets) {
-      if (socket.plugHash && armorArchetypeHashes[socket.plugHash]) {
+      if (
+        !archetype &&
+        socket.plugHash &&
+        armorArchetypeHashes[socket.plugHash]
+      ) {
         // Found archetype socket using cached hash map
         archetype = armorArchetypeHashes[socket.plugHash];
 
@@ -258,37 +302,9 @@ export function extractArmor(data, isPolling = false) {
           archetypePrimaryStat = archetypeStats.primary;
           archetypeSecondaryStat = archetypeStats.secondary;
         }
-        break; // Found archetype, no need to continue
       }
-    }
-
-    // Now extract the tertiary stat from the item's actual stats (component 304)
-    // The tertiary is the highest value among the 4 stats NOT in the archetype
-
-    if (archetypePrimaryStat && archetypeSecondaryStat) {
-      const itemStats = data.itemComponents?.stats?.data?.[instanceId]?.stats;
-
-      if (itemStats) {
-        // Find the tertiary stat (highest value among non-archetype stats)
-        let maxValue = 0;
-        let tertiaryStatName = null;
-        for (const [statHash, statName] of Object.entries(armorStatHashes)) {
-          // Skip archetype primary and secondary stats
-          if (
-            statName === archetypePrimaryStat ||
-            statName === archetypeSecondaryStat
-          ) {
-            continue;
-          }
-
-          const statValue = itemStats[statHash]?.value || 0;
-          if (statValue > maxValue) {
-            maxValue = statValue;
-            tertiaryStatName = statName;
-          }
-        }
-
-        tertiary = tertiaryStatName;
+      if (!tertiary && socket.plugHash && tertiaryStatHashes[socket.plugHash]) {
+        tertiary = tertiaryStatHashes[socket.plugHash];
       }
     }
 
@@ -299,6 +315,7 @@ export function extractArmor(data, isPolling = false) {
       slot,
       archetype: archetype || "Unknown",
       tertiary: tertiary || "Unknown",
+      tuning: tuning || "Unknown",
       ghost_mod: ghostArmorerMod, // Will be null if not polling, or the mod name if polling
     });
   };
@@ -386,8 +403,8 @@ export async function storeUserInventoryData(
   // Only insert NEW armor
   if (newArmor.length > 0) {
     const createArmorStmt = appDb.prepare(
-      `INSERT INTO armor (instance_id, item_hash, name, slot, archetype, tertiary, ghost_mod)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO armor (instance_id, item_hash, name, slot, archetype, tertiary, tuning, ghost_mod)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
     );
 
     const insertMany = appDb.transaction((armorPieces) => {
@@ -399,6 +416,7 @@ export async function storeUserInventoryData(
           armor.slot,
           armor.archetype,
           armor.tertiary,
+          armor.tuning,
           armor.ghost_mod
         );
       }

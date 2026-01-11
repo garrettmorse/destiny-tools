@@ -17,6 +17,65 @@ export const armorArchetypeHashes = destinyDb
     {}
   );
 
+export const tertiaryStatHashes = destinyDb
+  .prepare(
+    `SELECT ii.id, json_extract(s.json, '$.displayProperties.name') as stat_name FROM DestinyInventoryItemDefinition ii 
+    INNER JOIN DestinyStatDefinition s ON json_extract(s.json, '$.hash') = json_extract(ii.json, '$.investmentStats[0].statTypeHash')
+    WHERE json_extract(ii.json, '$.plug.plugCategoryIdentifier') = 'armor_stats'
+    AND json_extract(ii.json, '$.investmentStats[0].value') = 20;`
+  )
+  .all()
+  .reduce(
+    (tertiaries, { id, stat_name }) => ({
+      ...tertiaries,
+      [unsigned(id)]: stat_name,
+    }),
+    {}
+  );
+
+export const tuningModHashes = destinyDb
+  .prepare(
+    `SELECT ii.id, json_extract(s.json, '$.displayProperties.name') as stat_name FROM DestinyInventoryItemDefinition ii
+    INNER JOIN DestinyStatDefinition s ON json_extract(s.json, '$.hash') = json_extract(ii.json, '$.investmentStats[0].statTypeHash')
+    WHERE json_extract(ii.json, '$.plug.plugCategoryIdentifier') = 'core.gear_systems.armor_tiering.plugs.tuning.mods'
+    AND json_extract(ii.json, '$.investmentStats[0].value') = 5;`
+  )
+  .all()
+  .reduce(
+    (tunings, { id, stat_name }) => ({
+      ...tunings,
+      [unsigned(id)]: stat_name,
+    }),
+    {}
+  );
+
+export const archetypeIconUrls = destinyDb
+  .prepare(
+    `SELECT json_extract(json, '$.displayProperties.name') as archetype, json_extract(json, '$.displayProperties.iconSequences[0].frames[1]') as icon FROM DestinyInventoryItemDefinition WHERE json_extract(json, '$.plug.plugCategoryIdentifier') = 'armor_archetypes';`
+  )
+  .all()
+  .reduce(
+    (archetypes, { archetype, icon }) => ({ ...archetypes, [archetype]: icon }),
+    {}
+  );
+
+// export const statIconUrls = destinyDb
+//   .prepare(
+//     `SELECT json_extract(json, '$.displayProperties.name') as archetype, json_extract(json, '$.displayProperties.iconSequences[0].frames[1]') as icon FROM DestinyStatDefinition WHERE json_extract(json, '$.plug.plugCategoryIdentifier') = 'armor_archetypes';`
+//   )
+//   .all()
+
+export const statIconUrls = destinyDb
+  .prepare(
+    `SELECT json_extract(json, '$.displayProperties.name') as stat, json_extract(json, '$.displayProperties.icon') as icon FROM DestinyStatDefinition 
+    WHERE json_extract(json, '$.statCategory') = 2 
+    AND icon IS NOT NULL
+    AND json_extract(json, '$.hash') != 2135857333
+    AND json_extract(json, '$.hash') != 4244567218;` // bugged stat hashes...
+  )
+  .all()
+  .reduce((stats, { stat, icon }) => ({ ...stats, [stat]: icon }), {});
+
 /**
  * Archetype name to primary/secondary stat mapping
  */
