@@ -1,3 +1,10 @@
+import {
+  archetypes,
+  tertiaryStats,
+  archetypeColors,
+  archetypeStatMapping,
+} from "../constants/armor";
+
 type ArmorHeatmapProps = {
   slot: string;
   data: {
@@ -7,46 +14,6 @@ type ArmorHeatmapProps = {
   };
   ghostMod: string | null;
   isLoading: boolean;
-};
-
-const archetypes = [
-  "Gunner",
-  "Grenadier",
-  "Paragon",
-  "Brawler",
-  "Bulwark",
-  "Specialist",
-];
-
-const tertiaryStats = [
-  "Weapons",
-  "Grenade",
-  "Super",
-  "Melee",
-  "Health",
-  "Class",
-];
-
-// Map archetype to color
-const archetypeColors: { [key: string]: string } = {
-  Specialist: "bg-purple-600",
-  Gunner: "bg-red-600",
-  Bulwark: "bg-blue-600",
-  Grenadier: "bg-green-600",
-  Paragon: "bg-yellow-600",
-  Brawler: "bg-orange-600",
-};
-
-// Map archetype to primary and secondary stats
-const archetypeStatMapping: {
-  [key: string]: { primary: string; secondary: string };
-} = {
-  Specialist: { primary: "Class", secondary: "Weapons" },
-  Gunner: { primary: "Weapons", secondary: "Grenade" },
-  Bulwark: { primary: "Health", secondary: "Class" },
-  Grenadier: { primary: "Grenade", secondary: "Super" },
-  Paragon: { primary: "Super", secondary: "Melee" },
-  Brawler: { primary: "Melee", secondary: "Health" },
 };
 
 export default function ArmorHeatmap({
@@ -156,7 +123,8 @@ export default function ArmorHeatmap({
                 {tertiaryStats.map((stat) => {
                   const count = data[archetype]?.[stat] || 0;
                   const opacity = isLoading ? 0.2 : getOpacity(count);
-                  const baseColor = archetypeColors[archetype] || "bg-gray-600";
+                  const baseColor =
+                    archetypeColors.bg[archetype] || "bg-gray-600";
                   const impossible = isImpossibleCombination(archetype, stat);
                   return (
                     <td

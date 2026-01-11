@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router";
+import {
+  archetypeColors,
+  primaryStatArchetypeMapping,
+} from "../constants/armor";
 
 type ArmorPiece = {
   instance_id: string;
@@ -8,7 +12,11 @@ type ArmorPiece = {
   name: string;
   slot: string;
   archetype: string;
+  archetypeUrl: string;
   tertiary: string;
+  tertiaryUrl: string;
+  tuning: string;
+  tuningUrl: string | null;
   ghost_mod: string;
   icon: string;
   class: string;
@@ -40,9 +48,6 @@ export default function ArmorFeed() {
 
         if (res.ok) {
           const data = await res.json();
-          if (data.length > 0) {
-            await new Promise((res) => setTimeout(res, 250));
-          }
           setNewArmor(data);
         }
       } catch (err) {
@@ -167,7 +172,7 @@ export default function ArmorFeed() {
                 >
                   <div className="flex gap-3">
                     {/* Item icon */}
-                    <div className="flex-shrink-0">
+                    <div className="flex-shrink-0 flex flex-col items-center">
                       <a
                         href={`https://www.light.gg/db/items/${armor.item_hash}`}
                         target="_blank"
@@ -179,6 +184,12 @@ export default function ArmorFeed() {
                           className="w-16 h-16 rounded"
                         />
                       </a>
+                      {/* Archetype icon */}
+                      <img
+                        src={`https://www.bungie.net${armor.archetypeUrl}`}
+                        alt={armor.name}
+                        className="w-12 h-12 mt-5 rounded"
+                      />
                     </div>
 
                     {/* Item details */}
@@ -206,22 +217,64 @@ export default function ArmorFeed() {
                         )}
 
                         <div className="flex gap-2">
-                          <span className="text-gray-500">Archetype:</span>
-                          <span className="text-purple-400">
+                          <span className="text-gray-500">Stats:</span>
+                          <span
+                            className={`${
+                              archetypeColors.text[armor.archetype]
+                            }`}
+                          >
                             {armor.archetype}
                           </span>
-                        </div>
-
-                        <div className="flex gap-2">
-                          <span className="text-gray-500">Tertiary:</span>
-                          <span className="text-blue-400">
+                          <span className="text-gray-400"> + </span>
+                          <span
+                            className={`flex ${
+                              archetypeColors.text[
+                                primaryStatArchetypeMapping[armor.tertiary]
+                              ]
+                            }`}
+                          >
+                            <span>
+                              <img
+                                src={`https://www.bungie.net${armor.tertiaryUrl}`}
+                                alt={armor.tertiary}
+                                className="h-5 w-5"
+                              />
+                            </span>
                             {armor.tertiary}
                           </span>
                         </div>
 
                         <div className="flex gap-2">
+                          <span className="text-gray-500">Tuning:</span>
+                          <span
+                            className={`flex ${
+                              archetypeColors.text[
+                                primaryStatArchetypeMapping[armor.tuning]
+                              ] ?? "text-gray-400"
+                            }`}
+                          >
+                            {armor.tuningUrl && (
+                              <span>
+                                <img
+                                  src={`https://www.bungie.net${armor.tuningUrl}`}
+                                  alt={armor.tuning}
+                                  className="h-5 w-5"
+                                />
+                              </span>
+                            )}
+                            {armor.tuning}
+                          </span>
+                        </div>
+
+                        <div className="flex gap-2">
                           <span className="text-gray-500">Ghost Mod:</span>
-                          <span className="text-green-400">
+                          <span
+                            className={`${
+                              archetypeColors.text[
+                                armor.ghost_mod.split(" ")[0]
+                              ] ?? "text-gray-400"
+                            }`}
+                          >
                             {armor.ghost_mod === "" ? "None" : armor.ghost_mod}
                           </span>
                         </div>
