@@ -260,7 +260,16 @@ d2.get("/pollLoot", authorize, async (req, res) => {
       true
     );
 
-    res.json({ new: newArmor });
+    // Add cached metadata (icon, class, armorSet) to each armor piece
+    // and archetype with icon URL
+    const enrichedArmor = newArmor.map((armor) => ({
+      ...armor,
+      ...armorItemCache[armor.item_hash],
+      archetypeUrl: archetypeIconUrls[armor.archetype],
+      tertiaryUrl: statIconUrls[armor.tertiary],
+      tuningUrl: statIconUrls[armor.tuning] ?? null,
+    }));
+    res.json({ new: enrichedArmor });
   } catch (err) {
     console.error("Poll loot error:", err);
     res.status(500).json({ error: "Server error" });
@@ -400,7 +409,6 @@ d2.get("/recentArmor", authorize, async (req, res) => {
       tertiaryUrl: statIconUrls[armor.tertiary],
       tuningUrl: statIconUrls[armor.tuning] ?? null,
     }));
-
     res.json(enrichedArmor);
   } catch (err) {
     console.error("Recent armor error:", err);
