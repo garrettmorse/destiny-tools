@@ -90,6 +90,7 @@ export default function Dashboard() {
   }
 
   const slots = [
+    "All Armor",
     "Helmet",
     "Gauntlets",
     "Chest Armor",

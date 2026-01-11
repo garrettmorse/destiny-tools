@@ -335,7 +335,22 @@ d2.get("/armorStats", authorize, async (req, res) => {
       {}
     );
 
-    res.json(statsBySlot);
+    // Calculate "All Armor" aggregate across all slots
+    const allArmor = stats.reduce((acc, { archetype, tertiary, count }) => {
+      if (!acc[archetype]) {
+        acc[archetype] = {};
+      }
+      if (!acc[archetype][tertiary]) {
+        acc[archetype][tertiary] = 0;
+      }
+      acc[archetype][tertiary] += count;
+      return acc;
+    }, {});
+
+    res.json({
+      "All Armor": allArmor,
+      ...statsBySlot,
+    });
   } catch (err) {
     console.error("Armor stats error:", err);
     res.status(500).json({ error: "Server error" });
