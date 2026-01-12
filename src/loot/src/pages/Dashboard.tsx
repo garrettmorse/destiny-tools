@@ -3,7 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import ArmorHeatmap from "../components/ArmorHeatmap";
 import ArmorFeed from "../components/ArmorFeed";
 import { useNavigate } from "react-router";
-import { useWebSocket } from "../hooks/useWebSocket";
+import { useWebSocketContext } from "../context/WebSocketContext";
 
 type ArmorStats = {
   [slot: string]: {
@@ -23,13 +23,8 @@ export default function Dashboard() {
   const [isFeedOpen, setIsFeedOpen] = useState(false);
   const [showUserOnly, setShowUserOnly] = useState(false);
 
-  // Determine WebSocket URL based on environment
-  const wsUrl =
-    process.env.NODE_ENV === "development"
-      ? "ws://localhost:8080"
-      : `wss://${window.location.host}`;
-
-  const { status: wsStatus, lastMessage } = useWebSocket(wsUrl);
+  // Use shared WebSocket context
+  const { status: wsStatus, lastMessage } = useWebSocketContext();
 
   // Handle WebSocket messages for armor stats updates
   useEffect(() => {

@@ -5,7 +5,7 @@ import {
   archetypeColors,
   primaryStatArchetypeMapping,
 } from "../constants/armor";
-import { useWebSocket } from "../hooks/useWebSocket";
+import { useWebSocketContext } from "../context/WebSocketContext";
 
 type ArmorPiece = {
   instance_id: string;
@@ -30,16 +30,8 @@ export default function ArmorFeed() {
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Determine WebSocket URL based on environment
-  const wsUrl =
-    process.env.NODE_ENV === "development"
-      ? "ws://localhost:8080"
-      : `wss://${window.location.host}`;
-
-  const { status: wsStatus, lastMessage } = useWebSocket(wsUrl, {
-    enableLootPolling: true,
-    pollingInterval: 10_000, // Check every 10 seconds
-  });
+  // Use shared WebSocket context
+  const { status: wsStatus, lastMessage } = useWebSocketContext();
 
   useEffect(() => {
     if (auth.status !== "loading" && auth.status !== "authenticated") {

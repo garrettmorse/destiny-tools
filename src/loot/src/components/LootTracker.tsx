@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { useWebSocket } from "../hooks/useWebSocket";
+import { useWebSocketContext } from "../context/WebSocketContext";
 
 type ArmorPiece = {
   instance_id: string;
@@ -15,16 +15,8 @@ export default function LootTracker() {
   const { auth } = useAuth();
   const [newArmor, setNewArmor] = useState<ArmorPiece[]>([]);
 
-  // Determine WebSocket URL based on environment
-  const wsUrl =
-    process.env.NODE_ENV === "development"
-      ? "ws://localhost:8080"
-      : `wss://${window.location.host}`;
-
-  const { status: wsStatus, lastMessage } = useWebSocket(wsUrl, {
-    enableLootPolling: true,
-    pollingInterval: 10_000, // Check every 10 seconds
-  });
+  // Use shared WebSocket context
+  const { status: wsStatus, lastMessage } = useWebSocketContext();
 
   // Handle WebSocket messages
   useEffect(() => {
