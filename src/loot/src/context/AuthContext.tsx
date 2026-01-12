@@ -52,7 +52,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
 
         const data = (await response.json()) as AuthResponse;
-        console.log(data);
+        // console.log(data);
         if (data.msg === "success" || data.msg === "still authorized") {
           setAuth({
             status: "authenticated",

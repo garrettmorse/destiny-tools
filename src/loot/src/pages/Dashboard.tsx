@@ -3,6 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import ArmorHeatmap from "../components/ArmorHeatmap";
 import ArmorFeed from "../components/ArmorFeed";
 import { useNavigate } from "react-router";
+import { useWebSocket } from "../hooks/useWebSocket";
 
 type ArmorStats = {
   [slot: string]: {
@@ -19,14 +20,27 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedGhostMod, setSelectedGhostMod] = useState<string | null>(null);
-  const [isPolling, setIsPolling] = useState(false);
   const [isFeedOpen, setIsFeedOpen] = useState(false);
   const [showUserOnly, setShowUserOnly] = useState(false);
+
+  // Determine WebSocket URL based on environment
+  const wsUrl =
+    process.env.NODE_ENV === "development"
+      ? "ws://localhost:8080"
+      : `wss://${window.location.host}`;
+
+  const { status: wsStatus, lastMessage } = useWebSocket(wsUrl);
+
+  // Handle WebSocket messages for armor stats updates
+  useEffect(() => {
+    if (lastMessage?.type === "armorStats") {
+      setArmorStats(lastMessage.data);
+    }
+  }, [lastMessage]);
 
   useEffect(() => {
     if (auth.status !== "loading" && auth.status !== "authenticated") {
       setLoading(false);
-      setIsPolling(false);
       navigate(global.BASE_PATH || "/");
       return;
     }
@@ -62,19 +76,8 @@ export default function Dashboard() {
       }
     };
 
-    // Initial fetch
+    // Initial fetch only - WebSocket will handle updates
     fetchStats();
-    // Set up polling every 30 seconds
-    setIsPolling(true);
-    const interval = setInterval(() => {
-      console.log("Polling for updated community stats...");
-      fetchStats();
-    }, 30_000);
-
-    return () => {
-      clearInterval(interval);
-      setIsPolling(false);
-    };
   }, [auth.status, selectedGhostMod, showUserOnly, navigate]);
 
   if (error) {
@@ -151,7 +154,7 @@ export default function Dashboard() {
               <h1 className="max-sm:text-2xl sm:text-3xl md:text-4xl font-bold">
                 Community Tier 5 Armor Statistics
               </h1>
-              {isPolling && (
+              {wsStatus === "connected" && (
                 <span className="max-sm:text-xs sm:text-sm text-green-400">
                   (Live)
                 </span>

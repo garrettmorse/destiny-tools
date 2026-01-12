@@ -5,6 +5,7 @@ import {
   archetypeColors,
   primaryStatArchetypeMapping,
 } from "../constants/armor";
+import { useWebSocket } from "../hooks/useWebSocket";
 
 type ArmorPiece = {
   instance_id: string;
@@ -26,14 +27,23 @@ type ArmorPiece = {
 export default function ArmorFeed() {
   const { auth } = useAuth();
   const [newArmor, setNewArmor] = useState<ArmorPiece[]>([]);
-  const [isPolling, setIsPolling] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+
+  // Determine WebSocket URL based on environment
+  const wsUrl =
+    process.env.NODE_ENV === "development"
+      ? "ws://localhost:8080"
+      : `wss://${window.location.host}`;
+
+  const { status: wsStatus, lastMessage } = useWebSocket(wsUrl, {
+    enableLootPolling: true,
+    pollingInterval: 10_000, // Check every 10 seconds
+  });
 
   useEffect(() => {
     if (auth.status !== "loading" && auth.status !== "authenticated") {
       setNewArmor([]);
-      setIsPolling(false);
       navigate(global.BASE_PATH || "/");
       return;
     }
@@ -58,72 +68,27 @@ export default function ArmorFeed() {
     };
 
     fetchRecentArmor();
-
-    setIsPolling(true);
-    const interval = setInterval(async () => {
-      console.log("Polling for new loot...");
-      try {
-        const res = await fetch(`${global.SERVICE_URL}/api/d2/pollLoot`, {
-          credentials: "include",
-        });
-
-        if (res.status === 401) {
-          // Token may be expired, attempt refresh via authorize endpoint
-          console.warn("Poll returned 401, attempting token refresh...");
-          const refreshRes = await fetch(
-            `${global.SERVICE_URL}/api/d2/authorize`,
-            {
-              credentials: "include",
-            }
-          );
-
-          if (refreshRes.ok) {
-            // Token refreshed successfully — retry the original poll
-            console.log("Token refreshed, retrying poll...");
-            const retryRes = await fetch(
-              `${global.SERVICE_URL}/api/d2/pollLoot`,
-              {
-                credentials: "include",
-              }
-            );
-            if (retryRes.ok) {
-              const data = await retryRes.json();
-              if (data.new?.length > 0) {
-                setNewArmor((prev) => [...data.new, ...prev]);
-              }
-            }
-            return; // Exit early after successful retry
-          } else {
-            // Refresh failed - refresh token is invalid, redirect to re-authenticate
-            console.error("Token refresh failed, redirecting to OAuth...");
-            window.location.href = `${global.BNET}/en/OAuth/Authorize?client_id=${global.CLIENT_ID}&response_type=code&state=777`;
-            return;
-          }
-        }
-
-        if (res.ok) {
-          const data = await res.json();
-          if (data.new?.length > 0) {
-            setNewArmor((prev) => [...data.new, ...prev]); // prepend new
-          }
-        }
-      } catch (err) {
-        console.error("Loot poll error:", err);
-      }
-    }, 10_000); // every 10 seconds
-
-    return () => {
-      clearInterval(interval);
-      setIsPolling(false);
-    };
   }, [auth.status, navigate]);
+
+  // Handle WebSocket messages
+  useEffect(() => {
+    if (lastMessage?.type === "newLoot") {
+      const newLoot = lastMessage.data;
+      if (newLoot?.length > 0) {
+        console.log(`Received ${newLoot.length} drops`);
+        setNewArmor((prev) => [...newLoot, ...prev]); // prepend new
+      }
+    }
+  }, [lastMessage]);
 
   return (
     <div className="h-screen overflow-y-auto bg-gray-850">
       <div className="sticky top-0 bg-gray-800 border-b border-gray-700 p-4 z-10">
         <h2 className="text-xl font-semibold">
           Your Recent Drops{" "}
-          {isPolling && <span className="text-green-400">(Live)</span>}
+          {wsStatus === "connected" && (
+            <span className="text-green-400">(Live)</span>
+          )}
         </h2>
       </div>
       <div className="p-4">
