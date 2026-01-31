@@ -19,7 +19,6 @@ import {
   validateRaidIds,
   findRelevantRaidActivities,
 } from "../services/raids.js";
-import { broadcastNewLoot } from "../services/websocket.js";
 
 const d2 = Router();
 
@@ -270,12 +269,6 @@ d2.get("/pollLoot", authorize, async (req, res) => {
       tertiaryUrl: statIconUrls[armor.tertiary],
       tuningUrl: statIconUrls[armor.tuning] ?? null,
     }));
-
-    // Broadcast to WebSocket clients if there's new armor
-    if (enrichedArmor.length > 0) {
-      broadcastNewLoot(d2Id, enrichedArmor);
-    }
-
     res.json({ new: enrichedArmor });
   } catch (err) {
     console.error("Poll loot error:", err);
