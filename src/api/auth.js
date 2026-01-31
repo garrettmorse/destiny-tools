@@ -3,7 +3,7 @@ import { apiClient } from "./client.js";
 /**
  * Exchange authorization code for access token
  * @param {string} code
- * @returns {Promise<[Error, null] | [null, { access_token: string; refresh_token: string; expires_in: number; membership_id: string; }]>}
+ * @returns {Promise<[Error, null] | [null, { access_token: string; refresh_token: string; expires_in: number; refresh_expires_in: number; membership_id: string; }]>}
  */
 async function exchangeCodeForToken(code) {
   let error = null,
@@ -33,7 +33,7 @@ async function exchangeCodeForToken(code) {
 /**
  * Refresh an expired access token using refresh token
  * @param {string} refreshToken
- * @returns {Promise<[Error, null] | [null, { access_token: string; refresh_token: string; expires_in: number; membership_id: string; }]>}
+ * @returns {Promise<[Error, null] | [null, { access_token: string; refresh_token: string; expires_in: number; refresh_expires_in: number; membership_id: string; }]>}
  */
 async function refreshAccessToken(refreshToken) {
   let error = null,
@@ -119,12 +119,12 @@ export async function authorize(req, res, next) {
       // Preserve existing token properties (like d2Id, d2Type)
       const refreshedToken = { ...cookie, ...newToken };
 
-      // Update cookie with new token
+      // Update cookie with new token (use refresh token lifetime for cookie expiry)
       res.cookie("BNET_AUTH", refreshedToken, {
         httpOnly: true,
         secure: true,
         sameSite: "none",
-        maxAge: newToken.expires_in * 1000,
+        maxAge: newToken.refresh_expires_in * 1000,
       });
 
       res.locals.token = refreshedToken;

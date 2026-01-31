@@ -215,7 +215,7 @@ d2.get("/authorize", authorize, async (req, res) => {
           httpOnly: true,
           secure: true,
           sameSite: "none",
-          maxAge: token.expires_in * 1000,
+          maxAge: token.refresh_expires_in * 1000,
         })
         .status(202)
         .json({
