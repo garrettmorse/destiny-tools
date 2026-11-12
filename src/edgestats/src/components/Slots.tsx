@@ -5,31 +5,45 @@ import type {
   DialogClick,
   StatType,
   ModType,
-  Tier,
+  SlotUpdateType,
+  Tuning,
 } from "../util";
-import { ARMOR, PRIMARY_STAT_ARCHETYPE_MAP } from "../util";
+import {
+  ARMOR,
+  ARCHETYPE_SECONDARY_STAT_MAP,
+  PRIMARY_STAT_ARCHETYPE_MAP,
+} from "../util";
 import Dialog from "./Dialog";
 import Slot from "./Slot";
 
+// fits a tuning label in the narrow mobile column
+const STAT_ABBREVIATION: Record<StatType, string> = {
+  Weapons: "Wpn",
+  Melee: "Mel",
+  Health: "Hlth",
+  Super: "Sup",
+  Grenade: "Gren",
+  Class: "Cls",
+};
+
 interface SlotProps {
-  tier: Tier;
   currentSlotHover: {
     armorKind: ArmorKind;
-    type: "archetype" | "mod" | "tertiary";
+    type: SlotUpdateType;
   } | null;
   handleSlotEnter: ({
     armorKind,
     updateType,
   }: {
     armorKind: ArmorKind;
-    updateType: "archetype" | "mod" | "tertiary";
+    updateType: SlotUpdateType;
   }) => void;
   handleSlotLeave: ({
     armorKind,
     updateType,
   }: {
     armorKind: ArmorKind;
-    updateType: "archetype" | "mod" | "tertiary";
+    updateType: SlotUpdateType;
   }) => void;
   handleDialogClick: ({
     armorKind,
@@ -47,31 +61,36 @@ const Slots: React.FC<SlotProps> = ({
   handleDialogClick,
   handleSlotEnter,
   handleSlotLeave,
-  tier,
   slotData,
 }) => (
   <>
-    <div className="flex justify-center gap-4 mb-2">
-      <div className="border-b max-sm:w-24 sm:w-36 justify-center flex max-sm:text-lg sm:text-2xl font-bold text-center">
+    <div className="flex justify-center max-sm:gap-1.5 sm:gap-4 mb-2">
+      <div className="border-b max-sm:w-[84px] sm:w-36 justify-center flex max-sm:text-base sm:text-2xl font-bold text-center">
         Archetype
       </div>
-      <div className="border-b max-sm:w-24 sm:w-36 justify-center flex max-sm:text-lg sm:text-2xl font-bold text-center">
+      <div className="border-b max-sm:w-[84px] sm:w-36 justify-center flex max-sm:text-base sm:text-2xl font-bold text-center">
         Tertiary
       </div>
-      <div className="border-b max-sm:w-24 sm:w-36 justify-center flex max-sm:text-lg sm:text-2xl font-bold text-center">
+      <div className="border-b max-sm:w-[84px] sm:w-36 justify-center flex max-sm:text-base sm:text-2xl font-bold text-center">
+        Tuning
+      </div>
+      <div className="border-b max-sm:w-[84px] sm:w-36 justify-center flex max-sm:text-base sm:text-2xl font-bold text-center">
         Mod
       </div>
     </div>
     {ARMOR.map((armor, idx) => (
-      <div key={armor} className="flex justify-center gap-4">
-        <div id="archetype-slots" className="flex max-sm:w-24 sm:w-36">
+      <div
+        key={armor}
+        className="relative flex justify-center max-sm:gap-1.5 sm:gap-4"
+      >
+        <div id="archetype-slots" className="flex max-sm:w-[84px] sm:w-36">
           <div
             className="flex flex-col items-center"
             onMouseLeave={() =>
               handleSlotLeave({ armorKind: armor, updateType: "archetype" })
             }
           >
-            <div className="text-center max-sm:w-24 sm:w-36 max-sm:text-xs sm:text-sm">
+            <div className="text-center max-sm:w-[84px] sm:w-36 max-sm:text-xs sm:text-sm">
               {slotData[armor].get?.archetype ?? "Select Type"}
             </div>
             <div className="relative">
@@ -98,19 +117,22 @@ const Slots: React.FC<SlotProps> = ({
                 <Slot
                   identifier={`archetype-${idx}`}
                   kind={slotData[armor].get?.archetype ?? armor}
+                  secondary={
+                    slotData[armor].get?.archetype &&
+                    ARCHETYPE_SECONDARY_STAT_MAP[slotData[armor].get.archetype]
+                  }
                 />
               </div>
               {currentSlotHover?.armorKind === armor &&
                 currentSlotHover?.type === "archetype" && (
                   <div
                     id={`archetype-dialog-${armor}`}
-                    className="absolute max-lg:left-full lg:right-full fade-in -top-1 z-50"
+                    className="absolute max-xl:left-full xl:right-full fade-in -top-1 z-50"
                   >
                     <Dialog
                       identifier={idx}
                       armor={armor}
                       archetype
-                      tier={tier}
                       handleClick={(archetype: ArmorArchetype | null) =>
                         handleDialogClick({
                           armorKind: armor,
@@ -126,7 +148,7 @@ const Slots: React.FC<SlotProps> = ({
         </div>
         <div
           id="tertiary-slots"
-          className={`flex max-sm:w-24 sm:w-36 ${
+          className={`flex max-sm:w-[84px] sm:w-36 ${
             slotData[armor].get?.archetype
               ? ""
               : "select-none pointer-events-none opacity-40"
@@ -138,7 +160,7 @@ const Slots: React.FC<SlotProps> = ({
               handleSlotLeave({ armorKind: armor, updateType: "tertiary" })
             }
           >
-            <div className="text-center max-sm:w-24 sm:w-36 max-sm:text-xs sm:text-sm text-center">
+            <div className="text-center max-sm:w-[84px] sm:w-36 max-sm:text-xs sm:text-sm text-center">
               {slotData[armor].get?.tertiary ?? "Select Tertiary"}
             </div>
             <div className="relative">
@@ -182,7 +204,6 @@ const Slots: React.FC<SlotProps> = ({
                       identifier={idx}
                       armor={armor}
                       tertiary
-                      tier={tier}
                       withArchetype={slotData[armor].get?.archetype}
                       handleClick={(tertiary: StatType | null) =>
                         handleDialogClick({
@@ -197,14 +218,113 @@ const Slots: React.FC<SlotProps> = ({
             </div>
           </div>
         </div>
-        <div id="mod-slots" className={`flex max-sm:w-24 sm:w-36`}>
+        <div
+          id="tuning-slots"
+          className={`flex max-sm:w-[84px] sm:w-36 ${
+            slotData[armor].get?.archetype
+              ? ""
+              : "select-none pointer-events-none opacity-40"
+          }`}
+        >
+          <div
+            className="flex flex-col items-center"
+            onMouseLeave={() =>
+              handleSlotLeave({ armorKind: armor, updateType: "tuning" })
+            }
+          >
+            <div className="text-center max-sm:w-[84px] sm:w-36 max-sm:text-xs sm:text-sm text-nowrap">
+              {slotData[armor].get?.tuningPlus &&
+              slotData[armor].get?.tuningMinus ? (
+                <>
+                  <span className="max-sm:hidden">
+                    +{slotData[armor].get.tuningPlus} −
+                    {slotData[armor].get.tuningMinus}
+                  </span>
+                  <span className="sm:hidden">
+                    +{STAT_ABBREVIATION[slotData[armor].get.tuningPlus]} −
+                    {STAT_ABBREVIATION[slotData[armor].get.tuningMinus]}
+                  </span>
+                </>
+              ) : (
+                "Select Tuning"
+              )}
+            </div>
+            {/* not positioned, so the dialog anchors to the whole row */}
+            <div>
+              <div
+                onMouseEnter={() =>
+                  handleSlotEnter({ armorKind: armor, updateType: "tuning" })
+                }
+                onClick={() =>
+                  currentSlotHover?.armorKind === armor &&
+                  currentSlotHover?.type === "tuning"
+                    ? handleSlotLeave({
+                        armorKind: armor,
+                        updateType: "tuning",
+                      })
+                    : handleSlotEnter({
+                        armorKind: armor,
+                        updateType: "tuning",
+                      })
+                }
+              >
+                <Slot
+                  identifier={`tuning-${idx}`}
+                  kind={
+                    slotData[armor].get?.tuningPlus &&
+                    slotData[armor].get?.tuningMinus
+                      ? PRIMARY_STAT_ARCHETYPE_MAP[
+                          slotData[armor].get.tuningPlus
+                        ]
+                      : "Tuning"
+                  }
+                  cost={
+                    slotData[armor].get?.tuningPlus
+                      ? slotData[armor].get?.tuningMinus
+                      : undefined
+                  }
+                />
+              </div>
+              {currentSlotHover?.armorKind === armor &&
+                currentSlotHover?.type === "tuning" && (
+                  <div
+                    id={`tuning-dialog-${armor}`}
+                    className="absolute left-1/2 -translate-x-1/2 top-full fade-in z-50"
+                  >
+                    <Dialog
+                      identifier={idx}
+                      armor={armor}
+                      tuning
+                      current={
+                        slotData[armor].get?.tuningPlus &&
+                        slotData[armor].get?.tuningMinus
+                          ? {
+                              plus: slotData[armor].get.tuningPlus,
+                              minus: slotData[armor].get.tuningMinus,
+                            }
+                          : null
+                      }
+                      handleClick={(tuning: Tuning | null) =>
+                        handleDialogClick({
+                          armorKind: armor,
+                          updateType: "tuning",
+                          selection: tuning,
+                        })
+                      }
+                    />
+                  </div>
+                )}
+            </div>
+          </div>
+        </div>
+        <div id="mod-slots" className={`flex max-sm:w-[84px] sm:w-36`}>
           <div
             className="flex flex-col items-center"
             onMouseLeave={() =>
               handleSlotLeave({ armorKind: armor, updateType: "mod" })
             }
           >
-            <div className="text-center max-sm:w-24 sm:w-36 max-sm:text-xs sm:text-sm">
+            <div className="text-center max-sm:w-[84px] sm:w-36 max-sm:text-xs sm:text-sm">
               {slotData[armor].get?.mod?.slice(0, -3) ?? "Select Mod"}
             </div>
             <div className="relative">
@@ -228,7 +348,7 @@ const Slots: React.FC<SlotProps> = ({
                 currentSlotHover?.type === "mod" && (
                   <div
                     id={`mod-dialog-${armor}`}
-                    className={`absolute max-lg:right-full lg:left-full fade-in -top-1 z-50`}
+                    className={`absolute max-xl:right-full xl:left-full fade-in -top-1 z-50`}
                   >
                     <Dialog
                       identifier={idx}

@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from "react";
 import Slots from "../components/Slots";
 import StatChart from "../components/StatChart";
 import Buttons from "../components/Buttons";
-import Tiers from "../components/Tiers";
 import {
   ARCHETYPE_TERTIARY_STAT_MAP,
   FRAGMENTS,
@@ -18,7 +17,7 @@ import type {
   FragmentType,
   StatType,
   Fragments,
-  Tier,
+  SlotUpdateType,
 } from "../util";
 import { useSearchParams } from "react-router";
 import "./Home.css";
@@ -50,13 +49,10 @@ const HomePage: React.FC = () => {
     useState<ArmorState | null>(armorParams.Class as unknown as ArmorState);
   const [currentSlotHover, setCurrentSlotHover] = useState<{
     armorKind: ArmorKind;
-    type: "archetype" | "mod" | "tertiary";
+    type: SlotUpdateType;
   } | null>(null);
   const [masterwork, toggleMasterwork] = useState<boolean>(
     !!searchParams.get("mw"),
-  );
-  const [tier, setTier] = useState<Tier>(
-    Number(searchParams.get("e") ?? "5") as Tier,
   );
   const [selectedFragmentTab, setSelectedFragmentTab] = useState<FragmentType>(
     (fragmentParams?.f?.at(0) as FragmentType) ?? "Arc",
@@ -108,7 +104,6 @@ const HomePage: React.FC = () => {
         {},
       ),
       masterwork,
-      tier,
     ),
   );
 
@@ -122,6 +117,12 @@ const HomePage: React.FC = () => {
           STATE_MAP[key].get?.archetype,
           STATE_MAP[key].get?.tertiary,
           STATE_MAP[key].get?.mod,
+          ...(STATE_MAP[key].get?.tuningPlus && STATE_MAP[key].get?.tuningMinus
+            ? [
+                `+${STATE_MAP[key].get.tuningPlus}`,
+                `-${STATE_MAP[key].get.tuningMinus}`,
+              ]
+            : []),
         ];
         return acc;
       }, {}),
@@ -140,7 +141,6 @@ const HomePage: React.FC = () => {
       active: selectedFragmentTab,
     });
     const masterworkParams = masterwork ? "mw=1" : null;
-    const tierParams = `e=${tier}`;
     if (!copyTimeout) {
       const defaultButtonMsg = document.getElementById("default-message");
       const successButtonMsg = document.getElementById("success-message");
@@ -166,9 +166,6 @@ const HomePage: React.FC = () => {
     }
     if (masterworkParams) {
       paramArr.push(masterworkParams);
-    }
-    if (tierParams) {
-      paramArr.push(tierParams);
     }
 
     navigator.clipboard.writeText(
@@ -197,7 +194,7 @@ const HomePage: React.FC = () => {
       {},
     );
     // @ts-expect-error cba
-    const baseStats = getStats(armorStates, masterwork, tier);
+    const baseStats = getStats(armorStates, masterwork);
     const fragmentStats = Object.keys(fragments[selectedFragmentTab])
       .filter(
         // @ts-expect-error cba
@@ -231,7 +228,6 @@ const HomePage: React.FC = () => {
     helmetArchetype,
     classItemArchetype,
     bootsArchetype,
-    tier,
   ]);
 
   useEffect(() => {
@@ -256,12 +252,21 @@ const HomePage: React.FC = () => {
     const prevArchetype = STATE_MAP[armorKind].get?.archetype;
     const prevMod = STATE_MAP[armorKind].get?.mod;
     const prevTertiary = STATE_MAP[armorKind].get?.tertiary;
-    const update = {
-      archetype: prevArchetype,
-      mod: prevMod,
-      tertiary: prevTertiary,
-      [updateType]: selection,
-    };
+    const update =
+      updateType === "tuning"
+        ? {
+            archetype: prevArchetype,
+            mod: prevMod,
+            tertiary: prevTertiary,
+            tuningPlus: selection?.plus,
+            tuningMinus: selection?.minus,
+          }
+        : {
+            archetype: prevArchetype,
+            mod: prevMod,
+            tertiary: prevTertiary,
+            [updateType]: selection,
+          };
     if (updateType === "archetype") {
       // tertiary is illegal if incoming archetype does not support tertiary
       if (
@@ -286,7 +291,7 @@ const HomePage: React.FC = () => {
     updateType,
   }: {
     armorKind: ArmorKind;
-    updateType: "archetype" | "mod" | "tertiary";
+    updateType: SlotUpdateType;
   }) => {
     const el = document.getElementById(`${updateType}-dialog-${armorKind}`);
     el?.classList.toggle("fade-in");
@@ -299,15 +304,11 @@ const HomePage: React.FC = () => {
     updateType,
   }: {
     armorKind: ArmorKind;
-    updateType: "archetype" | "mod" | "tertiary";
+    updateType: SlotUpdateType;
   }) => {
     const el = document.getElementById(`${updateType}-dialog-${armorKind}`);
     el?.classList.toggle("fade-out");
     slotTimeout = setTimeout(() => setCurrentSlotHover(null), 100);
-  };
-
-  const handleTierSelect = (selectedTier: Tier) => {
-    setTier(selectedTier);
   };
 
   return (
@@ -316,7 +317,7 @@ const HomePage: React.FC = () => {
         Edgestats
       </h1>
       <p className="dark:text-gray-400 text-xl md:text-2xl lg:text-3xl text-center">
-        Preview the Edge of Fate armor stats
+        Preview Tier 5 armor stats
       </p>
       <div className="my-4">
         <div id="buttons" className="flex justify-center gap-2 mb-2">
@@ -333,17 +334,7 @@ const HomePage: React.FC = () => {
             handleSlotEnter={handleSlotEnter}
             handleSlotLeave={handleSlotLeave}
             handleDialogClick={handleDialogClick}
-            tier={tier}
             slotData={STATE_MAP}
-          />
-        </div>
-        <div
-          id="tiers"
-          className="flex gap-2 align-middle border- items-center justify-center  mb-2"
-        >
-          <Tiers
-            handleTierSelect={handleTierSelect}
-            selectedTier={tier as Tier}
           />
         </div>
         <div id="chart" className="flex flex-col items-center mb-4">

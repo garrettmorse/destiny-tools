@@ -1,6 +1,8 @@
 type ArmorStateBase = {
   mod: ModType;
-  tuning: boolean;
+  // tuning applies only when both stats are set
+  tuningPlus?: StatType;
+  tuningMinus?: StatType;
   masterwork: boolean;
 };
 
@@ -17,11 +19,17 @@ export type ArmorKind = "Helmet" | "Gloves" | "Chest" | "Boots" | "Class";
 
 export type ArmorArchetype =
   | "Brawler"
+  | "Skirmisher"
   | "Gunner"
+  | "Powerhouse"
   | "Specialist"
+  | "Reaver"
   | "Grenadier"
+  | "Demolitionist"
   | "Paragon"
-  | "Bulwark";
+  | "Colossus"
+  | "Bulwark"
+  | "Siegebreaker";
 
 export type StatType =
   | "Weapons"
@@ -33,11 +41,17 @@ export type StatType =
 
 export const ARCHETYPES: ArmorArchetype[] = [
   "Gunner",
+  "Powerhouse",
   "Brawler",
+  "Skirmisher",
   "Bulwark",
+  "Siegebreaker",
   "Paragon",
+  "Colossus",
   "Grenadier",
+  "Demolitionist",
   "Specialist",
+  "Reaver",
 ] as const;
 
 export const STATS: StatType[] = [
@@ -72,39 +86,15 @@ export const ARMOR: ArmorKind[] = [
   "Class",
 ] as const;
 
-export type Tier = 1 | 2 | 3 | 4 | 5;
-
+// Tier 5 armor
 export const STAT_COUNT = {
-  tier: {
-    5: {
-      PRIMARY: 30,
-      SECONDARY: 25,
-      TERTIARY: 20,
-    },
-    4: {
-      PRIMARY: 30,
-      SECONDARY: 25,
-      TERTIARY: 15,
-    },
-    3: {
-      PRIMARY: 30,
-      SECONDARY: 20,
-      TERTIARY: 10,
-    },
-    2: {
-      PRIMARY: 30,
-      SECONDARY: 15,
-      TERTIARY: 10,
-    },
-    1: {
-      PRIMARY: 25,
-      SECONDARY: 15,
-      TERTIARY: 10,
-    },
-  },
+  PRIMARY: 30,
+  SECONDARY: 25,
+  TERTIARY: 20,
   MAJOR_MOD: 10,
   MINOR_MOD: 5,
   MASTERWORK: 5,
+  TUNING: 5,
 } as const;
 
 export const PRIMARY_STAT_ARCHETYPE_MAP: Record<StatType, ArmorArchetype> = {
@@ -118,21 +108,41 @@ export const PRIMARY_STAT_ARCHETYPE_MAP: Record<StatType, ArmorArchetype> = {
 
 export const ARCHETYPE_PRIMARY_STAT_MAP: Record<ArmorArchetype, StatType> = {
   Specialist: "Class",
+  Reaver: "Class",
   Grenadier: "Grenade",
+  Demolitionist: "Grenade",
   Gunner: "Weapons",
+  Powerhouse: "Weapons",
   Paragon: "Super",
+  Colossus: "Super",
   Bulwark: "Health",
+  Siegebreaker: "Health",
   Brawler: "Melee",
+  Skirmisher: "Melee",
 } as const;
 
 export const ARCHETYPE_SECONDARY_STAT_MAP: Record<ArmorArchetype, StatType> = {
   Specialist: "Weapons",
+  Reaver: "Melee",
   Grenadier: "Super",
+  Demolitionist: "Class",
   Gunner: "Grenade",
+  Powerhouse: "Super",
   Paragon: "Melee",
+  Colossus: "Health",
   Bulwark: "Class",
+  Siegebreaker: "Grenade",
   Brawler: "Health",
+  Skirmisher: "Weapons",
 } as const;
+
+// Archetypes grouped by primary stat, e.g. Weapons -> [Gunner, Powerhouse]
+export const ARCHETYPE_GROUPS = STATS.map((stat) => ({
+  stat,
+  archetypes: ARCHETYPES.filter(
+    (archetype) => ARCHETYPE_PRIMARY_STAT_MAP[archetype] === stat,
+  ),
+}));
 
 interface ArmorArchetypeConfig<T extends ArmorArchetype> {
   PRIMARY: StatType;
@@ -141,17 +151,29 @@ interface ArmorArchetypeConfig<T extends ArmorArchetype> {
     StatType,
     T extends "Brawler"
       ? "Melee" | "Health"
-      : T extends "Gunner"
-        ? "Weapons" | "Grenade"
-        : T extends "Specialist"
-          ? "Class" | "Weapons"
-          : T extends "Grenadier"
-            ? "Grenade" | "Super"
-            : T extends "Paragon"
-              ? "Super" | "Melee"
-              : T extends "Bulwark"
-                ? "Health" | "Class"
-                : never
+      : T extends "Skirmisher"
+        ? "Melee" | "Weapons"
+        : T extends "Gunner"
+          ? "Weapons" | "Grenade"
+          : T extends "Powerhouse"
+            ? "Weapons" | "Super"
+            : T extends "Specialist"
+              ? "Class" | "Weapons"
+              : T extends "Reaver"
+                ? "Class" | "Melee"
+                : T extends "Grenadier"
+                  ? "Grenade" | "Super"
+                  : T extends "Demolitionist"
+                    ? "Grenade" | "Class"
+                    : T extends "Paragon"
+                      ? "Super" | "Melee"
+                      : T extends "Colossus"
+                        ? "Super" | "Health"
+                        : T extends "Bulwark"
+                          ? "Health" | "Class"
+                          : T extends "Siegebreaker"
+                            ? "Health" | "Grenade"
+                            : never
   >;
 }
 
@@ -162,11 +184,17 @@ export const ARCHETYPE_TERTIARY_STAT_MAP: {
   [K in ArmorArchetype]: TertiaryArmorStat<K>[];
 } = {
   Brawler: ["Grenade", "Super", "Class", "Weapons"],
+  Skirmisher: ["Class", "Grenade", "Health", "Super"],
   Bulwark: ["Melee", "Super", "Weapons", "Grenade"],
+  Siegebreaker: ["Class", "Melee", "Super", "Weapons"],
   Grenadier: ["Class", "Melee", "Weapons", "Health"],
+  Demolitionist: ["Health", "Melee", "Super", "Weapons"],
   Gunner: ["Super", "Class", "Health", "Melee"],
+  Powerhouse: ["Class", "Grenade", "Health", "Melee"],
   Specialist: ["Grenade", "Health", "Melee", "Super"],
+  Reaver: ["Grenade", "Health", "Super", "Weapons"],
   Paragon: ["Grenade", "Health", "Weapons", "Class"],
+  Colossus: ["Class", "Grenade", "Melee", "Weapons"],
 } as const;
 
 export const MOD_STAT_MAP = {
@@ -304,7 +332,6 @@ export const STAT_DESCRIPTION_MAP = {
 export const getStats = (
   archetypes: Record<ArmorKind, ArmorState | null>,
   masterwork: boolean,
-  tier: Tier,
 ) => {
   const stats: Record<StatType, number> = {
     Health: 0,
@@ -327,10 +354,15 @@ export const getStats = (
     const primaryStat = ARCHETYPE_PRIMARY_STAT_MAP[archetype];
     const secondaryStat = ARCHETYPE_SECONDARY_STAT_MAP[archetype];
     const tertiaryStat = archetypes[armor]?.tertiary as StatType;
-    stats[primaryStat] += STAT_COUNT.tier[tier].PRIMARY;
-    stats[secondaryStat] += STAT_COUNT.tier[tier].SECONDARY;
+    stats[primaryStat] += STAT_COUNT.PRIMARY;
+    stats[secondaryStat] += STAT_COUNT.SECONDARY;
     if (tertiaryStat) {
-      stats[tertiaryStat] += STAT_COUNT.tier[tier].TERTIARY;
+      stats[tertiaryStat] += STAT_COUNT.TERTIARY;
+    }
+    const { tuningPlus, tuningMinus } = archetypes[armor];
+    if (tuningPlus && tuningMinus) {
+      stats[tuningPlus] += STAT_COUNT.TUNING;
+      stats[tuningMinus] -= STAT_COUNT.TUNING;
     }
     if (masterwork && tertiaryStat) {
       // get the 3 stats that arent primary, secondary, tertiary
@@ -350,11 +382,17 @@ export const getStats = (
 
 const SLOT_MAP = {
   Gunner: "archetype",
+  Powerhouse: "archetype",
   Brawler: "archetype",
+  Skirmisher: "archetype",
   Bulwark: "archetype",
+  Siegebreaker: "archetype",
   Paragon: "archetype",
+  Colossus: "archetype",
   Grenadier: "archetype",
+  Demolitionist: "archetype",
   Specialist: "archetype",
+  Reaver: "archetype",
   Health: "tertiary",
   Melee: "tertiary",
   Grenade: "tertiary",
@@ -373,6 +411,18 @@ const SLOT_MAP = {
   "Minor Class Mod": "mod",
   "Minor Health Mod": "mod",
   "Minor Melee Mod": "mod",
+  "+Health": "tuningPlus",
+  "+Melee": "tuningPlus",
+  "+Grenade": "tuningPlus",
+  "+Super": "tuningPlus",
+  "+Class": "tuningPlus",
+  "+Weapons": "tuningPlus",
+  "-Health": "tuningMinus",
+  "-Melee": "tuningMinus",
+  "-Grenade": "tuningMinus",
+  "-Super": "tuningMinus",
+  "-Class": "tuningMinus",
+  "-Weapons": "tuningMinus",
 } as const;
 
 const FRAGMENT_MAP: Record<Fragments, FragmentType> = {
@@ -473,6 +523,29 @@ const ARMOR_PARAM_CODES = {
   "Minor Class Mod": 21,
   "Minor Health Mod": 22,
   "Minor Melee Mod": 23,
+  // Archetypes 2.0 (24-29)
+  Powerhouse: 24,
+  Skirmisher: 25,
+  Siegebreaker: 26,
+  Colossus: 27,
+  Demolitionist: 28,
+  Reaver: 29,
+  // Tuning boost (30-35)
+  "+Health": 30,
+  "+Melee": 31,
+  "+Grenade": 32,
+  "+Super": 33,
+  "+Class": 34,
+  "+Weapons": 35,
+  // Tuning cost (36-41), encoded as two characters ("10"-"15"). These never
+  // collide with single-character pairs since codes are sorted and "1" is only
+  // followed by "0"-"5" when two archetypes share a slot
+  "-Health": 36,
+  "-Melee": 37,
+  "-Grenade": 38,
+  "-Super": 39,
+  "-Class": 40,
+  "-Weapons": 41,
 } as const;
 
 export const FRAGMENT_PARAM_CODES: Record<Fragments, number> = {
@@ -846,7 +919,13 @@ class SearchParamEncoder {
           "armor",
         );
         const mappedArmorParams = decodedArmorParams.reduce(
-          (params, param) => ({ ...params, [SLOT_MAP[param]]: param }),
+          (params, param) => ({
+            ...params,
+            // tuning codes are signed stat names, e.g. "+Weapons"
+            [SLOT_MAP[param]]: SLOT_MAP[param].startsWith("tuning")
+              ? param.slice(1)
+              : param,
+          }),
           {},
         );
         if (decodedArmorParams.length > 0) {
@@ -946,8 +1025,22 @@ interface TertiaryDialogClick {
   updateType: "tertiary";
 }
 
+export type Tuning = { plus: StatType; minus: StatType };
+
+interface TuningDialogClick {
+  selection: Tuning | null;
+  updateType: "tuning";
+}
+
 export type DialogClick = BaseDialogClick &
-  (ArchetypeDialogClick | ModDialogClick | TertiaryDialogClick);
+  (
+    | ArchetypeDialogClick
+    | ModDialogClick
+    | TertiaryDialogClick
+    | TuningDialogClick
+  );
+
+export type SlotUpdateType = DialogClick["updateType"];
 
 export type FragmentType =
   | "Arc"
