@@ -1,5 +1,5 @@
 {
-  "name": "pi-server",
+  "name": "destiny-tools",
   "version": "1.0.0",
   "main": "index.js",
   "type": "module",
@@ -11,18 +11,10 @@
     "build:edge": "cd src/edgestats && npm run build && cd ../.. && rm -rf dist/edgestats && mv src/edgestats/dist/edgestats dist",
     "build:loot": "cd src/loot && npm run build && cd ../.. && rm -rf dist/loot && mv src/loot/dist/loot dist"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/garrettmorse/pi-server.git"
-  },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/garrettmorse/pi-server/issues"
-  },
-  "homepage": "https://github.com/garrettmorse/pi-server#readme",
-  "description": "",
+  "author": "Garrett Morse",
+  "license": "MIT",
+  "description": "Destiny 2 web apps (Edgestats, Loot Tracker, Raidlytics) on a self-hosted Express + SQLite backend",
   "dependencies": {
     "adm-zip": "^0.5.16",
     "axios": "^1.9.0",

@@ -40,7 +40,7 @@ app.use("/api/d2", d2);
 
 app.disable("x-powered-by");
 
-app.set("trust proxy", "process.env.TRUSTED_PROXY");
+if (process.env.TRUSTED_PROXY) app.set("trust proxy", process.env.TRUSTED_PROXY);
 
 app.use(
   "/raidlytics",
