@@ -8,6 +8,24 @@ A small suite of Destiny 2 web apps, built on the Bungie.net API and self-hosted
 | **Loot Tracker** | Bungie OAuth -- polls your inventory for new armor drops, and builds a feed and stat heatmap of what you've earned | [garrettmorse.com/loot](https://garrettmorse.com/loot) |
 | **Raidlytics** | Raid history and fireteam statistics for any player | [garrettmorse.com/raidlytics](https://garrettmorse.com/raidlytics) |
 
+<p align="center">
+  <img src="docs/screenshots/loot.png" alt="Loot Tracker: community armor heatmap and a live feed of recent drops" width="860">
+  <br><sub><b>Loot Tracker</b> · community Tier 5 armor statistics alongside a live feed of your recent drops</sub>
+</p>
+
+<table>
+  <tr>
+    <td width="42%" valign="top" align="center">
+      <img src="docs/screenshots/edgestats.png" alt="Edgestats: armor stat optimizer with archetype, tertiary and mod selection" width="100%">
+      <br><sub><b>Edgestats</b> · pick armor, mods and fragments, then see the stat spread</sub>
+    </td>
+    <td width="58%" valign="top" align="center">
+      <img src="docs/screenshots/raidlytics.png" alt="Raidlytics: per-player raid stats with kill breakdowns by weapon and ammo type" width="100%">
+      <br><sub><b>Raidlytics</b> · per-raid player stats, weapon breakdowns and fireteam history</sub>
+    </td>
+  </tr>
+</table>
+
 ## Architecture
 
 ```
